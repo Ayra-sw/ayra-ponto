@@ -14,6 +14,7 @@ export default function Login() {
   const [carregando, setCarregando] = useState(false)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [avisoRecuperacao, setAvisoRecuperacao] = useState(false)
 
   async function handleEntrar(e) {
     e.preventDefault()
@@ -51,6 +52,45 @@ export default function Login() {
     setAvisoConfirmacao(true)
   }
 
+  async function handleRecuperar(e) {
+    e.preventDefault()
+    setErro('')
+    setCarregando(true)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    })
+
+    setCarregando(false)
+
+    if (error) {
+      setErro(error.message)
+      return
+    }
+
+    setAvisoRecuperacao(true)
+  }
+
+  if (avisoRecuperacao) {
+    return (
+      <div className="container">
+        <div className="card">
+          <h2>Verifique seu e-mail</h2>
+          <p>
+            Se <strong>{email}</strong> estiver cadastrado, você vai receber um
+            link para escolher uma nova senha. Confira também a caixa de spam.
+          </p>
+          <button
+            className="btn-primary"
+            onClick={() => { setAvisoRecuperacao(false); setModo('entrar') }}
+          >
+            Voltar para o login
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (avisoConfirmacao) {
     return (
       <div className="container">
@@ -63,6 +103,43 @@ export default function Login() {
           <button className="btn-primary" onClick={() => { setAvisoConfirmacao(false); setModo('entrar') }}>
             Voltar para o login
           </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (modo === 'recuperar') {
+    return (
+      <div className="container">
+        <div className="card">
+          <h1><span className="brand">Ayra</span> Ponto</h1>
+          <p style={{ color: 'var(--text-muted)' }}>
+            Esqueceu sua senha? Informe seu e-mail e enviamos um link para você
+            escolher uma nova.
+          </p>
+
+          <form onSubmit={handleRecuperar}>
+            <label htmlFor="email-recuperar">E-mail</label>
+            <input
+              id="email-recuperar"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            {erro && <p className="error-text">{erro}</p>}
+
+            <button className="btn-primary" type="submit" disabled={carregando}>
+              {carregando ? 'Enviando…' : 'Enviar link de recuperação'}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', marginTop: 16 }}>
+            <button className="link-btn" onClick={() => { setErro(''); setModo('entrar') }}>
+              Voltar para o login
+            </button>
+          </p>
         </div>
       </div>
     )
@@ -117,6 +194,18 @@ export default function Login() {
               {mostrarSenha ? '🙈' : '👁️'}
             </button>
           </div>
+
+          {modo === 'entrar' && (
+            <p style={{ textAlign: 'right', marginTop: 8 }}>
+              <button
+                type="button"
+                className="link-btn link-btn--discreto"
+                onClick={() => { setErro(''); setModo('recuperar') }}
+              >
+                Esqueci minha senha
+              </button>
+            </p>
+          )}
 
           {erro && <p className="error-text">{erro}</p>}
 
