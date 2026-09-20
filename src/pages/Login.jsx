@@ -13,6 +13,7 @@ export default function Login() {
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
+  const [mostrarSenha, setMostrarSenha] = useState(false)
 
   async function handleEntrar(e) {
     e.preventDefault()
@@ -97,7 +98,25 @@ export default function Login() {
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
           <label htmlFor="senha">Senha</label>
-          <input id="senha" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={6} required />
+          <div className="campo-senha">
+            <input
+              id="senha"
+              type={mostrarSenha ? 'text' : 'password'}
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              minLength={6}
+              required
+            />
+            <button
+              type="button"
+              className="botao-olho"
+              onClick={() => setMostrarSenha((v) => !v)}
+              aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              tabIndex={-1}
+            >
+              {mostrarSenha ? '🙈' : '👁️'}
+            </button>
+          </div>
 
           {erro && <p className="error-text">{erro}</p>}
 
