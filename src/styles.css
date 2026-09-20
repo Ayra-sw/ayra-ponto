@@ -121,6 +121,27 @@ button {
   margin-top: 8px;
 }
 
+.campo-senha {
+  position: relative;
+}
+
+.campo-senha input {
+  padding-right: 40px;
+}
+
+.botao-olho {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  padding: 6px 8px;
+  cursor: pointer;
+  line-height: 1;
+}
+
 .link-btn {
   background: none;
   border: none;
