@@ -1,31 +1,32 @@
 # Ayra Ponto
 
-Software de ponto eletrônico para startups e PMEs (até 50 colaboradores).
-React + Vite + Supabase, hospedado na Vercel.
+Controle de jornada e ponto eletrônico para startups e PMEs (até 50 colaboradores).
+React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, categoria REP-P.
 
-## O que já está aqui (versão inicial)
+## O que já está aqui
 
-- Login e cadastro (com escolha de perfil: administrador, RH, funcionário)
-- Onboarding: administrador cria a empresa (gera código de convite); RH/funcionário
-  entram usando esse código
-- Tela do funcionário: bater ponto (entrada, intervalo, saída) e ver as marcações do dia
-- Painel de gestão (admin/RH): ver equipe, ver e aprovar/rejeitar solicitações de ajuste
-- Tema claro/escuro com a identidade visual (azul escuro + marrom dourado nas telas de gestão)
-- Todo o banco de dados já pensado para a Portaria 671/2021 (categoria REP-P): marcações
-  imutáveis, NSR sequencial por filial, estrutura pronta para AFD/AEJ/espelho/comprovante
+- **Acesso:** entrar, "Criar conta da minha empresa", "Recebi um convite" (inclusive por link
+  `/convite/CODIGO`), recuperação de senha. Quem entra por convite é sempre colaborador.
+- **Colaborador:** tela de ponto com a próxima marcação sugerida (sem nunca bloquear outro tipo),
+  comprovante de cada marcação com NSR, marcações do dia, minha conta.
+- **Gestão (administrador e RH):** painel "Hoje", colaboradores (busca, filtros, edição),
+  solicitações pendentes, empresa (CNPJ alfanumérico, endereço, convite), unidades, meu ponto.
+- **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
+  telas responsivas para computador, tablet e celular.
+- **Banco pensado para a Portaria 671:** marcações imutáveis, NSR sequencial por unidade,
+  ajustes sempre ligados ao registro original, isolamento por empresa com RLS.
 
-## O que NÃO está aqui ainda (próximos passos)
+A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um guia em `docs/`.
 
-- Geração e assinatura digital (ICP-Brasil) dos arquivos AFD e AEJ — isso vai virar uma
-  Edge Function separada, porque precisa do certificado digital da empresa
-- Geração do espelho de ponto mensal em PDF assinado (PAdES)
-- Quando um ajuste é aprovado no painel de gestão, ainda falta esse aprovado virar de fato
-  um novo registro em `registros_ponto` (hoje só muda o status do pedido)
-- Cadastro/gestão de filiais pelo administrador (hoje a empresa nasce só com a filial "Matriz")
-- Registro do software no INPI e obtenção do certificado ICP-Brasil — são passos
-  administrativos, fora do código, mas obrigatórios antes do lançamento
+## Próximas fases
 
-## Como rodar localmente (opcional — você pode só publicar direto na Vercel)
+- **Fase 2:** perfil completo do colaborador, departamentos, cargos, jornadas, escalas,
+  feriados, cálculo de horas, espelho de ponto, banco de horas, pedidos de ajuste.
+- **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
+- **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
+- **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.
+
+## Como rodar localmente (opcional)
 
 1. `npm install`
 2. Copie `.env.example` para `.env` e preencha com a URL e a chave "anon" do seu
@@ -34,7 +35,5 @@ React + Vite + Supabase, hospedado na Vercel.
 
 ## Publicando na Vercel
 
-1. Importe este repositório na Vercel (New Project → selecione `ayra-ponto`)
-2. Em "Environment Variables", adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
-   com os mesmos valores do seu projeto Supabase
-3. Deploy — a Vercel detecta automaticamente que é um projeto Vite
+A Vercel publica sozinha a cada envio para a branch `main`. As variáveis
+`VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` ficam em Settings → Environment Variables.

@@ -13,6 +13,9 @@ const REGRAS = [
   { teste: /auth session missing|session.*expired|jwt expired/i, msg: () => 'Sua sessão expirou. Entre novamente para continuar.' },
   { teste: /failed to fetch|networkerror|load failed/i, msg: () => 'Não conseguimos falar com o servidor. Confira sua internet e tente de novo.' },
   { teste: /empresas_cnpj_key/i, msg: () => 'Já existe uma empresa cadastrada com esse CNPJ.' },
+  { teste: /empresas_cnpj_valido|filiais_cnpj_valido/i, msg: () => 'Esse CNPJ não é válido. Confira as letras e os números.' },
+  { teste: /uf_valida/i, msg: () => 'Escolha um estado (UF) da lista.' },
+  { teste: /empresas_codigo_convite_key/i, msg: () => 'Não foi possível gerar um código novo. Tente de novo.' },
   { teste: /duplicate key/i, msg: () => 'Esse cadastro já existe.' },
   { teste: /row-level security|permission denied/i, msg: () => 'Você não tem permissão para fazer isso.' },
 ]

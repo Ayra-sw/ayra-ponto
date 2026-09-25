@@ -1,36 +1,33 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ShellPublico from '../components/layout/ShellPublico'
+import Botao from '../components/ui/Botao'
+import { Esqueleto } from '../components/ui/Estados'
 
-// tiposPermitidos: lista opcional de tipos de perfil que podem acessar
-// (ex.: ['administrador', 'rh']). Se omitido, qualquer perfil logado passa.
-// exigeEmpresa: false na própria tela de onboarding, pra não entrar em loop
+// tiposPermitidos: lista opcional de papéis que podem acessar
+// (ex.: ['administrador', 'rh']). Se omitido, qualquer pessoa logada passa.
+// exigeEmpresa: false na tela de onboarding, pra não entrar em loop
 // de redirecionamento (quem ainda não tem empresa É pra estar lá).
+// A segurança de verdade está no banco (RLS); isto só organiza as telas.
 export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa = true }) {
   const { session, perfil, perfilStatus, loading, recarregarPerfil, signOut } = useAuth()
 
-  if (loading) return <div className="container">Carregando…</div>
+  if (loading) return <Carregando />
 
-  if (!session) return <Navigate to="/login" replace />
+  if (!session) return <Navigate to="/entrar" replace />
 
   if (!perfil) {
     if (perfilStatus === 'erro') {
       return (
-        <div className="container">
-          <div className="card" role="alert">
-            <h2>Não conseguimos carregar seu cadastro</h2>
-            <p style={{ color: 'var(--text-muted)' }}>
-              Pode ser a conexão com a internet. Tente de novo em instantes. Se
-              continuar, saia e entre novamente.
-            </p>
-            <button className="btn-primary" onClick={recarregarPerfil}>Tentar de novo</button>
-            <p style={{ textAlign: 'center', marginTop: 16 }}>
-              <button className="link-btn" onClick={signOut}>Sair</button>
-            </p>
+        <ShellPublico titulo="Não conseguimos carregar seu cadastro" subtitulo="Pode ser a conexão com a internet. Tente de novo em instantes. Se continuar, saia e entre novamente.">
+          <div className="acoes">
+            <Botao onClick={recarregarPerfil}>Tentar de novo</Botao>
+            <Botao variante="secundario" onClick={signOut}>Sair</Botao>
           </div>
-        </div>
+        </ShellPublico>
       )
     }
-    return <div className="container">Carregando seu perfil…</div>
+    return <Carregando />
   }
 
   if (exigeEmpresa && !perfil.empresa_id) return <Navigate to="/onboarding" replace />
@@ -42,4 +39,12 @@ export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa
   }
 
   return children
+}
+
+function Carregando() {
+  return (
+    <div className="publico" aria-busy="true">
+      <div className="publico__caixa"><Esqueleto blocos={1} linhas={3} /></div>
+    </div>
+  )
 }

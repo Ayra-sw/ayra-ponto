@@ -1,142 +1,70 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { traduzirErro } from '../lib/mensagensErro'
+import ShellPublico from '../components/layout/ShellPublico'
+import Botao from '../components/ui/Botao'
+import Alerta from '../components/ui/Alerta'
+import { CampoSenha } from '../components/ui/Campo'
+import { Esqueleto } from '../components/ui/Estados'
 
-// Página acessada pelo link que o Supabase manda por e-mail (handleRecuperar,
-// em Login.jsx). O próprio Supabase, ao abrir esse link, cria uma sessão
-// temporária de recuperação — não exigimos login normal aqui (por isso essa
-// rota NÃO fica dentro de ProtectedRoute lá no App.jsx).
+// Página aberta pelo link de recuperação enviado por e-mail. O Supabase cria
+// uma sessão temporária ao abrir o link, por isso esta rota não exige login.
 export default function RedefinirSenha() {
   const navigate = useNavigate()
   const [novaSenha, setNovaSenha] = useState('')
-  const [confirmarSenha, setConfirmarSenha] = useState('')
-  const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [confirmar, setConfirmar] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [sucesso, setSucesso] = useState(false)
-  const [linkValido, setLinkValido] = useState(null) // null = checando, true/false depois
+  const [linkValido, setLinkValido] = useState(null) // null = conferindo
 
   useEffect(() => {
-    // Quando o Supabase processa o link de recuperação, ele cria uma sessão.
-    // Se não houver sessão nenhuma, o link é inválido/expirado.
-    supabase.auth.getSession().then(({ data }) => {
-      setLinkValido(!!data.session)
-    })
+    supabase.auth.getSession().then(({ data }) => setLinkValido(!!data.session))
   }, [])
 
-  async function handleSalvar(e) {
+  async function salvar(e) {
     e.preventDefault()
     setErro('')
-
-    if (novaSenha.length < 6) {
-      setErro('A senha precisa ter pelo menos 6 caracteres.')
-      return
-    }
-
-    if (novaSenha !== confirmarSenha) {
-      setErro('As senhas digitadas não são iguais.')
-      return
-    }
-
+    if (novaSenha.length < 6) return setErro('A senha precisa ter pelo menos 6 caracteres.')
+    if (novaSenha !== confirmar) return setErro('As duas senhas digitadas não são iguais.')
     setCarregando(true)
     const { error } = await supabase.auth.updateUser({ password: novaSenha })
     setCarregando(false)
-
-    if (error) {
-      setErro(traduzirErro(error))
-      return
-    }
-
+    if (error) return setErro(traduzirErro(error))
     setSucesso(true)
   }
 
   if (linkValido === null) {
-    return (
-      <div className="container">
-        <div className="card">
-          <p>Verificando o link…</p>
-        </div>
-      </div>
-    )
+    return <ShellPublico titulo="Conferindo o link…"><Esqueleto linhas={2} /></ShellPublico>
   }
 
-  if (linkValido === false) {
+  if (!linkValido) {
     return (
-      <div className="container">
-        <div className="card">
-          <h2>Link inválido ou expirado</h2>
-          <p>
-            Esse link de recuperação de senha não é mais válido. Volte para o
-            login e peça um novo.
-          </p>
-          <button className="btn-primary" onClick={() => navigate('/login')}>
-            Voltar para o login
-          </button>
-        </div>
-      </div>
+      <ShellPublico titulo="Link inválido ou expirado" rodape={<Link to="/entrar" className="link">Voltar para o login</Link>}>
+        <p className="suave">Esse link de recuperação não vale mais. Peça um novo na tela de login, em "Esqueci minha senha".</p>
+        <Botao bloco onClick={() => navigate('/recuperar-senha')}>Pedir um novo link</Botao>
+      </ShellPublico>
     )
   }
 
   if (sucesso) {
     return (
-      <div className="container">
-        <div className="card">
-          <h2>Senha alterada!</h2>
-          <p>Sua senha foi redefinida com sucesso. Agora é só entrar.</p>
-          <button className="btn-primary" onClick={() => navigate('/login')}>
-            Ir para o login
-          </button>
-        </div>
-      </div>
+      <ShellPublico titulo="Senha alterada">
+        <Alerta tom="ok">Sua senha foi redefinida. Você já pode usar o Ayra Ponto.</Alerta>
+        <Botao bloco onClick={() => navigate('/')}>Continuar</Botao>
+      </ShellPublico>
     )
   }
 
   return (
-    <div className="container">
-      <div className="card">
-        <h1><span className="brand">Ayra</span> Ponto</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Escolha sua nova senha</p>
-
-        <form onSubmit={handleSalvar}>
-          <label htmlFor="nova-senha">Nova senha</label>
-          <div className="campo-senha">
-            <input
-              id="nova-senha"
-              type={mostrarSenha ? 'text' : 'password'}
-              value={novaSenha}
-              onChange={(e) => setNovaSenha(e.target.value)}
-              minLength={6}
-              required
-            />
-            <button
-              type="button"
-              className="botao-olho"
-              onClick={() => setMostrarSenha((v) => !v)}
-              aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-              aria-pressed={mostrarSenha}
-            >
-              {mostrarSenha ? '🙈' : '👁️'}
-            </button>
-          </div>
-
-          <label htmlFor="confirmar-senha">Confirme a nova senha</label>
-          <input
-            id="confirmar-senha"
-            type={mostrarSenha ? 'text' : 'password'}
-            value={confirmarSenha}
-            onChange={(e) => setConfirmarSenha(e.target.value)}
-            minLength={6}
-            required
-          />
-
-          {erro && <p className="error-text" role="alert">{erro}</p>}
-
-          <button className="btn-primary" type="submit" disabled={carregando}>
-            {carregando ? 'Salvando…' : 'Salvar nova senha'}
-          </button>
-        </form>
-      </div>
-    </div>
+    <ShellPublico titulo="Escolha sua nova senha">
+      <form className="formulario" onSubmit={salvar}>
+        <CampoSenha rotulo="Nova senha" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} autoComplete="new-password" minLength={6} ajuda="Pelo menos 6 caracteres." required />
+        <CampoSenha rotulo="Confirme a nova senha" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} autoComplete="new-password" minLength={6} required />
+        {erro && <Alerta tom="problema">{erro}</Alerta>}
+        <Botao type="submit" bloco carregando={carregando}>Salvar nova senha</Botao>
+      </form>
+    </ShellPublico>
   )
 }
