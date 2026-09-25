@@ -6,6 +6,7 @@ import RedefinirSenha from './pages/RedefinirSenha'
 import Onboarding from './pages/Onboarding'
 import FuncionarioDashboard from './pages/FuncionarioDashboard'
 import GestaoDashboard from './pages/GestaoDashboard'
+import NaoEncontrada from './pages/NaoEncontrada'
 
 function Home() {
   const { perfil } = useAuth()
@@ -36,6 +37,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NaoEncontrada />} />
     </Routes>
   )
 }

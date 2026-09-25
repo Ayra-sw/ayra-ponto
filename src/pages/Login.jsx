@@ -1,15 +1,29 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { traduzirErro } from '../lib/mensagensErro'
+
+// Dois caminhos de cadastro separados. O papel de cada pessoa NUNCA vem daqui:
+// o banco cria todo cadastro como colaborador, e só vira administrador quem
+// cadastra a própria empresa. A "intenção" só decide qual tela aparece depois.
+const CADASTROS = {
+  criar_empresa: {
+    titulo: 'Criar conta da minha empresa',
+    subtitulo: 'Você será o administrador. Depois de confirmar o e-mail, é só cadastrar a empresa.',
+  },
+  convite: {
+    titulo: 'Recebi um convite',
+    subtitulo: 'Crie sua conta. Depois de confirmar o e-mail, digite o código de convite que a sua empresa enviou.',
+  },
+}
 
 export default function Login() {
   const navigate = useNavigate()
-  const [modo, setModo] = useState('entrar') // 'entrar' | 'cadastrar'
+  const [modo, setModo] = useState('entrar') // 'entrar' | 'criar_empresa' | 'convite' | 'recuperar'
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [cpf, setCpf] = useState('')
-  const [tipo, setTipo] = useState('funcionario')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
@@ -23,7 +37,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
     setCarregando(false)
     if (error) {
-      setErro('E-mail ou senha incorretos.')
+      setErro(traduzirErro(error))
       return
     }
     navigate('/')
@@ -38,14 +52,14 @@ export default function Login() {
       email,
       password: senha,
       options: {
-        data: { nome_completo: nome, cpf, tipo },
+        data: { nome_completo: nome, cpf, intencao: modo },
       },
     })
 
     setCarregando(false)
 
     if (error) {
-      setErro(error.message)
+      setErro(traduzirErro(error))
       return
     }
 
@@ -64,7 +78,7 @@ export default function Login() {
     setCarregando(false)
 
     if (error) {
-      setErro(error.message)
+      setErro(traduzirErro(error))
       return
     }
 
@@ -128,7 +142,7 @@ export default function Login() {
               required
             />
 
-            {erro && <p className="error-text">{erro}</p>}
+            {erro && <p className="error-text" role="alert">{erro}</p>}
 
             <button className="btn-primary" type="submit" disabled={carregando}>
               {carregando ? 'Enviando…' : 'Enviar link de recuperação'}
@@ -136,7 +150,7 @@ export default function Login() {
           </form>
 
           <p style={{ textAlign: 'center', marginTop: 16 }}>
-            <button className="link-btn" onClick={() => { setErro(''); setModo('entrar') }}>
+            <button type="button" className="link-btn" onClick={() => { setErro(''); setModo('entrar') }}>
               Voltar para o login
             </button>
           </p>
@@ -145,34 +159,39 @@ export default function Login() {
     )
   }
 
+  const cadastro = CADASTROS[modo]
+
+  function irPara(novoModo) {
+    setErro('')
+    setModo(novoModo)
+  }
+
   return (
     <div className="container">
       <div className="card">
         <h1><span className="brand">Ayra</span> Ponto</h1>
-        <p style={{ color: 'var(--text-muted)' }}>
-          {modo === 'entrar' ? 'Entre com sua conta' : 'Crie sua conta'}
-        </p>
+        {cadastro ? (
+          <>
+            <h2 style={{ marginBottom: 4 }}>{cadastro.titulo}</h2>
+            <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>{cadastro.subtitulo}</p>
+          </>
+        ) : (
+          <p style={{ color: 'var(--text-muted)' }}>Entre com sua conta</p>
+        )}
 
-        <form onSubmit={modo === 'entrar' ? handleEntrar : handleCadastrar}>
-          {modo === 'cadastrar' && (
+        <form onSubmit={cadastro ? handleCadastrar : handleEntrar}>
+          {cadastro && (
             <>
               <label htmlFor="nome">Nome completo</label>
-              <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required />
+              <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="name" required />
 
               <label htmlFor="cpf">CPF</label>
-              <input id="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" required />
-
-              <label htmlFor="tipo">Você é</label>
-              <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)}>
-                <option value="administrador">Administrador (vou cadastrar minha empresa)</option>
-                <option value="rh">RH</option>
-                <option value="funcionario">Funcionário</option>
-              </select>
+              <input id="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" required />
             </>
           )}
 
           <label htmlFor="email">E-mail</label>
-          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
 
           <label htmlFor="senha">Senha</label>
           <div className="campo-senha">
@@ -181,6 +200,7 @@ export default function Login() {
               type={mostrarSenha ? 'text' : 'password'}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
+              autoComplete={cadastro ? 'new-password' : 'current-password'}
               minLength={6}
               required
             />
@@ -189,7 +209,7 @@ export default function Login() {
               className="botao-olho"
               onClick={() => setMostrarSenha((v) => !v)}
               aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-              tabIndex={-1}
+              aria-pressed={mostrarSenha}
             >
               {mostrarSenha ? '🙈' : '👁️'}
             </button>
@@ -200,27 +220,33 @@ export default function Login() {
               <button
                 type="button"
                 className="link-btn link-btn--discreto"
-                onClick={() => { setErro(''); setModo('recuperar') }}
+                onClick={() => irPara('recuperar')}
               >
                 Esqueci minha senha
               </button>
             </p>
           )}
 
-          {erro && <p className="error-text">{erro}</p>}
+          {erro && <p className="error-text" role="alert">{erro}</p>}
 
           <button className="btn-primary" type="submit" disabled={carregando}>
-            {carregando ? 'Um momento…' : modo === 'entrar' ? 'Entrar' : 'Criar conta'}
+            {carregando ? 'Um momento…' : cadastro ? 'Criar conta' : 'Entrar'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 16 }}>
-          {modo === 'entrar' ? (
-            <>Não tem conta? <button className="link-btn" onClick={() => setModo('cadastrar')}>Cadastre-se</button></>
-          ) : (
-            <>Já tem conta? <button className="link-btn" onClick={() => setModo('entrar')}>Entrar</button></>
-          )}
-        </p>
+        {modo === 'entrar' ? (
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 8px' }}>Ainda não usa o Ayra Ponto?</p>
+            <p style={{ margin: 0, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button type="button" className="link-btn" onClick={() => irPara('criar_empresa')}>Criar conta da minha empresa</button>
+              <button type="button" className="link-btn" onClick={() => irPara('convite')}>Recebi um convite</button>
+            </p>
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', marginTop: 16 }}>
+            Já tem conta? <button type="button" className="link-btn" onClick={() => irPara('entrar')}>Entrar</button>
+          </p>
+        )}
       </div>
     </div>
   )

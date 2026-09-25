@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { traduzirErro } from '../lib/mensagensErro'
 
 // Página acessada pelo link que o Supabase manda por e-mail (handleRecuperar,
 // em Login.jsx). O próprio Supabase, ao abrir esse link, cria uma sessão
@@ -43,7 +44,7 @@ export default function RedefinirSenha() {
     setCarregando(false)
 
     if (error) {
-      setErro(error.message)
+      setErro(traduzirErro(error))
       return
     }
 
@@ -113,7 +114,7 @@ export default function RedefinirSenha() {
               className="botao-olho"
               onClick={() => setMostrarSenha((v) => !v)}
               aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-              tabIndex={-1}
+              aria-pressed={mostrarSenha}
             >
               {mostrarSenha ? '🙈' : '👁️'}
             </button>
@@ -129,7 +130,7 @@ export default function RedefinirSenha() {
             required
           />
 
-          {erro && <p className="error-text">{erro}</p>}
+          {erro && <p className="error-text" role="alert">{erro}</p>}
 
           <button className="btn-primary" type="submit" disabled={carregando}>
             {carregando ? 'Salvando…' : 'Salvar nova senha'}

@@ -7,19 +7,24 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [perfil, setPerfil] = useState(null)
   const [loading, setLoading] = useState(true)
+  // 'ocioso' | 'carregando' | 'ok' | 'erro'
+  const [perfilStatus, setPerfilStatus] = useState('ocioso')
 
   async function carregarPerfil(userId) {
+    setPerfilStatus('carregando')
     const { data, error } = await supabase
       .from('perfis')
       .select('*')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
 
-    if (error) {
-      console.error('Erro ao carregar perfil:', error)
+    if (error || !data) {
+      console.error('Erro ao carregar perfil:', error || 'perfil não encontrado')
       setPerfil(null)
+      setPerfilStatus('erro')
     } else {
       setPerfil(data)
+      setPerfilStatus('ok')
     }
   }
 
@@ -36,6 +41,7 @@ export function AuthProvider({ children }) {
         carregarPerfil(session.user.id)
       } else {
         setPerfil(null)
+        setPerfilStatus('ocioso')
       }
     })
 
@@ -53,7 +59,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, perfil, loading, signOut, recarregarPerfil }}>
+    <AuthContext.Provider value={{ session, perfil, perfilStatus, loading, signOut, recarregarPerfil }}>
       {children}
     </AuthContext.Provider>
   )

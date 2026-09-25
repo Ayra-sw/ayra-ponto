@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import TopBar from '../components/TopBar'
+import { traduzirErro } from '../lib/mensagensErro'
 
 const TIPOS_MARCACAO = [
   { valor: 'entrada', rotulo: 'Entrada' },
@@ -46,7 +47,7 @@ export default function FuncionarioDashboard() {
     setCarregando(true)
 
     if (!perfil.filial_id) {
-      setMensagem('Você ainda não está vinculado a uma filial. Peça pro seu administrador/RH te vincular.')
+      setMensagem('Sua conta ainda não está vinculada a uma unidade. Fale com o RH da sua empresa.')
       setCarregando(false)
       return
     }
@@ -61,7 +62,8 @@ export default function FuncionarioDashboard() {
       // geolocalização opcional — segue sem coordenadas se não tiver permissão
     }
 
-    const { error } = await supabase.rpc('registrar_ponto', {
+    // O banco sempre registra para a pessoa logada, na unidade do cadastro dela.
+    const { data, error } = await supabase.rpc('registrar_ponto', {
       p_filial_id: perfil.filial_id,
       p_perfil_id: perfil.id,
       p_tipo: tipo,
@@ -72,11 +74,12 @@ export default function FuncionarioDashboard() {
     setCarregando(false)
 
     if (error) {
-      setMensagem('Não deu pra registrar: ' + error.message)
+      setMensagem('Não foi possível registrar: ' + traduzirErro(error))
       return
     }
 
-    setMensagem('Ponto registrado!')
+    const hora = data?.marcado_em ? new Date(data.marcado_em).toLocaleTimeString('pt-BR') : ''
+    setMensagem(hora ? `Ponto registrado às ${hora} (NSR ${data.nsr}).` : 'Ponto registrado!')
     carregarRegistrosDeHoje()
   }
 
@@ -103,7 +106,7 @@ export default function FuncionarioDashboard() {
             ))}
           </div>
 
-          {mensagem && <p style={{ marginTop: 16, textAlign: 'center' }}>{mensagem}</p>}
+          {mensagem && <p role="status" style={{ marginTop: 16, textAlign: 'center' }}>{mensagem}</p>}
         </div>
 
         <div className="card" style={{ marginTop: 16 }}>
