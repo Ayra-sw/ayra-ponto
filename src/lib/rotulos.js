@@ -40,3 +40,26 @@ export const TIPO_IDENTIFICADOR = {
   caepf: 'CAEPF',
   cno: 'CNO',
 }
+
+export const RESULTADO_FACIAL = {
+  reconhecido: { rotulo: 'Rosto reconhecido', tom: 'ok' },
+  nao_reconhecido: { rotulo: 'Rosto não reconhecido', tom: 'atencao' },
+  sem_referencia: { rotulo: 'Sem foto de cadastro aprovada', tom: 'info' },
+  sem_foto: { rotulo: 'Sem foto', tom: 'neutra' },
+}
+
+export const CONFERENCIA_FACIAL = {
+  pendente: { rotulo: 'A conferir pelo RH', tom: 'atencao' },
+  confirmada: { rotulo: 'Conferida pelo RH', tom: 'ok' },
+  contestada: { rotulo: 'Contestada pelo RH', tom: 'problema' },
+}
+
+export const MOTIVO_SEM_FOTO = {
+  sem_camera: 'Aparelho sem câmera',
+  permissao_negada: 'Câmera bloqueada no aparelho',
+  aviso_nao_aceito: 'Não aceitou o aviso de privacidade',
+  falha_envio: 'A foto não chegou (internet)',
+  rosto_nao_encontrado: 'A câmera não encontrou o rosto',
+  app_sem_camera: 'Registrado sem câmera',
+  outro: 'Registrado sem foto',
+}

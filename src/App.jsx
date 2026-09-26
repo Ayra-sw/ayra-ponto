@@ -15,6 +15,7 @@ import Solicitacoes from './pages/gestao/Solicitacoes'
 import Empresa from './pages/gestao/Empresa'
 import Unidades from './pages/gestao/Unidades'
 import MeuPonto from './pages/gestao/MeuPonto'
+import Reconhecimento from './pages/gestao/Reconhecimento'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -49,6 +50,7 @@ export default function App() {
         <Route index element={<GestaoDashboard />} />
         <Route path="pessoas" element={<Pessoas />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
+        <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
         <Route path="configuracoes/empresa" element={<Empresa />} />
         <Route path="configuracoes/unidades" element={<Unidades />} />

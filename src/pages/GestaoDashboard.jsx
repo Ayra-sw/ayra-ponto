@@ -21,7 +21,7 @@ const ORDEM = { trabalhando: 0, intervalo: 1, sem_marcacao: 2, encerrado: 3 }
 // Mostra primeiro o que pede atenção; os números vêm depois.
 export default function GestaoDashboard() {
   const { perfil } = useAuth()
-  const { empresa, unidades, unidadesAtivas, pendentes } = useOutletContext()
+  const { empresa, unidades, unidadesAtivas, pendentes, pendentesFacial } = useOutletContext()
   const [pessoas, setPessoas] = useState([])
   const [registros, setRegistros] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -81,6 +81,8 @@ export default function GestaoDashboard() {
 
   const atencao = []
   if (pendentes > 0) atencao.push({ tom: 'atencao', texto: `${pendentes} ${pendentes === 1 ? 'solicitação espera' : 'solicitações esperam'} sua análise.`, link: '/gestao/solicitacoes', acao: 'Analisar' })
+  if (pendentesFacial?.fotos > 0) atencao.push({ tom: 'atencao', texto: `${pendentesFacial.fotos} ${pendentesFacial.fotos === 1 ? 'foto de rosto espera' : 'fotos de rosto esperam'} aprovação.`, link: '/gestao/reconhecimento', acao: 'Ver fotos' })
+  if (pendentesFacial?.marcacoes > 0) atencao.push({ tom: 'atencao', texto: `${pendentesFacial.marcacoes} ${pendentesFacial.marcacoes === 1 ? 'marcação precisa' : 'marcações precisam'} ser conferida${pendentesFacial.marcacoes === 1 ? '' : 's'} (rosto não confirmado).`, link: '/gestao/reconhecimento', acao: 'Conferir' })
   if (empresa?.cnpj && !cnpjOk) atencao.push({ tom: 'problema', texto: 'O CNPJ cadastrado não é válido. Corrija para evitar problemas no espelho de ponto.', link: '/gestao/configuracoes/empresa', acao: 'Corrigir' })
 
   return (

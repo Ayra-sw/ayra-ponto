@@ -10,6 +10,7 @@ import { PAPEL, SITUACAO } from '../lib/rotulos'
 import Botao from '../components/ui/Botao'
 import Alerta from '../components/ui/Alerta'
 import { Campo, CampoSenha } from '../components/ui/Campo'
+import MeuRosto from '../components/rosto/MeuRosto'
 
 export default function MinhaConta() {
   const { session, perfil, recarregarPerfil, signOut } = useAuth()
@@ -81,6 +82,8 @@ export default function MinhaConta() {
           <div className="acoes"><Botao type="submit" carregando={salvandoNome} disabled={nome.trim() === (perfil.nome_completo || '')}>Salvar nome</Botao></div>
         </form>
       </section>
+
+      {perfil.empresa_id && <MeuRosto />}
 
       <section className="cartao" aria-labelledby="t-senha">
         <div className="cartao__cabecalho"><h2 id="t-senha">Alterar senha</h2></div>

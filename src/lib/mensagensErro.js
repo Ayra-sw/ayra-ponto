@@ -17,6 +17,9 @@ const REGRAS = [
   { teste: /uf_valida/i, msg: () => 'Escolha um estado (UF) da lista.' },
   { teste: /empresas_codigo_convite_key/i, msg: () => 'Não foi possível gerar um código novo. Tente de novo.' },
   { teste: /duplicate key/i, msg: () => 'Esse cadastro já existe.' },
+  { teste: /payload too large|exceeded the maximum allowed size|entity too large/i, msg: () => 'A foto ficou grande demais. Tente de novo.' },
+  { teste: /mime type .* is not supported|invalid mime/i, msg: () => 'Formato de foto não aceito.' },
+  { teste: /bucket not found/i, msg: () => 'O armazenamento de fotos ainda não foi configurado. Avise o administrador.' },
   { teste: /row-level security|permission denied/i, msg: () => 'Você não tem permissão para fazer isso.' },
 ]
 

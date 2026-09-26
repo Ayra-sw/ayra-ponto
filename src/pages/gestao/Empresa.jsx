@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ScanFace } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
@@ -11,6 +11,7 @@ import { buscarCep } from '../../lib/cep'
 import { linkConvite, novoCodigoConvite } from '../../lib/convite'
 import Botao from '../../components/ui/Botao'
 import BotaoCopiar from '../../components/ui/BotaoCopiar'
+import Etiqueta from '../../components/ui/Etiqueta'
 import Alerta from '../../components/ui/Alerta'
 import { Campo, Selecao } from '../../components/ui/Campo'
 import { Confirmacao } from '../../components/ui/Dialogo'
@@ -39,6 +40,8 @@ export default function Empresa() {
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [confirmarCodigo, setConfirmarCodigo] = useState(false)
   const [gerandoCodigo, setGerandoCodigo] = useState(false)
+  const [confirmarFacial, setConfirmarFacial] = useState(false)
+  const [salvandoFacial, setSalvandoFacial] = useState(false)
 
   const podeEditar = perfil.tipo === 'administrador'
 
@@ -104,6 +107,17 @@ export default function Empresa() {
     if (error) return avisar(traduzirErro(error), 'problema')
     await recarregar()
     avisar('Novo código de convite criado. O anterior deixou de funcionar.')
+  }
+
+  async function alternarFacial() {
+    const ligar = !empresa.reconhecimento_facial
+    setSalvandoFacial(true)
+    const { error } = await supabase.from('empresas').update({ reconhecimento_facial: ligar }).eq('id', empresa.id)
+    setSalvandoFacial(false)
+    setConfirmarFacial(false)
+    if (error) return avisar(traduzirErro(error), 'problema')
+    await recarregar()
+    avisar(ligar ? 'Reconhecimento facial ligado.' : 'Reconhecimento facial desligado.')
   }
 
   const cnpjAtualInvalido = empresa.cnpj && !cnpjValido(empresa.cnpj)
@@ -185,6 +199,34 @@ export default function Empresa() {
         )}
       </form>
 
+      <section className="cartao" aria-labelledby="t-facial">
+        <div className="cartao__cabecalho">
+          <div>
+            <h2 id="t-facial">Ponto com reconhecimento facial</h2>
+            <p className="suave pequeno">Ao registrar o ponto, a câmera do celular confirma que é a própria pessoa.</p>
+          </div>
+          <Etiqueta tom={empresa.reconhecimento_facial ? 'ok' : 'neutra'}>{empresa.reconhecimento_facial ? 'Ligado' : 'Desligado'}</Etiqueta>
+        </div>
+        <ul className="lista-simples">
+          <li>Cada pessoa lê um aviso de privacidade e cadastra uma foto do rosto, que o RH ou você aprova.</li>
+          <li>A cada marcação, a câmera tira uma selfie e compara com a foto de cadastro. A selfie fica guardada como prova.</li>
+          <li>Se o rosto não for reconhecido, ou a pessoa estiver sem câmera, o ponto é registrado mesmo assim e aparece para conferência em <strong>Reconhecimento facial</strong>. Ninguém fica impedido de bater o ponto.</li>
+        </ul>
+        {podeEditar && cnpjAtualInvalido && (
+          <Alerta tom="atencao">Corrija e salve o CNPJ acima antes de ligar. Enquanto o CNPJ gravado for inválido, nenhuma alteração da empresa pode ser salva.</Alerta>
+        )}
+        {podeEditar ? (
+          <div className="acoes" style={{ marginTop: 12 }}>
+            <Botao variante={empresa.reconhecimento_facial ? 'secundario' : 'primario'} icone={ScanFace}
+              onClick={() => setConfirmarFacial(true)} disabled={Boolean(cnpjAtualInvalido)}>
+              {empresa.reconhecimento_facial ? 'Desligar reconhecimento facial' : 'Ligar reconhecimento facial'}
+            </Botao>
+          </div>
+        ) : (
+          <p className="suave pequeno">Somente o administrador liga ou desliga.</p>
+        )}
+      </section>
+
       <section className="cartao" aria-labelledby="t-convite">
         <div className="cartao__cabecalho">
           <div>
@@ -209,6 +251,19 @@ export default function Empresa() {
           )}
         </div>
       </section>
+
+      <Confirmacao
+        aberta={confirmarFacial}
+        titulo={empresa.reconhecimento_facial ? 'Desligar o reconhecimento facial?' : 'Ligar o reconhecimento facial?'}
+        textoConfirmar={empresa.reconhecimento_facial ? 'Desligar' : 'Ligar'}
+        carregando={salvandoFacial}
+        aoConfirmar={alternarFacial}
+        aoCancelar={() => setConfirmarFacial(false)}
+      >
+        {empresa.reconhecimento_facial
+          ? 'O ponto volta a ser registrado sem câmera. As fotos e verificações já feitas continuam guardadas.'
+          : 'Na próxima vez que registrarem o ponto, as pessoas verão o aviso de privacidade e a câmera. Avise a equipe antes, e cadastre também o seu rosto em "Minha conta".'}
+      </Confirmacao>
 
       <Confirmacao
         aberta={confirmarCodigo}

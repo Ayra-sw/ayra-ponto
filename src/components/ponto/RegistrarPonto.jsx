@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Clock, History } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { Clock, History, ScanFace } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
+import useRosto from '../../hooks/useRosto'
+import { obterLocalizacao } from '../../lib/localizacao'
 import { traduzirErro } from '../../lib/mensagensErro'
 import { duracao, hora, inicioDeHoje, nsr, primeiroNome } from '../../lib/formatos'
 import {
@@ -15,6 +18,8 @@ import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import Alerta from '../ui/Alerta'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
+import PontoFacial from '../rosto/PontoFacial'
+import { EtiquetaVerificacao } from '../rosto/EtiquetaVerificacao'
 
 // Tela principal de marcação: um botão com a próxima marcação sugerida e,
 // se a pessoa precisar, "Registrar outro tipo". A sugestão nunca bloqueia.
@@ -31,21 +36,29 @@ export default function RegistrarPonto() {
   const [etapa, setEtapa] = useState('') // '' | 'localizacao' | 'registrando'
   const [erro, setErro] = useState('')
   const [comprovante, setComprovante] = useState(null)
+  const [verificacoes, setVerificacoes] = useState({}) // registro_id -> verificação facial
+  const [fluxoFacial, setFluxoFacial] = useState(false)
+  const rosto = useRosto()
+  const local = useLocation()
+  const linkConta = local.pathname.startsWith('/gestao') ? '/gestao/conta' : '/conta'
 
   const carregar = useCallback(async () => {
     setErroCarga(false)
-    const [regs, uni, emp] = await Promise.all([
+    const [regs, uni, emp, ver] = await Promise.all([
       supabase.from('registros_ponto').select('*').eq('perfil_id', perfil.id)
         .gte('marcado_em', inicioDeHoje()).order('marcado_em', { ascending: true }),
       perfil.filial_id
         ? supabase.from('filiais').select('id, nome').eq('id', perfil.filial_id).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase.from('empresas').select('id, nome').eq('id', perfil.empresa_id).maybeSingle(),
+      supabase.from('empresas').select('id, nome, reconhecimento_facial').eq('id', perfil.empresa_id).maybeSingle(),
+      supabase.from('verificacoes_faciais').select('registro_id, resultado, conferencia')
+        .eq('perfil_id', perfil.id).gte('criado_em', inicioDeHoje()),
     ])
     if (regs.error) setErroCarga(true)
     setRegistros(regs.data || [])
     setUnidade(uni.data || null)
     setEmpresa(emp.data || null)
+    setVerificacoes(Object.fromEntries((ver.data || []).map((v) => [v.registro_id, v])))
     setCarregando(false)
   }, [perfil.id, perfil.filial_id, perfil.empresa_id])
 
@@ -55,19 +68,29 @@ export default function RegistrarPonto() {
   const tipo = tipoEscolhido || sugerido
   const agora = situacaoAgora(registros)
 
-  async function obterLocalizacao() {
-    if (!navigator.geolocation) return {}
-    try {
-      const pos = await new Promise((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, maximumAge: 60000 }))
-      return { p_latitude: Number(pos.coords.latitude.toFixed(6)), p_longitude: Number(pos.coords.longitude.toFixed(6)) }
-    } catch {
-      return {} // localização é opcional
-    }
+  const usaRosto = Boolean(empresa?.reconhecimento_facial)
+
+  function concluirFacial(data) {
+    const { verificacao_facial: verificacao, ...registro } = data
+    setFluxoFacial(false)
+    if (verificacao) setVerificacoes((v) => ({ ...v, [registro.id]: { registro_id: registro.id, ...verificacao } }))
+    finalizar(registro)
+  }
+
+  function finalizar(data) {
+    setComprovante(data)
+    setTipoEscolhido(null)
+    setEscolherOutro(false)
+    avisar(`${rotuloMarcacao(data.tipo)} registrada às ${hora(data.marcado_em)} · NSR ${Number(data.nsr)}`)
+    setRegistros((lista) => [...lista, data])
   }
 
   async function registrar() {
     setErro('')
+    if (usaRosto) {
+      setFluxoFacial(true)
+      return
+    }
     setEtapa('localizacao')
     const coords = await obterLocalizacao()
     setEtapa('registrando')
@@ -84,11 +107,7 @@ export default function RegistrarPonto() {
       setErro(traduzirErro(error))
       return
     }
-    setComprovante(data)
-    setTipoEscolhido(null)
-    setEscolherOutro(false)
-    avisar(`${rotuloMarcacao(data.tipo)} registrada às ${hora(data.marcado_em)} · NSR ${Number(data.nsr)}`)
-    setRegistros((lista) => [...lista, data])
+    finalizar(data)
   }
 
   if (carregando) return <div className="cartao"><Esqueleto blocos={1} linhas={3} /></div>
@@ -101,7 +120,10 @@ export default function RegistrarPonto() {
   return (
     <div className="ponto">
       {comprovante && (
-        <Comprovante registro={comprovante} perfil={perfil} unidade={unidade} empresa={empresa} aoFechar={() => setComprovante(null)} />
+        <Comprovante registro={comprovante} verificacao={verificacoes[comprovante.id]} perfil={perfil} unidade={unidade} empresa={empresa} aoFechar={() => setComprovante(null)} />
+      )}
+      {fluxoFacial && (
+        <PontoFacial tipo={tipo} rosto={rosto} aoConcluir={concluirFacial} aoFechar={() => setFluxoFacial(false)} />
       )}
 
       <section className="cartao ponto" aria-labelledby="titulo-ponto">
@@ -124,9 +146,16 @@ export default function RegistrarPonto() {
               {tipoEscolhido && tipoEscolhido !== sugerido ? 'Você escolheu: ' : 'Próxima marcação esperada: '}
               <strong>{rotuloMarcacao(tipo)}</strong>
             </p>
-            <Botao tamanho="grande" bloco icone={Clock} onClick={registrar} carregando={Boolean(etapa)}>
+            <Botao tamanho="grande" bloco icone={usaRosto ? ScanFace : Clock} onClick={registrar} carregando={Boolean(etapa)}>
               {textoBotao}
             </Botao>
+            {usaRosto && !rosto.carregando && !rosto.aprovada && (
+              <p className="suave pequeno" style={{ textAlign: 'center' }}>
+                {rosto.pendente
+                  ? 'Sua foto de cadastro está aguardando aprovação do RH.'
+                  : <>Você ainda não cadastrou seu rosto. <Link to={linkConta} className="link">Cadastrar agora</Link></>}
+              </p>
+            )}
             {erro && <Alerta tom="problema">{erro}</Alerta>}
 
             {!escolherOutro ? (
@@ -178,7 +207,7 @@ export default function RegistrarPonto() {
             {registros.map((r) => (
               <li key={r.id}>
                 <span className="linha-tempo__hora">{hora(r.marcado_em)}</span>
-                <span>{rotuloMarcacao(r.tipo)}</span>
+                <span>{rotuloMarcacao(r.tipo)} <EtiquetaVerificacao verificacao={verificacoes[r.id]} compacta /></span>
                 <button type="button" className="link link--suave linha-tempo__nsr" onClick={() => setComprovante(r)} title="Ver comprovante">
                   NSR {nsr(r.nsr)}
                 </button>

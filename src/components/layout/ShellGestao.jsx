@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, Clock, Inbox, LayoutDashboard, LogOut, MapPin, UserRound, Users } from 'lucide-react'
+import { Building2, Clock, Inbox, LayoutDashboard, LogOut, MapPin, ScanFace, UserRound, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -10,6 +10,7 @@ import TopBar from '../TopBar'
 const TITULOS = [
   ['/gestao/pessoas', 'Pessoas'],
   ['/gestao/solicitacoes', 'Solicitações'],
+  ['/gestao/reconhecimento', 'Reconhecimento facial'],
   ['/gestao/configuracoes/empresa', 'Empresa'],
   ['/gestao/configuracoes/unidades', 'Unidades'],
   ['/gestao/meu-ponto', 'Meu ponto'],
@@ -34,7 +35,7 @@ function ItemMenu({ para, icone: Icone, texto, contador, fim, aoClicar }) {
   )
 }
 
-function Menu({ pendentes, aoNavegar }) {
+function Menu({ pendentes, pendentesFacial, aoNavegar }) {
   const { signOut } = useAuth()
   return (
     <nav className="menu-lateral" aria-label="Menu principal">
@@ -46,6 +47,7 @@ function Menu({ pendentes, aoNavegar }) {
       <ItemMenu para="/gestao/pessoas" icone={Users} texto="Colaboradores" aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Gestão</span>
       <ItemMenu para="/gestao/solicitacoes" icone={Inbox} texto="Solicitações" contador={pendentes} aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/reconhecimento" icone={ScanFace} texto="Reconhecimento facial" contador={pendentesFacial} aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Configurações</span>
       <ItemMenu para="/gestao/configuracoes/empresa" icone={Building2} texto="Empresa" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/configuracoes/unidades" icone={MapPin} texto="Unidades" aoClicar={aoNavegar} />
@@ -68,6 +70,7 @@ export default function ShellGestao() {
   const local = useLocation()
   const dadosEmpresa = useEmpresa()
   const [pendentes, setPendentes] = useState(0)
+  const [facial, setFacial] = useState({ fotos: 0, marcacoes: 0 })
   const [gavetaAberta, setGavetaAberta] = useState(false)
 
   const atualizarPendentes = useCallback(async () => {
@@ -77,6 +80,11 @@ export default function ShellGestao() {
       .eq('status', 'pendente')
       .neq('perfil_id', perfil.id)
     setPendentes(count || 0)
+    const [fotos, marcacoes] = await Promise.all([
+      supabase.from('rostos_referencia').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
+      supabase.from('verificacoes_faciais').select('id', { count: 'exact', head: true }).eq('conferencia', 'pendente'),
+    ])
+    setFacial({ fotos: fotos.count || 0, marcacoes: marcacoes.count || 0 })
   }, [perfil.id])
 
   useEffect(() => { atualizarPendentes() }, [atualizarPendentes, local.pathname])
@@ -95,10 +103,10 @@ export default function ShellGestao() {
   return (
     <div className="shell shell--gestao">
       <a href="#conteudo" className="pular-conteudo">Pular para o conteúdo</a>
-      <Menu pendentes={pendentes} />
+      <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} />
       {gavetaAberta && (
         <div className="gaveta">
-          <Menu pendentes={pendentes} aoNavegar={() => setGavetaAberta(false)} />
+          <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} aoNavegar={() => setGavetaAberta(false)} />
           <button type="button" className="gaveta__fundo" aria-label="Fechar menu" onClick={() => setGavetaAberta(false)} />
         </div>
       )}
@@ -114,7 +122,7 @@ export default function ShellGestao() {
           )}
         />
         <main id="conteudo" tabIndex={-1}>
-          <Outlet context={{ ...dadosEmpresa, pendentes, atualizarPendentes }} />
+          <Outlet context={{ ...dadosEmpresa, pendentes, pendentesFacial: facial, atualizarPendentes }} />
         </main>
       </div>
     </div>

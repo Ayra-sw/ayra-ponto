@@ -536,3 +536,94 @@ button.cartao-linha:hover { border-color: var(--borda-forte); }
 .filtros { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
 .filtros .campo { flex: 1 1 180px; }
 .filtros .campo--busca { flex: 2 1 240px; }
+
+/* ------------------------------------------------ Reconhecimento facial */
+.acoes--centro { justify-content: center; }
+.lista-simples { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.93rem; }
+.dicas-foto { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 0.88rem; color: var(--texto-suave); }
+
+.camera-rosto { display: grid; gap: 12px; }
+.camera-rosto__visor {
+  position: relative; width: min(100%, 340px); aspect-ratio: 3 / 4; margin: 0 auto;
+  border-radius: var(--raio-cartao); overflow: hidden; background: #0B0F17;
+}
+.camera-rosto__visor video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transform: scaleX(-1); /* espelho: fica natural para quem está olhando */
+}
+.camera-rosto__moldura {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 34% 40% at 50% 46%, transparent 97%, rgba(8, 12, 20, 0.55) 100%);
+}
+.camera-rosto__moldura::after {
+  content: ''; position: absolute; left: 16%; right: 16%; top: 6%; bottom: 14%;
+  border: 3px dashed rgba(255, 255, 255, 0.75); border-radius: 50%;
+  transition: border-color var(--transicao);
+}
+.camera-rosto__visor--pronto .camera-rosto__moldura::after { border-style: solid; border-color: #4CC38A; }
+.camera-rosto__carregando {
+  position: absolute; inset: 0; display: grid; place-items: center; color: #FFFFFF;
+  background: rgba(8, 12, 20, 0.35);
+}
+.camera-rosto__carregando svg { width: 36px; height: 36px; }
+.camera-rosto__mensagem {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;
+  font-weight: 600; text-align: center; min-height: 1.5em;
+}
+.camera-rosto__mensagem svg { width: 18px; height: 18px; color: var(--dourado-texto); flex-shrink: 0; }
+
+.foto-rosto {
+  width: 96px; aspect-ratio: 3 / 4; object-fit: cover; border-radius: var(--raio-controle);
+  background: var(--superficie-2); border: 1px solid var(--borda); display: block;
+}
+.foto-rosto--grande { width: min(100%, 300px); margin: 0 auto; transform: scaleX(-1); }
+.foto-rosto--vazia { display: grid; place-items: center; color: var(--texto-suave); }
+.foto-rosto--vazia svg { width: 28px; height: 28px; }
+.foto-rosto--carregando { animation: pulsar 1.2s ease-in-out infinite; }
+@keyframes pulsar { 50% { opacity: 0.55; } }
+
+.meu-rosto { display: flex; gap: 16px; align-items: flex-start; }
+
+.aviso-biometria { display: grid; gap: 12px; }
+.aviso-biometria h3 { margin: 0; font-size: 1.1rem; text-align: center; }
+.aviso-biometria > p { margin: 0; text-align: center; }
+.aviso-biometria__icone {
+  width: 48px; height: 48px; margin: 0 auto; border-radius: var(--raio-redondo);
+  display: grid; place-items: center; background: var(--info-fundo); color: var(--info);
+}
+.aviso-biometria__icone svg { width: 26px; height: 26px; }
+.aviso-biometria__itens { margin: 0; display: grid; gap: 4px; font-size: 0.9rem; }
+.aviso-biometria__itens dt { font-weight: 600; margin-top: 8px; }
+.aviso-biometria__itens dd { margin: 0; color: var(--texto-suave); }
+
+.abas { display: flex; gap: 4px; border-bottom: 1px solid var(--borda); overflow-x: auto; }
+.abas__item {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; margin-bottom: -1px;
+  background: none; border: none; border-bottom: 2px solid transparent; color: var(--texto-suave);
+  font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; min-height: 44px;
+}
+.abas__item[aria-selected='true'] { color: var(--texto); border-bottom-color: var(--dourado); }
+.abas__item:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.abas__contador {
+  min-width: 22px; padding: 1px 7px; border-radius: var(--raio-redondo);
+  background: var(--atencao-fundo); color: var(--atencao); font-size: 0.78rem; text-align: center;
+}
+
+.grade-revisao { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.revisao { display: grid; gap: 12px; align-content: start; }
+.revisao__fotos { display: flex; gap: 10px; }
+.revisao__fotos figure { margin: 0; display: grid; gap: 4px; flex: 1; max-width: 140px; }
+.revisao__fotos .foto-rosto { width: 100%; }
+.revisao__fotos figcaption { font-size: 0.78rem; color: var(--texto-suave); text-align: center; }
+.revisao__info { display: grid; gap: 4px; }
+.revisao__dados { margin: 4px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.85rem; }
+.revisao__dados dt { color: var(--texto-suave); }
+.revisao__dados dd { margin: 0; }
+
+.ficha {
+  padding: 6px 10px; border-radius: var(--raio-redondo); border: 1px solid var(--borda-forte);
+  background: var(--superficie); color: var(--texto); font: inherit; font-size: 0.82rem; cursor: pointer;
+}
+.ficha:hover { border-color: var(--primaria); }
+textarea.entrada { resize: vertical; min-height: 80px; padding-top: 10px; }
+.aviso-biometria h3:focus { outline: none; }

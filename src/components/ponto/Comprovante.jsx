@@ -3,10 +3,11 @@ import { data, hora, mascararCpf, nsr } from '../../lib/formatos'
 import { rotuloMarcacao } from '../../lib/marcacoes'
 import Etiqueta from '../ui/Etiqueta'
 import Botao from '../ui/Botao'
+import { EtiquetaVerificacao } from '../rosto/EtiquetaVerificacao'
 
 // Comprovante de marcação exibido logo após cada registro (Portaria 671).
 // A versão em PDF assinado (PAdES) entra na fase de conformidade.
-export default function Comprovante({ registro, perfil, unidade, empresa, aoFechar }) {
+export default function Comprovante({ registro, verificacao, perfil, unidade, empresa, aoFechar }) {
   if (!registro) return null
   const cpf = mascararCpf(perfil?.cpf)
   return (
@@ -23,6 +24,7 @@ export default function Comprovante({ registro, perfil, unidade, empresa, aoFech
         <dt>CPF</dt><dd>{cpf || 'não informado'}</dd>
         {empresa?.nome && (<><dt>Empresa</dt><dd>{empresa.nome}</dd></>)}
         <dt>Unidade</dt><dd>{unidade?.nome || '—'}</dd>
+        {verificacao && (<><dt>Reconhecimento facial</dt><dd><EtiquetaVerificacao verificacao={verificacao} /></dd></>)}
         <dt>Código de integridade</dt><dd>{registro.hash_integridade ? `${registro.hash_integridade.slice(0, 8)}…${registro.hash_integridade.slice(-6)}` : '—'}</dd>
       </dl>
       <p className="comprovante__nota">Horário registrado pelo servidor do Ayra Ponto. {!cpf && 'Peça ao RH para cadastrar o seu CPF, que identifica você no comprovante.'}</p>
