@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CameraOff, LoaderCircle, RefreshCw, ScanFace } from 'lucide-react'
+import { Camera, CameraOff, LoaderCircle, RefreshCw, ScanFace } from 'lucide-react'
 import {
   CONFIG_ENQUADRAMENTO, CONFIG_LEITURA, abrirCamera, avaliarEnquadramento, canvasParaJpeg,
   capturarQuadro, carregarMotor, fecharCamera, piscou,
@@ -7,118 +7,190 @@ import {
 import Botao from '../ui/Botao'
 import Alerta from '../ui/Alerta'
 
-const TEMPO_LIMITE = 25000 // ms procurando o rosto antes de oferecer alternativas
-const QUADROS_BONS = 3 // quadros seguidos bem enquadrados antes da foto
+const QUADROS_BONS = 3 // quadros seguidos bem enquadrados antes da foto automática
 const ESPERA_PISCADA = 3500 // ms esperando a piscada; depois tira a foto assim mesmo
+const MOSTRAR_BOTAO_FOTO = 4000 // ms até oferecer o botão "Tirar foto agora"
+const TEMPO_DICA = 20000 // ms sem conseguir a foto automática até mostrar as dicas
 
 const MENSAGENS_ERRO = {
   permissao_negada: 'A câmera foi bloqueada. Para liberar, toque no cadeado ao lado do endereço do site e permita a câmera.',
   sem_camera: 'Não encontramos uma câmera neste aparelho.',
-  motor: 'Não foi possível carregar o reconhecimento facial. Confira sua internet e tente de novo.',
 }
 
-// Câmera frontal com guia de enquadramento. Quando o rosto está bem
-// posicionado (e, se possível, depois de uma piscada), tira a foto sozinha e
-// devolve a foto + a leitura do rosto em aoCapturar.
-export default function CameraRosto({ aoCapturar, aoDesistir, textoDesistir = 'Cancelar', dica }) {
+// Câmera frontal com guia de enquadramento.
+// - Com o reconhecimento carregado: tira a foto sozinha quando o rosto está
+//   bem posicionado (e, se possível, depois de uma piscada).
+// - Sempre existe o botão "Tirar foto agora": a selfie é a prova da marcação
+//   e nunca pode depender do reconhecimento ter funcionado.
+// - Se o reconhecimento não carregar, a câmera continua e a foto é manual.
+// aoCapturar recebe { blob, imagem, descritor (ou null), qualidade, antispoof, vivacidade, piscou, manual }.
+// exigirRosto: no cadastro, a foto só vale se tiver um rosto legível.
+export default function CameraRosto({ aoCapturar, aoDesistir, textoDesistir = 'Cancelar', dica, exigirRosto = false }) {
   const videoRef = useRef(null)
+  const humanRef = useRef(null)
+  const piscadaRef = useRef(false)
+  const capturandoRef = useRef(false)
   const aoCapturarRef = useRef(aoCapturar)
   aoCapturarRef.current = aoCapturar
   const [tentativa, setTentativa] = useState(0)
-  const [estado, setEstado] = useState('iniciando') // iniciando | enquadrando | lendo | tempo | erro
+  const [estado, setEstado] = useState('iniciando') // iniciando | ao_vivo | lendo | erro
+  const [motor, setMotor] = useState('carregando') // carregando | pronto | falhou
   const [mensagem, setMensagem] = useState('Abrindo a câmera…')
   const [erro, setErro] = useState(null) // { motivo, texto }
+  const [aviso, setAviso] = useState('')
   const [pronto, setPronto] = useState(false)
+  const [mostrarBotao, setMostrarBotao] = useState(false)
+  const [mostrarDicas, setMostrarDicas] = useState(false)
+  const streamRef = useRef(null)
 
-  const rodar = useCallback(async (sinal) => {
-    let stream = null
-    try {
-      setEstado('iniciando')
-      setMensagem('Abrindo a câmera…')
-      const [s, human] = await Promise.all([
-        abrirCamera(),
-        carregarMotor().catch((e) => { e.motivo = 'motor'; throw e }),
-      ])
-      stream = s
-      if (sinal.cancelado) return
-      const video = videoRef.current
-      video.srcObject = stream
-      await video.play().catch(() => {})
-      if (!video.videoWidth) await new Promise((r) => { video.onloadedmetadata = r })
-
-      setEstado('enquadrando')
-      const inicio = performance.now()
-      let bons = 0
-      let primeiroBom = 0
-      let viuPiscada = false
-
-      while (!sinal.cancelado) {
-        if (performance.now() - inicio > TEMPO_LIMITE) {
-          setEstado('tempo')
-          break
-        }
-        const res = await human.detect(video, CONFIG_ENQUADRAMENTO)
-        if (sinal.cancelado) break
-        const aval = avaliarEnquadramento(res, video)
-        if (piscou(res)) viuPiscada = true
-        if (aval.pronto) {
-          bons += 1
-          if (!primeiroBom) primeiroBom = performance.now()
-        } else {
-          bons = 0
-          primeiroBom = 0
-        }
-        setPronto(aval.pronto)
-        const esperandoPiscada = aval.pronto && !viuPiscada && performance.now() - primeiroBom < ESPERA_PISCADA
-        setMensagem(esperandoPiscada ? 'Agora pisque os olhos uma vez' : aval.mensagem)
-
-        if (bons >= QUADROS_BONS && !esperandoPiscada) {
-          setEstado('lendo')
-          setMensagem('Lendo o rosto…')
-          const canvas = capturarQuadro(video)
-          const leitura = await human.detect(canvas, CONFIG_LEITURA)
-          const rosto = leitura.face?.length === 1 ? leitura.face[0] : null
-          if (sinal.cancelado) break
-          if (rosto?.embedding?.length) {
-            const blob = await canvasParaJpeg(canvas)
-            fecharCamera(stream)
-            stream = null
-            aoCapturarRef.current({
-              blob,
-              imagem: canvas.toDataURL('image/jpeg', 0.8),
-              descritor: Array.from(rosto.embedding),
-              qualidade: rosto.faceScore ?? rosto.boxScore ?? null,
-              antispoof: rosto.real ?? null,
-              vivacidade: rosto.live ?? null,
-              piscou: viuPiscada,
-            })
-            return
-          }
-          bons = 0
-          primeiroBom = 0
-          setEstado('enquadrando')
-        }
-        await new Promise((r) => setTimeout(r, 90))
+  // Lê o quadro atual e entrega a foto. manual = a pessoa tocou no botão.
+  const capturar = useCallback(async (manual) => {
+    const video = videoRef.current
+    if (capturandoRef.current || !video?.videoWidth) return false
+    capturandoRef.current = true
+    setEstado('lendo')
+    setMensagem(manual ? 'Salvando a foto…' : 'Lendo o rosto…')
+    const canvas = capturarQuadro(video)
+    let rosto = null
+    if (humanRef.current) {
+      try {
+        const leitura = await humanRef.current.detect(canvas, CONFIG_LEITURA)
+        rosto = leitura.face?.length === 1 ? leitura.face[0] : null
+      } catch (e) {
+        console.error('Leitura do rosto:', e)
       }
-    } catch (e) {
-      if (sinal.cancelado) return
-      const motivo = e?.motivo || 'motor'
-      console.error('Câmera/reconhecimento:', e)
-      setErro({ motivo, texto: MENSAGENS_ERRO[motivo] || MENSAGENS_ERRO.motor })
-      setEstado('erro')
-    } finally {
-      if (stream) fecharCamera(stream)
     }
-  }, [])
+    const descritor = rosto?.embedding?.length ? Array.from(rosto.embedding) : null
+    if (!descritor && (exigirRosto || !manual)) {
+      capturandoRef.current = false
+      setEstado('ao_vivo')
+      if (manual) setAviso('Não encontramos um rosto nessa foto. Olhe de frente para a câmera, num lugar claro, e tente de novo.')
+      return false
+    }
+    const blob = await canvasParaJpeg(canvas)
+    fecharCamera(streamRef.current)
+    streamRef.current = null
+    aoCapturarRef.current({
+      blob,
+      imagem: canvas.toDataURL('image/jpeg', 0.8),
+      descritor,
+      qualidade: rosto ? rosto.faceScore ?? rosto.boxScore ?? null : null,
+      antispoof: rosto?.real ?? null,
+      vivacidade: rosto?.live ?? null,
+      piscou: humanRef.current ? piscadaRef.current : null,
+      manual,
+    })
+    return true
+  }, [exigirRosto])
 
   useEffect(() => {
     const sinal = { cancelado: false }
+    capturandoRef.current = false
+    piscadaRef.current = false
     setErro(null)
-    rodar(sinal)
-    return () => { sinal.cancelado = true }
-  }, [rodar, tentativa])
+    setAviso('')
+    setPronto(false)
+    setMostrarBotao(false)
+    setMostrarDicas(false)
+    setEstado('iniciando')
+    setMensagem('Abrindo a câmera…')
 
-  const tentarDeNovo = () => { setPronto(false); setTentativa((t) => t + 1) }
+    // o reconhecimento carrega em paralelo; se falhar, a câmera continua
+    if (!humanRef.current) {
+      setMotor('carregando')
+      carregarMotor()
+        .then((h) => { humanRef.current = h; if (!sinal.cancelado) setMotor('pronto') })
+        .catch((e) => { console.error('Reconhecimento facial não carregou:', e); if (!sinal.cancelado) setMotor('falhou') })
+    } else {
+      setMotor('pronto')
+    }
+
+    ;(async () => {
+      try {
+        const stream = await abrirCamera()
+        if (sinal.cancelado) { fecharCamera(stream); return }
+        streamRef.current = stream
+        const video = videoRef.current
+        video.srcObject = stream
+        await video.play().catch(() => {})
+        if (!video.videoWidth) await new Promise((r) => { video.onloadedmetadata = r })
+        if (sinal.cancelado) return
+        setEstado('ao_vivo')
+        setMensagem('Posicione o rosto dentro do círculo')
+        const inicio = performance.now()
+        setTimeout(() => { if (!sinal.cancelado) setMostrarBotao(true) }, MOSTRAR_BOTAO_FOTO)
+        setTimeout(() => { if (!sinal.cancelado) setMostrarDicas(true) }, TEMPO_DICA)
+
+        let bons = 0
+        let primeiroBom = 0
+        while (!sinal.cancelado && streamRef.current) {
+          const human = humanRef.current
+          if (!human || capturandoRef.current) {
+            await new Promise((r) => setTimeout(r, 200))
+            continue
+          }
+          let res
+          try {
+            res = await human.detect(video, CONFIG_ENQUADRAMENTO)
+          } catch (e) {
+            // o reconhecimento quebrou no meio: segue só com a foto manual
+            console.error('Reconhecimento facial falhou:', e)
+            humanRef.current = null
+            setMotor('falhou')
+            setPronto(false)
+            continue
+          }
+          if (sinal.cancelado || capturandoRef.current) continue
+          const aval = avaliarEnquadramento(res, video)
+          if (piscou(res)) piscadaRef.current = true
+          if (aval.pronto) {
+            bons += 1
+            if (!primeiroBom) primeiroBom = performance.now()
+          } else {
+            bons = 0
+            primeiroBom = 0
+          }
+          setPronto(aval.pronto)
+          const esperandoPiscada = aval.pronto && !piscadaRef.current && performance.now() - primeiroBom < ESPERA_PISCADA
+          setMensagem(esperandoPiscada ? 'Agora pisque os olhos uma vez' : aval.mensagem)
+          if (bons >= QUADROS_BONS && !esperandoPiscada) {
+            const foi = await capturar(false)
+            if (foi) return
+            bons = 0
+            primeiroBom = 0
+          }
+          if (performance.now() - inicio > TEMPO_DICA) setMostrarDicas(true)
+          await new Promise((r) => setTimeout(r, 90))
+        }
+      } catch (e) {
+        if (sinal.cancelado) return
+        const motivo = e?.motivo || 'sem_camera'
+        console.error('Câmera:', e)
+        setErro({ motivo, texto: MENSAGENS_ERRO[motivo] || MENSAGENS_ERRO.sem_camera })
+        setEstado('erro')
+      }
+    })()
+
+    return () => {
+      sinal.cancelado = true
+      fecharCamera(streamRef.current)
+      streamRef.current = null
+    }
+  }, [tentativa, capturar])
+
+  const motorFalhou = motor === 'falhou'
+  const aoVivo = estado === 'ao_vivo'
+  const podeTirarManual = aoVivo && (mostrarBotao || motorFalhou)
+
+  function desistir() {
+    if (erro) return aoDesistir(erro.motivo)
+    if (motorFalhou) return aoDesistir('reconhecimento_indisponivel')
+    return aoDesistir('usuario_optou')
+  }
+
+  let texto = mensagem
+  if (aoVivo && motor === 'carregando') texto = mostrarBotao ? 'Ainda preparando o reconhecimento… você pode tirar a foto agora' : 'Preparando o reconhecimento…'
+  if (aoVivo && motorFalhou) texto = 'Olhe para a câmera e toque em "Tirar foto"'
 
   return (
     <div className="camera-rosto">
@@ -133,9 +205,9 @@ export default function CameraRosto({ aoCapturar, aoDesistir, textoDesistir = 'C
         )}
       </div>
 
-      {estado !== 'erro' && estado !== 'tempo' && (
+      {estado !== 'erro' && (
         <p className="camera-rosto__mensagem" role="status" aria-live="polite">
-          <ScanFace aria-hidden="true" /> {mensagem}
+          <ScanFace aria-hidden="true" /> {texto}
         </p>
       )}
       {estado === 'iniciando' && (
@@ -143,23 +215,32 @@ export default function CameraRosto({ aoCapturar, aoDesistir, textoDesistir = 'C
           Na primeira vez pode levar alguns segundos para carregar.
         </p>
       )}
-      {dica && estado === 'enquadrando' && <p className="suave pequeno" style={{ textAlign: 'center' }}>{dica}</p>}
+      {dica && aoVivo && <p className="suave pequeno" style={{ textAlign: 'center' }}>{dica}</p>}
 
-      {estado === 'tempo' && (
-        <Alerta tom="atencao" titulo="Não conseguimos ver seu rosto direito">
-          Tente num lugar mais claro, sem boné ou óculos escuros, com o rosto inteiro dentro do círculo.
+      {motorFalhou && aoVivo && (
+        <Alerta tom="atencao">
+          O reconhecimento automático não carregou (pode ser a internet). A foto continua sendo guardada; {exigirRosto ? 'tente de novo mais tarde se ela não for aceita.' : 'o RH confere depois.'}
         </Alerta>
       )}
+      {mostrarDicas && aoVivo && !motorFalhou && (
+        <Alerta tom="info" titulo="Não está conseguindo?">
+          Aproxime o rosto da câmera, procure um lugar mais claro e tire boné ou óculos escuros. Ou toque em <strong>Tirar foto agora</strong>.
+        </Alerta>
+      )}
+      {aviso && aoVivo && <Alerta tom="atencao">{aviso}</Alerta>}
       {estado === 'erro' && <Alerta tom="problema">{erro?.texto}</Alerta>}
 
       <div className="acoes acoes--centro">
-        {(estado === 'tempo' || estado === 'erro') && (
-          <Botao icone={RefreshCw} onClick={tentarDeNovo}>Tentar de novo</Botao>
+        {podeTirarManual && (
+          <Botao icone={Camera} onClick={() => { setAviso(''); capturar(true) }}>
+            {motorFalhou ? 'Tirar foto' : 'Tirar foto agora'}
+          </Botao>
+        )}
+        {estado === 'erro' && (
+          <Botao icone={RefreshCw} onClick={() => setTentativa((t) => t + 1)}>Tentar de novo</Botao>
         )}
         {aoDesistir && (
-          <Botao variante="secundario" onClick={() => aoDesistir(estado === 'tempo' ? 'rosto_nao_encontrado' : erro?.motivo === 'motor' ? 'outro' : erro?.motivo || 'outro')}>
-            {textoDesistir}
-          </Botao>
+          <Botao variante="secundario" onClick={desistir} disabled={estado === 'lendo'}>{textoDesistir}</Botao>
         )}
       </div>
     </div>

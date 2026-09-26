@@ -46,7 +46,7 @@ export default function PontoFacial({ tipo, rosto, aoConcluir, aoFechar }) {
   const aoCapturar = useCallback(async (c) => {
     setEtapa('registrando')
     let sim = null
-    if (rosto.aprovada?.descritor?.length) {
+    if (rosto.aprovada?.descritor?.length && c.descritor?.length) {
       try {
         sim = similaridade(await carregarMotor(), c.descritor, rosto.aprovada.descritor)
       } catch (e) {

@@ -78,7 +78,7 @@ export default function CadastroRosto({ aberto, aceitou, aoFechar, aoConcluir })
               <li>Tire boné, óculos escuros e máscara.</li>
               <li>Segure o celular na altura dos olhos.</li>
             </ul>
-            <CameraRosto aoCapturar={aoCapturar} aoDesistir={aoFechar} textoDesistir="Cancelar" />
+            <CameraRosto aoCapturar={aoCapturar} aoDesistir={aoFechar} textoDesistir="Cancelar" exigirRosto />
           </>
         )}
 

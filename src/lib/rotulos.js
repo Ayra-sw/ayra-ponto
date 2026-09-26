@@ -61,5 +61,7 @@ export const MOTIVO_SEM_FOTO = {
   falha_envio: 'A foto não chegou (internet)',
   rosto_nao_encontrado: 'A câmera não encontrou o rosto',
   app_sem_camera: 'Registrado sem câmera',
+  usuario_optou: 'A pessoa escolheu registrar sem foto',
+  reconhecimento_indisponivel: 'O reconhecimento não carregou no aparelho',
   outro: 'Registrado sem foto',
 }

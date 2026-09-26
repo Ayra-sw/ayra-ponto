@@ -380,7 +380,8 @@ begin
   elsif p_foto_path is not null then
     v_motivo := 'falha_envio';
   else
-    v_motivo := case when p_motivo_sem_foto in ('sem_camera', 'permissao_negada', 'aviso_nao_aceito', 'falha_envio', 'rosto_nao_encontrado', 'outro')
+    v_motivo := case when p_motivo_sem_foto in ('sem_camera', 'permissao_negada', 'aviso_nao_aceito', 'falha_envio', 'rosto_nao_encontrado',
+                                             'usuario_optou', 'reconhecimento_indisponivel', 'outro')
                      then p_motivo_sem_foto else 'outro' end;
   end if;
 

@@ -185,7 +185,8 @@ export default function Reconhecimento() {
       ) : (
         <div className="grade-revisao">
           {marcacoes.map((m) => {
-            const ref = aprovadas[m.perfil_id]
+            const aprovada = aprovadas[m.perfil_id]
+            const ref = aprovada || fotos.find((f) => f.perfil_id === m.perfil_id)
             const res = RESULTADO_FACIAL[m.resultado]
             return (
               <article key={m.id} className="cartao revisao">
@@ -196,7 +197,7 @@ export default function Reconhecimento() {
                   </figure>
                   <figure>
                     <FotoRosto caminho={ref?.foto_path} alt="Foto de cadastro" />
-                    <figcaption>Cadastro</figcaption>
+                    <figcaption>{ref && !aprovada ? 'Cadastro (aguardando)' : 'Cadastro'}</figcaption>
                   </figure>
                 </div>
                 <div className="revisao__info">

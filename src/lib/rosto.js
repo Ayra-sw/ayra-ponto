@@ -49,22 +49,37 @@ export const CONFIG_LEITURA = {
 
 let promessa = null
 
+const TEMPO_MAX_CARGA = 45000 // ms; depois disso a câmera segue com foto manual
+
+// Confere se os modelos carregaram de verdade, rodando uma leitura numa imagem vazia.
+async function testar(human) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 64
+  await human.detect(canvas)
+}
+
 export function carregarMotor() {
   if (!promessa) {
-    promessa = (async () => {
+    const carga = (async () => {
       const { Human } = await import('@vladmandic/human')
       let human = new Human(CONFIG)
       try {
         await human.load()
         await human.warmup()
+        await testar(human)
       } catch (erro) {
         // aparelho sem WebGL: tenta o modo mais lento, que funciona em qualquer um
-        console.warn('Reconhecimento facial: WebGL indisponível, usando CPU.', erro)
+        console.warn('Reconhecimento facial: tentando o modo CPU.', erro)
         human = new Human({ ...CONFIG, backend: 'cpu' })
         await human.load()
+        await testar(human)
       }
       return human
-    })().catch((erro) => {
+    })()
+    const limite = new Promise((_, rejeitar) =>
+      setTimeout(() => rejeitar(new Error('O reconhecimento facial demorou demais para carregar.')), TEMPO_MAX_CARGA))
+    promessa = Promise.race([carga, limite]).catch((erro) => {
       promessa = null
       throw erro
     })
