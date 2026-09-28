@@ -7,6 +7,7 @@ import { data } from '../../lib/formatos'
 import { CATEGORIA, PAPEL, SITUACAO } from '../../lib/rotulos'
 import Botao from '../../components/ui/Botao'
 import Etiqueta from '../../components/ui/Etiqueta'
+import Alerta from '../../components/ui/Alerta'
 import { Selecao } from '../../components/ui/Campo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
 import ConvidarPessoas from '../../components/ConvidarPessoas'
@@ -71,7 +72,7 @@ export default function Pessoas() {
         <div className="pagina__titulo">
           <span className="pagina__trilha">Pessoas</span>
           <h1>Colaboradores</h1>
-          <p className="suave">{pessoas.filter((p) => p.status !== 'desligado').length} pessoas na empresa</p>
+          <p className="suave">{(() => { const n = pessoas.filter((p) => p.status !== 'desligado').length; return `${n} ${n === 1 ? 'pessoa' : 'pessoas'} na empresa` })()}</p>
         </div>
         <Botao icone={UserPlus} onClick={() => setConvidarAberto(true)}>Convidar colaboradores</Botao>
       </div>
@@ -102,8 +103,8 @@ export default function Pessoas() {
           ]} />
       </div>
 
-      {carregando ? <Esqueleto linhas={6} /> : erro ? <EstadoErro aoTentarDeNovo={carregar} /> : pessoas.length <= 1 ? (
-        <EstadoVazio icone={Users} titulo="Você ainda é a única pessoa por aqui"
+      {carregando ? <Esqueleto linhas={6} /> : erro ? <EstadoErro aoTentarDeNovo={carregar} /> : pessoas.length === 0 ? (
+        <EstadoVazio icone={Users} titulo="Nenhum colaborador por aqui"
           acao={<Botao icone={UserPlus} onClick={() => setConvidarAberto(true)}>Convidar colaboradores</Botao>}>
           Envie o link de convite. Cada pessoa cria a própria senha e aparece nesta lista.
         </EstadoVazio>
@@ -114,6 +115,11 @@ export default function Pessoas() {
         </EstadoVazio>
       ) : (
         <>
+          {pessoas.length === 1 && (
+            <Alerta tom="info">
+              Por enquanto você é a única pessoa aqui. Clique no seu nome para abrir a sua ficha, ou use o botão “Convidar colaboradores” para chamar a sua equipe.
+            </Alerta>
+          )}
           <div className="so-computador">
             <div className="tabela-envoltorio">
               <table className="tabela">
