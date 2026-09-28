@@ -16,6 +16,12 @@ import Empresa from './pages/gestao/Empresa'
 import Unidades from './pages/gestao/Unidades'
 import MeuPonto from './pages/gestao/MeuPonto'
 import Reconhecimento from './pages/gestao/Reconhecimento'
+import PerfilPessoa from './pages/gestao/PerfilPessoa'
+import Departamentos from './pages/gestao/Departamentos'
+import Cargos from './pages/gestao/Cargos'
+import Jornadas from './pages/gestao/Jornadas'
+import Feriados from './pages/gestao/Feriados'
+import MeuHistorico from './pages/MeuHistorico'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -42,6 +48,7 @@ export default function App() {
       {/* Colaborador */}
       <Route path="/" element={<ProtectedRoute><AreaColaborador /></ProtectedRoute>}>
         <Route index element={<FuncionarioDashboard />} />
+        <Route path="historico" element={<MeuHistorico />} />
         <Route path="conta" element={<MinhaConta />} />
       </Route>
 
@@ -49,12 +56,18 @@ export default function App() {
       <Route path="/gestao" element={<ProtectedRoute tiposPermitidos={GESTAO}><ShellGestao /></ProtectedRoute>}>
         <Route index element={<GestaoDashboard />} />
         <Route path="pessoas" element={<Pessoas />} />
+        <Route path="pessoas/:id" element={<PerfilPessoa />} />
+        <Route path="departamentos" element={<Departamentos />} />
+        <Route path="cargos" element={<Cargos />} />
+        <Route path="jornadas" element={<Jornadas />} />
+        <Route path="feriados" element={<Feriados />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
         <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
         <Route path="configuracoes/empresa" element={<Empresa />} />
         <Route path="configuracoes/unidades" element={<Unidades />} />
         <Route path="meu-ponto" element={<MeuPonto />} />
+        <Route path="meu-historico" element={<MeuHistorico />} />
         <Route path="conta" element={<MinhaConta />} />
       </Route>
 

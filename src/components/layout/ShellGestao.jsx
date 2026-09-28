@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, Clock, Inbox, LayoutDashboard, LogOut, MapPin, ScanFace, UserRound, Users } from 'lucide-react'
+import { BriefcaseBusiness, Building2, CalendarClock, CalendarDays, Clock, History, Inbox, LayoutDashboard, LogOut, MapPin, Network, ScanFace, UserRound, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -9,6 +9,11 @@ import TopBar from '../TopBar'
 
 const TITULOS = [
   ['/gestao/pessoas', 'Pessoas'],
+  ['/gestao/departamentos', 'Departamentos'],
+  ['/gestao/cargos', 'Cargos'],
+  ['/gestao/jornadas', 'Jornadas'],
+  ['/gestao/feriados', 'Feriados'],
+  ['/gestao/meu-historico', 'Meu histórico'],
   ['/gestao/solicitacoes', 'Solicitações'],
   ['/gestao/reconhecimento', 'Reconhecimento facial'],
   ['/gestao/configuracoes/empresa', 'Empresa'],
@@ -45,6 +50,11 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao" fim icone={LayoutDashboard} texto="Visão geral" aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Pessoas</span>
       <ItemMenu para="/gestao/pessoas" icone={Users} texto="Colaboradores" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/departamentos" icone={Network} texto="Departamentos" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/cargos" icone={BriefcaseBusiness} texto="Cargos" aoClicar={aoNavegar} />
+      <span className="menu-lateral__grupo">Jornada</span>
+      <ItemMenu para="/gestao/jornadas" icone={CalendarClock} texto="Jornadas" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/feriados" icone={CalendarDays} texto="Feriados" aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Gestão</span>
       <ItemMenu para="/gestao/solicitacoes" icone={Inbox} texto="Solicitações" contador={pendentes} aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/reconhecimento" icone={ScanFace} texto="Reconhecimento facial" contador={pendentesFacial} aoClicar={aoNavegar} />
@@ -53,6 +63,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao/configuracoes/unidades" icone={MapPin} texto="Unidades" aoClicar={aoNavegar} />
       <div className="menu-lateral__rodape">
         <ItemMenu para="/gestao/meu-ponto" icone={Clock} texto="Meu ponto" aoClicar={aoNavegar} />
+        <ItemMenu para="/gestao/meu-historico" icone={History} texto="Meu histórico" aoClicar={aoNavegar} />
         <ItemMenu para="/gestao/conta" icone={UserRound} texto="Minha conta" aoClicar={aoNavegar} />
         <button type="button" className="menu-lateral__item" onClick={signOut} title="Sair" style={{ background: 'none', border: 'none', width: '100%', font: 'inherit', cursor: 'pointer' }}>
           <LogOut aria-hidden="true" />
@@ -116,7 +127,7 @@ export default function ShellGestao() {
           aoAbrirMenu={() => setGavetaAberta(true)}
           linkConta="/gestao/conta"
           acoes={!naTelaDePonto && (
-            <Link to="/gestao/meu-ponto" className="btn btn--primario btn--pequeno">
+            <Link to="/gestao/meu-ponto" className="btn btn--primario btn--pequeno" aria-label="Registrar ponto">
               <Clock aria-hidden="true" /> <span>Registrar ponto</span>
             </Link>
           )}

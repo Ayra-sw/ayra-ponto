@@ -627,3 +627,20 @@ button.cartao-linha:hover { border-color: var(--borda-forte); }
 .ficha:hover { border-color: var(--primaria); }
 textarea.entrada { resize: vertical; min-height: 80px; padding-top: 10px; }
 .aviso-biometria h3:focus { outline: none; }
+
+/* ------------------------------------------------ Fase 2A: perfil e cadastros */
+.barra-salvar {
+  position: sticky; bottom: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; margin-top: 4px;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-flutuante, 0 -2px 12px rgba(0, 0, 0, 0.06));
+}
+a.cartao-linha { text-decoration: none; color: inherit; }
+a.cartao-linha:hover { border-color: var(--borda-forte); }
+
+/* Celular estreito: o botão "Registrar ponto" da barra vira só o ícone */
+@media (max-width: 480px) {
+  .barra-superior__acoes .btn--pequeno > span { display: none; }
+  .barra-superior__acoes .btn--pequeno { padding-inline: 10px; }
+}

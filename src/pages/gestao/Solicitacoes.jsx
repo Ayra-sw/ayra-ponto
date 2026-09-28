@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import { Inbox } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
@@ -7,6 +7,7 @@ import { useAvisos } from '../../contexts/AvisosContext'
 import { traduzirErro } from '../../lib/mensagensErro'
 import { dataHora } from '../../lib/formatos'
 import { TIPO_SOLICITACAO } from '../../lib/rotulos'
+import { descreverPedido } from '../../lib/ajustes'
 import Botao from '../../components/ui/Botao'
 import Etiqueta from '../../components/ui/Etiqueta'
 import { Confirmacao } from '../../components/ui/Dialogo'
@@ -80,13 +81,13 @@ export default function Solicitacoes() {
           <div className="so-computador">
             <div className="tabela-envoltorio">
               <table className="tabela">
-                <thead><tr><th>Colaborador</th><th>Tipo</th><th>Horário pedido</th><th>Motivo</th><th>Enviada em</th><th></th></tr></thead>
+                <thead><tr><th>Colaborador</th><th>Tipo</th><th>Pedido</th><th>Motivo</th><th>Enviada em</th><th></th></tr></thead>
                 <tbody>
                   {lista.map((a) => (
                     <tr key={a.id}>
-                      <td>{a.solicitante?.nome_completo || '—'}</td>
+                      <td><Link to={`/gestao/pessoas/${a.perfil_id}?aba=marcacoes`} className="link" style={{ textDecoration: 'none', color: 'var(--texto)' }}>{a.solicitante?.nome_completo || '—'}</Link></td>
                       <td><Etiqueta tom="atencao">{TIPO_SOLICITACAO[a.tipo] || a.tipo}</Etiqueta></td>
-                      <td className="mono">{a.marcacao_solicitada ? dataHora(a.marcacao_solicitada) : '—'}</td>
+                      <td>{descreverPedido(a) || '—'}</td>
                       <td style={{ maxWidth: 320 }}>{a.motivo}</td>
                       <td className="mono">{dataHora(a.criado_em)}</td>
                       <td><Acoes item={a} /></td>
@@ -105,7 +106,7 @@ export default function Solicitacoes() {
                 </div>
                 <p>{a.motivo}</p>
                 <div className="cartao-linha__detalhes">
-                  {a.marcacao_solicitada && <span className="mono">Pedido: {dataHora(a.marcacao_solicitada)}</span>}
+                  {descreverPedido(a) && <span>Pedido: {descreverPedido(a)}</span>}
                   <span className="mono">Enviada: {dataHora(a.criado_em)}</span>
                 </div>
                 <Acoes item={a} />
@@ -124,8 +125,8 @@ export default function Solicitacoes() {
         aoConfirmar={analisar}
         aoCancelar={() => setConfirmando(null)}
       >
-        A análise é definitiva e fica registrada com o seu nome e o horário.
-        {confirmando?.status === 'aprovado' && ' Por enquanto a aprovação fica registrada na solicitação; o ajuste passa a entrar no cálculo da jornada na próxima etapa do sistema.'}
+        A análise é definitiva e fica registrada com o seu nome e o horário. A marcação original nunca é apagada.
+        {confirmando?.status === 'aprovado' && ' Por enquanto a aprovação fica registrada na solicitação; o ajuste passa a valer no cálculo da jornada e no espelho de ponto na próxima etapa do sistema.'}
       </Confirmacao>
     </div>
   )

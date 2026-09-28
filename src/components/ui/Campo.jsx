@@ -45,6 +45,22 @@ export function Campo({ rotulo, opcional, ajuda, erro, dica, id: idProp, mono, c
   )
 }
 
+export function AreaTexto({ rotulo, opcional, ajuda, erro, dica, id: idProp, className = '', ...resto }) {
+  const auto = useId()
+  const id = idProp || auto
+  return (
+    <Moldura id={id} rotulo={rotulo} opcional={opcional} ajuda={ajuda} erro={erro} dica={dica}>
+      <textarea
+        id={id}
+        className={`entrada ${className}`}
+        aria-invalid={erro ? true : undefined}
+        aria-describedby={descricao(id, erro, ajuda)}
+        {...resto}
+      />
+    </Moldura>
+  )
+}
+
 export function CampoSenha({ rotulo = 'Senha', ajuda, erro, id: idProp, ...resto }) {
   const auto = useId()
   const id = idProp || auto

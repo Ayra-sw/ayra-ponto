@@ -1,10 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { House, UserRound } from 'lucide-react'
+import { History, House, UserRound } from 'lucide-react'
 import TopBar from '../TopBar'
 import Marca from './Marca'
 
 const ITENS = [
   { para: '/', texto: 'Início', icone: House, fim: true },
+  { para: '/historico', texto: 'Histórico', icone: History },
   { para: '/conta', texto: 'Minha conta', icone: UserRound },
 ]
 

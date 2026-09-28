@@ -9,8 +9,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   `/convite/CODIGO`), recuperação de senha. Quem entra por convite é sempre colaborador.
 - **Colaborador:** tela de ponto com a próxima marcação sugerida (sem nunca bloquear outro tipo),
   comprovante de cada marcação com NSR, marcações do dia, minha conta.
-- **Gestão (administrador e RH):** painel "Hoje", colaboradores (busca, filtros, edição),
-  solicitações pendentes, empresa (CNPJ alfanumérico, endereço, convite), unidades, meu ponto.
+- **Gestão (administrador e RH):** painel "Hoje", colaboradores (busca, filtros e ficha completa
+  com abas), departamentos, cargos, jornadas (modelos de horário), feriados, solicitações
+  pendentes, reconhecimento facial, empresa (CNPJ alfanumérico, endereço, convite), unidades, meu ponto.
+- **Histórico e pedidos de ajuste:** o colaborador vê as marcações dia a dia e pede correção,
+  marcação esquecida, abono ou folga; o RH analisa em Solicitações.
+- **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
 - **Banco pensado para a Portaria 671:** marcações imutáveis, NSR sequencial por unidade,
@@ -20,8 +24,8 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 2:** perfil completo do colaborador, departamentos, cargos, jornadas, escalas,
-  feriados, cálculo de horas, espelho de ponto, banco de horas, pedidos de ajuste.
+- **Fase 2B:** cálculo de horas trabalhadas, atrasos e extras, ajuste aprovado valendo no
+  cálculo, espelho de ponto, banco de horas e escalas.
 - **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.

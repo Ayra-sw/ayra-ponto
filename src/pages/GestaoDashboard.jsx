@@ -29,15 +29,18 @@ export default function GestaoDashboard() {
   const [atualizadoEm, setAtualizadoEm] = useState(null)
   const [filtroUnidade, setFiltroUnidade] = useState('')
   const [convidarAberto, setConvidarAberto] = useState(false)
+  const [temJornada, setTemJornada] = useState(null)
 
   const carregar = useCallback(async () => {
     setErro(false)
-    const [p, r] = await Promise.all([
+    const [p, r, j] = await Promise.all([
       supabase.from('perfis').select('id, nome_completo, tipo, status, filial_id, cargo')
         .eq('empresa_id', perfil.empresa_id).order('nome_completo'),
       supabase.from('registros_ponto').select('perfil_id, tipo, marcado_em, filial_id')
         .gte('marcado_em', inicioDeHoje()).order('marcado_em', { ascending: true }),
+      supabase.from('modelos_jornada').select('id', { count: 'exact', head: true }),
     ])
+    if (!j.error) setTemJornada((j.count || 0) > 0)
     if (p.error || r.error) setErro(true)
     setPessoas(p.data || [])
     setRegistros(r.data || [])
@@ -75,6 +78,7 @@ export default function GestaoDashboard() {
   const passos = [
     { feito: Boolean(empresa?.razao_social && cnpjOk && empresa?.cidade), titulo: 'Complete os dados da empresa', detalhe: 'Razão social, CNPJ e endereço aparecem no espelho de ponto.', link: '/gestao/configuracoes/empresa', acao: 'Abrir' },
     { feito: unidades.some((u) => u.cidade) , titulo: 'Confira suas unidades', detalhe: 'Cada local de trabalho tem sua própria sequência de registros.', link: '/gestao/configuracoes/unidades', acao: 'Abrir' },
+    { feito: temJornada !== false, titulo: 'Cadastre a jornada de trabalho', detalhe: 'Os horários previstos alimentam o cálculo de atrasos e horas extras.', link: '/gestao/jornadas', acao: 'Abrir' },
     { feito: pessoas.length > 1, titulo: 'Convide sua equipe', detalhe: 'Envie o link de convite. Cada pessoa cria a própria senha.', aoClicar: () => setConvidarAberto(true), acao: 'Convidar' },
   ]
   const feitos = passos.filter((p) => p.feito).length
