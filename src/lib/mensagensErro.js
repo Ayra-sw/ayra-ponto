@@ -25,6 +25,7 @@ const REGRAS = [
   { teste: /(departamentos|cargos|modelos_jornada|feriados)_nome_check/i, msg: () => 'O nome precisa ter entre 2 e 80 letras.' },
   { teste: /tolerancia_minutos_check/i, msg: () => 'A tolerância pode ser de 0 a 60 minutos.' },
   { teste: /dia_carga_positiva|dia_trabalho_completo|dia_intervalo/i, msg: () => 'Confira os horários da jornada: entrada, saída e intervalo.' },
+  { teste: /could not find the function .*apurar_periodo|could not find the function .*resumo_equipe/i, msg: () => 'O cálculo das horas ainda não foi instalado no banco. Rode a migração da Fase 2B no Supabase (passo a passo no guia da fase).' },
   { teste: /duplicate key/i, msg: () => 'Esse cadastro já existe.' },
   { teste: /payload too large|exceeded the maximum allowed size|entity too large/i, msg: () => 'A foto ficou grande demais. Tente de novo.' },
   { teste: /mime type .* is not supported|invalid mime/i, msg: () => 'Formato de foto não aceito.' },

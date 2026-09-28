@@ -15,6 +15,7 @@ import { Campo, Selecao } from '../../components/ui/Campo'
 import { Confirmacao } from '../../components/ui/Dialogo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
 import HistoricoMarcacoes from '../../components/marcacoes/HistoricoMarcacoes'
+import EspelhoMensal from '../../components/espelho/EspelhoMensal'
 import ListaSolicitacoes from '../../components/marcacoes/ListaSolicitacoes'
 
 const TOM_SITUACAO = { ativo: 'ok', afastado: 'atencao', desligado: 'neutra' }
@@ -23,6 +24,7 @@ const ABAS = [
   { id: 'trabalho', rotulo: 'Trabalho', formulario: true },
   { id: 'acesso', rotulo: 'Acesso', formulario: true },
   { id: 'marcacoes', rotulo: 'Marcações' },
+  { id: 'espelho', rotulo: 'Espelho' },
   { id: 'solicitacoes', rotulo: 'Solicitações' },
 ]
 
@@ -307,6 +309,9 @@ export default function PerfilPessoa() {
         </form>
       ) : aba === 'marcacoes' ? (
         <HistoricoMarcacoes perfilId={pessoa.id} />
+      ) : aba === 'espelho' ? (
+        <EspelhoMensal perfilId={pessoa.id} mesInicial={busca.get('mes')}
+          aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />
       ) : (
         <div className="pilha">
           <ListaSolicitacoes perfilId={pessoa.id} textoVazio="Esta pessoa ainda não enviou pedidos de ajuste, abono ou folga." />

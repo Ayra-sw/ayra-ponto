@@ -14,6 +14,10 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   pendentes, reconhecimento facial, empresa (CNPJ alfanumérico, endereço, convite), unidades, meu ponto.
 - **Histórico e pedidos de ajuste:** o colaborador vê as marcações dia a dia e pede correção,
   marcação esquecida, abono ou folga; o RH analisa em Solicitações.
+- **Espelho de ponto e horas da equipe:** o banco calcula, dia a dia, horas trabalhadas, atrasos,
+  horas extras, faltas, feriados, folgas e abonos (ajuste aprovado vale no cálculo, sem mexer na
+  marcação original). O colaborador vê o próprio espelho; administrador e RH veem o de cada pessoa
+  e o resumo da equipe, com impressão/PDF e planilha.
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -24,8 +28,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 2B:** cálculo de horas trabalhadas, atrasos e extras, ajuste aprovado valendo no
-  cálculo, espelho de ponto, banco de horas e escalas.
+- **Fase 2C:** banco de horas e escalas.
 - **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.

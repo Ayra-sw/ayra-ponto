@@ -22,6 +22,8 @@ import Cargos from './pages/gestao/Cargos'
 import Jornadas from './pages/gestao/Jornadas'
 import Feriados from './pages/gestao/Feriados'
 import MeuHistorico from './pages/MeuHistorico'
+import MeuEspelho from './pages/MeuEspelho'
+import Espelhos from './pages/gestao/Espelhos'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -49,6 +51,7 @@ export default function App() {
       <Route path="/" element={<ProtectedRoute><AreaColaborador /></ProtectedRoute>}>
         <Route index element={<FuncionarioDashboard />} />
         <Route path="historico" element={<MeuHistorico />} />
+        <Route path="espelho" element={<MeuEspelho />} />
         <Route path="conta" element={<MinhaConta />} />
       </Route>
 
@@ -61,6 +64,7 @@ export default function App() {
         <Route path="cargos" element={<Cargos />} />
         <Route path="jornadas" element={<Jornadas />} />
         <Route path="feriados" element={<Feriados />} />
+        <Route path="espelhos" element={<Espelhos />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
         <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
@@ -68,6 +72,7 @@ export default function App() {
         <Route path="configuracoes/unidades" element={<Unidades />} />
         <Route path="meu-ponto" element={<MeuPonto />} />
         <Route path="meu-historico" element={<MeuHistorico />} />
+        <Route path="meu-espelho" element={<MeuEspelho />} />
         <Route path="conta" element={<MinhaConta />} />
       </Route>
 

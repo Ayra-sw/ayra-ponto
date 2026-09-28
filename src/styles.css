@@ -644,3 +644,79 @@ a.cartao-linha:hover { border-color: var(--borda-forte); }
   .barra-superior__acoes .btn--pequeno > span { display: none; }
   .barra-superior__acoes .btn--pequeno { padding-inline: 10px; }
 }
+
+/* ----------------------------------------------------- Espelho de ponto (2B) */
+.marcas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.marcas__item {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem;
+  padding: 2px 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda);
+}
+.marcas__item--ajustada { border-color: var(--dourado); }
+.marcas__selo { display: inline-flex; color: var(--dourado-texto, var(--dourado)); }
+.marcas__selo svg { width: 13px; height: 13px; }
+.avisos-dia { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 0.82rem; color: var(--atencao); }
+.avisos-dia li { display: flex; gap: 6px; align-items: flex-start; }
+.avisos-dia svg { width: 14px; height: 14px; flex: none; margin-top: 2px; }
+.tabela--espelho td { vertical-align: top; }
+.tabela--espelho tfoot th, .tabela--espelho tfoot td { background: var(--superficie-2); font-weight: 600; border-top: 2px solid var(--borda-forte); }
+.tabela--espelho tfoot th { text-align: left; padding: 11px 14px; }
+.linha-suave { opacity: 0.72; }
+.cartao-linha--totais { background: var(--superficie-2); }
+.espelho__nota { display: flex; gap: 6px; align-items: flex-start; }
+.espelho__nota-icone { width: 14px; height: 14px; flex: none; margin-top: 3px; color: var(--dourado-texto, var(--dourado)); }
+.espelho__impressao, .espelho__impressao-rodape { display: none; }
+
+@media print {
+  @page { size: A4; margin: 14mm; }
+  html, body { background: #fff !important; color: #000 !important; }
+  .menu-lateral, .barra-inferior, .barra-superior, .topbar, .pular-conteudo, .avisos, .nao-imprimir,
+  .abas, .pagina__cabecalho, .alerta { display: none !important; }
+  .shell, .shell__conteudo, main, .pagina { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  .so-celular { display: none !important; }
+  .so-computador { display: block !important; }
+  .espelho__impressao { display: block; margin-bottom: 10px; }
+  .espelho__impressao h1 { font-size: 15pt; margin: 0 0 6px; }
+  .espelho__impressao dl { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; margin: 0; font-size: 9.5pt; }
+  .espelho__impressao dl div { display: flex; gap: 6px; }
+  .espelho__impressao dt { font-weight: 600; }
+  .espelho__impressao dd { margin: 0; }
+  .espelho__impressao-rodape { display: block; margin-top: 18px; font-size: 9pt; }
+  .indicadores { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .indicador { padding: 6px 8px; box-shadow: none; border: 1px solid #999; background: #fff; }
+  .indicador__valor { font-size: 12pt; }
+  .tabela-envoltorio { border: none; overflow: visible; }
+  .tabela { font-size: 8.5pt; }
+  .tabela th, .tabela td { padding: 4px 6px; border-bottom: 1px solid #bbb; color: #000; background: #fff !important; }
+  .tabela tr { break-inside: avoid; }
+  .etiqueta, .marcas__item { background: none !important; color: #000 !important; border: 1px solid #999; }
+  .avisos-dia { color: #000; }
+  .espelho__nota { font-size: 8pt; color: #333; }
+}
+.tabela--espelho td:first-child, .tabela--espelho th:first-child { white-space: nowrap; }
+.tabela--espelho td:nth-child(3) { min-width: 340px; }
+.tabela--espelho .marcas__item { padding: 1px 7px; font-size: 0.8rem; }
+.espelho > * { min-width: 0; }
+.tabela--espelho td:nth-child(3) { min-width: 300px; }
+.tabela--espelho { table-layout: fixed; }
+.tabela--espelho th:nth-child(1) { width: 96px; }
+.tabela--espelho th:nth-child(2) { width: 168px; }
+.tabela--espelho th:nth-child(n+4) { width: 86px; }
+.tabela--espelho td:nth-child(3) { min-width: 0; }
+.tabela--espelho .etiqueta { white-space: normal; }
+@media print {
+  .tabela--espelho th:nth-child(1) { width: 56px; }
+  .tabela--espelho th:nth-child(2) { width: 100px; }
+  .tabela--espelho th:nth-child(n+4) { width: 46px; }
+  .tabela--espelho th, .tabela--espelho td { font-size: 7.5pt; padding: 3px 4px; }
+  .tabela--espelho th { letter-spacing: 0; text-transform: none; }
+  .tabela--espelho td:first-child, .tabela--espelho th:first-child { white-space: normal; }
+  .tabela--espelho .marcas { gap: 1px 6px; }
+  .tabela--espelho .marcas__item { padding: 0; border: none; gap: 3px; font-size: 7.5pt; white-space: nowrap; }
+  .tabela--espelho .etiqueta { padding: 0 4px; font-size: 7pt; }
+  .tabela--espelho .avisos-dia { font-size: 7pt; }
+  .tabela--espelho tfoot th, .tabela--espelho tfoot td { border-top: 1px solid #000; }
+}
+@media print {
+  .tabela--espelho th:nth-child(n+4) { width: 52px; }
+  .tabela--espelho th.num { font-family: inherit; font-size: 6.5pt; white-space: normal; }
+}
