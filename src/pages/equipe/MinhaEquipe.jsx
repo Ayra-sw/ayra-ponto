@@ -6,6 +6,7 @@ import { traduzirErro } from '../../lib/mensagensErro'
 import { duracao } from '../../lib/formatos'
 import { ehMesAtualOuFuturo, lerMes, limitesDoMes, nomeDoMes, somarMeses, textoDoMes } from '../../lib/apuracao'
 import CentralSolicitacoes from '../../components/solicitacoes/CentralSolicitacoes'
+import Relatorios from '../../components/relatorios/Relatorios'
 import Botao from '../../components/ui/Botao'
 import Etiqueta from '../../components/ui/Etiqueta'
 import Indicador from '../../components/ui/Indicador'
@@ -14,13 +15,14 @@ import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
 const ABAS = [
   { id: 'pedidos', rotulo: 'Pedidos' },
   { id: 'pessoas', rotulo: 'Pessoas' },
+  { id: 'relatorios', rotulo: 'Relatórios' },
 ]
 
 // Área do gestor: os pedidos da equipe e as horas de cada pessoa no mês.
 export default function MinhaEquipe() {
   const { equipe } = useOutletContext()
   const [busca, setBusca] = useSearchParams()
-  const aba = busca.get('aba') === 'pessoas' ? 'pessoas' : 'pedidos'
+  const aba = ABAS.some((a) => a.id === busca.get('aba')) ? busca.get('aba') : 'pedidos'
 
   if (equipe.carregando) return <div className="pagina"><Esqueleto linhas={5} blocos={1} /></div>
   if (!equipe.ehGestor) {
@@ -38,7 +40,7 @@ export default function MinhaEquipe() {
 
   return (
     <div className="pagina">
-      <div className="pagina__cabecalho">
+      <div className="pagina__cabecalho nao-imprimir">
         <div className="pagina__titulo">
           <h1>Minha equipe</h1>
           <p className="suave">
@@ -48,7 +50,7 @@ export default function MinhaEquipe() {
         </div>
       </div>
 
-      <div className="abas" role="tablist" aria-label="Seções da equipe">
+      <div className="abas nao-imprimir" role="tablist" aria-label="Seções da equipe">
         {ABAS.map((a) => (
           <button key={a.id} type="button" role="tab" aria-selected={aba === a.id} className="abas__item"
             onClick={() => setBusca(a.id === 'pedidos' ? {} : { aba: a.id }, { replace: true })}>
@@ -60,7 +62,9 @@ export default function MinhaEquipe() {
 
       {aba === 'pedidos'
         ? <CentralSolicitacoes modo="gestor" aoAnalisar={equipe.recarregar} linkDaPessoa={(id) => `/equipe/${id}?aba=pedidos`} />
-        : <PessoasDaEquipe />}
+        : aba === 'relatorios'
+          ? <Relatorios modo="gestor" abaFixa="relatorios" />
+          : <PessoasDaEquipe />}
     </div>
   )
 }

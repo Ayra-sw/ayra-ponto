@@ -35,6 +35,7 @@ const REGRAS = [
   { teste: /could not find the function .*(minha_equipe|resumo_minha_equipe|nome_da_pessoa)|could not find the table .*departamento_gestores|comentario_analise|anexo_path|invalid input value for enum status_ajuste/i, msg: () => 'A gestão da equipe ainda não foi instalada no banco. Rode a migração da Fase 3A no Supabase (passo a passo no guia da fase).' },
   { teste: /departamento_gestores_pkey/i, msg: () => 'Essa pessoa já é gestora deste departamento.' },
   { teste: /ajustes_comentario_tamanho/i, msg: () => 'O comentário pode ter no máximo 500 caracteres.' },
+  { teste: /could not find the function .*(relatorio_frequencia|relatorio_banco_horas|relatorio_marcacoes)/i, msg: () => 'Os relatórios ainda não foram instalados no banco. Rode a migração da Fase 3B no Supabase (passo a passo no guia da fase).' },
   { teste: /duplicate key/i, msg: () => 'Esse cadastro já existe.' },
   { teste: /payload too large|exceeded the maximum allowed size|entity too large/i, msg: () => 'A foto ficou grande demais. Tente de novo.' },
   { teste: /mime type .* is not supported|invalid mime/i, msg: () => 'Formato de foto não aceito.' },

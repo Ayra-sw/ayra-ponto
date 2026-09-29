@@ -35,6 +35,9 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   filtros; comentário na resposta (obrigatório para recusar); a pessoa pode cancelar o próprio pedido.
 - **Atestado anexado** ao pedido de abono e ao afastamento (PDF ou foto, até 5 MB), num
   armazenamento privado: só a própria pessoa, o RH e o administrador abrem. Abonos são analisados pelo RH.
+- **Relatórios:** frequência (por pessoa e por dia, até 3 meses), pedidos (quantidade, situação e
+  tempo de resposta), banco de horas numa data e marcações do período (NSR, unidade, origem,
+  reconhecimento facial), com planilha e impressão. O gestor vê os da própria equipe.
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -45,7 +48,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 3B:** relatórios, avisos dentro do sistema (sininho) e histórico de alterações.
+- **Fase 3C:** avisos dentro do sistema (sininho) e histórico de alterações.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.
 

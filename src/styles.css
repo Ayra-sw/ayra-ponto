@@ -809,3 +809,18 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 }
 .anexo-escolhido__tirar:hover { background: var(--superficie); color: var(--texto); }
 .anexo-escolhido__tirar:focus-visible { outline: 2px solid var(--foco); outline-offset: 1px; }
+
+/* ==========================================================================
+   Fase 3B: relatórios
+   ========================================================================== */
+.ficha[aria-pressed='true'] { border-color: var(--primaria); background: var(--superficie-2); font-weight: 600; box-shadow: 0 0 0 1px var(--primaria); }
+.relatorio__impressao { display: none; }
+.tabela--relatorio td, .tabela--relatorio th { vertical-align: top; }
+@media print {
+  .relatorio__impressao { display: block; margin-bottom: 10px; }
+  .relatorio__impressao h1 { font-size: 15pt; margin: 0 0 4px; }
+  .relatorio__impressao p { margin: 0 0 8px; font-size: 9.5pt; }
+  .relatorio .indicadores { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .relatorio .indicador { padding: 6px 8px; border: 1px solid #bbb; box-shadow: none; }
+  .relatorio .etiqueta { background: none !important; color: #000 !important; padding: 0; }
+}

@@ -26,6 +26,7 @@ import MeuEspelho from './pages/MeuEspelho'
 import Espelhos from './pages/gestao/Espelhos'
 import BancoHorasEquipe from './pages/gestao/BancoHoras'
 import Escalas from './pages/gestao/Escalas'
+import RelatoriosGestao from './pages/gestao/Relatorios'
 import MinhaEquipe from './pages/equipe/MinhaEquipe'
 import PessoaDaEquipe from './pages/equipe/PessoaDaEquipe'
 
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="espelhos" element={<Espelhos />} />
         <Route path="banco-de-horas" element={<BancoHorasEquipe />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
+        <Route path="relatorios" element={<RelatoriosGestao />} />
         <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
         <Route path="configuracoes/empresa" element={<Empresa />} />
