@@ -8,6 +8,8 @@ import { traduzirErro } from '../../lib/mensagensErro'
 import { apenasDigitos, duracao, formatarCpf, formatarTelefone } from '../../lib/formatos'
 import { CATEGORIA, PAPEL, PAPEL_DESCRICAO, SITUACAO } from '../../lib/rotulos'
 import { cargaSemanal, diasParaFormulario, resumoHorarios } from '../../lib/jornadas'
+import { TIPOS_ESCALA, horarioDoTurno, proximosPlantoes12x36 } from '../../lib/escalas'
+import { data as formatarData } from '../../lib/formatos'
 import Botao from '../../components/ui/Botao'
 import Etiqueta from '../../components/ui/Etiqueta'
 import Alerta from '../../components/ui/Alerta'
@@ -44,6 +46,9 @@ function formularioDe(p) {
     categoria: p.categoria || '',
     data_admissao: p.data_admissao || '',
     filial_id: p.filial_id || '',
+    tipo_escala: p.tipo_escala || 'semanal',
+    escala_turno_id: p.escala_turno_id || '',
+    escala_referencia: p.escala_referencia || '',
     status: p.status,
     tipo: p.tipo,
   }
@@ -59,7 +64,7 @@ export default function PerfilPessoa() {
   const aba = ABAS.some((a) => a.id === busca.get('aba')) ? busca.get('aba') : 'dados'
 
   const [pessoa, setPessoa] = useState(null)
-  const [cadastros, setCadastros] = useState({ departamentos: [], cargos: [], modelos: [], dias: [] })
+  const [cadastros, setCadastros] = useState({ departamentos: [], cargos: [], modelos: [], dias: [], turnos: [] })
   const [form, setForm] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erroCarga, setErroCarga] = useState(false)
@@ -69,17 +74,18 @@ export default function PerfilPessoa() {
 
   const carregar = useCallback(async () => {
     setErroCarga(false)
-    const [p, d, c, m, dias] = await Promise.all([
+    const [p, d, c, m, dias, turnos] = await Promise.all([
       supabase.from('perfis').select('*').eq('id', id).eq('empresa_id', eu.empresa_id).maybeSingle(),
       supabase.from('departamentos').select('id, nome, ativo').eq('empresa_id', eu.empresa_id).order('nome'),
       supabase.from('cargos').select('id, nome, ativo').eq('empresa_id', eu.empresa_id).order('nome'),
       supabase.from('modelos_jornada').select('id, nome, ativo').eq('empresa_id', eu.empresa_id).order('nome'),
       supabase.from('modelos_jornada_dias').select('*'),
+      supabase.from('turnos').select('id, nome, sigla, entrada, saida, ativo').eq('empresa_id', eu.empresa_id).order('nome'),
     ])
     if (p.error || d.error || c.error || m.error || dias.error) setErroCarga(true)
     setPessoa(p.data || null)
     setForm(p.data ? formularioDe(p.data) : null)
-    setCadastros({ departamentos: d.data || [], cargos: c.data || [], modelos: m.data || [], dias: dias.data || [] })
+    setCadastros({ departamentos: d.data || [], cargos: c.data || [], modelos: m.data || [], dias: dias.data || [], turnos: turnos.data || [] })
     setCarregando(false)
   }, [id, eu.empresa_id])
 
@@ -111,6 +117,12 @@ export default function PerfilPessoa() {
         categoria: form.tipo === 'funcionario' ? vazio(form.categoria) : null,
         data_admissao: vazio(form.data_admissao),
         filial_id: vazio(form.filial_id),
+      } : {}),
+      // (só depois que a migração da Fase 2D foi rodada, quando o cadastro já traz o tipo de escala)
+      ...(podeEditarTrabalho && 'tipo_escala' in pessoa ? {
+        tipo_escala: form.tipo_escala,
+        escala_turno_id: form.tipo_escala === '12x36' ? vazio(form.escala_turno_id) : null,
+        escala_referencia: form.tipo_escala === '12x36' ? vazio(form.escala_referencia) : null,
       } : {}),
       ...(podeMudarSituacao ? { status: form.status } : {}),
       ...(podeMudarPapel ? { tipo: form.tipo } : {}),
@@ -152,6 +164,10 @@ export default function PerfilPessoa() {
     if (cpfDigitos && cpfDigitos.length !== 11) { irParaAba('dados'); return setErro('O CPF precisa ter 11 números.') }
     const tel = apenasDigitos(form.telefone)
     if (tel && (tel.length < 10 || tel.length > 11)) { irParaAba('dados'); return setErro('O telefone precisa ter DDD e 8 ou 9 números.') }
+    if (form.tipo_escala === '12x36' && (!form.escala_turno_id || !form.escala_referencia)) {
+      irParaAba('trabalho')
+      return setErro('Na escala 12x36, escolha o turno e o primeiro dia de trabalho.')
+    }
     if (form.status === 'desligado' && pessoa.status !== 'desligado') {
       return setConfirmar(`${form.nome_completo} não vai mais conseguir registrar o ponto. O histórico de marcações continua guardado, como a lei exige.`)
     }
@@ -188,6 +204,7 @@ export default function PerfilPessoa() {
     .map((x) => ({ valor: x.id, rotulo: x.ativo ? x.nome : `${x.nome} (desativado)` }))
   const modeloEscolhido = cadastros.modelos.find((m) => m.id === form.modelo_jornada_id)
   const diasDoModelo = cadastros.dias.filter((d) => d.modelo_id === form.modelo_jornada_id)
+  const escalaDisponivel = 'tipo_escala' in pessoa
   const unidadeAtualInativa = form.filial_id && !unidadesAtivas.some((u) => u.id === form.filial_id)
 
   return (
@@ -254,8 +271,38 @@ export default function PerfilPessoa() {
                       ajuda={!pessoa.cargo_id && pessoa.cargo ? `Cargo anterior (texto livre): ${pessoa.cargo}. Escolha um da lista para substituir.` : cadastros.cargos.length === 0 ? 'Nenhum cargo cadastrado ainda.' : undefined}
                       opcoes={[{ valor: '', rotulo: 'Sem cargo' }, ...opcoesDe(cadastros.cargos, form.cargo_id)]} />
                   </div>
-                  <Selecao rotulo="Jornada de trabalho" opcional value={form.modelo_jornada_id} onChange={mudar('modelo_jornada_id')}
-                    ajuda={modeloEscolhido
+                  {escalaDisponivel && (
+                    <>
+                      <Selecao rotulo="Como a pessoa trabalha" value={form.tipo_escala} onChange={mudar('tipo_escala')}
+                        dica="Jornada semanal: horários fixos por dia da semana. 12x36: trabalha um dia e folga o seguinte. Calendário: você marca, dia a dia, o turno de cada um."
+                        ajuda={TIPOS_ESCALA.find((t) => t.valor === form.tipo_escala)?.descricao}
+                        opcoes={TIPOS_ESCALA.map((t) => ({ valor: t.valor, rotulo: t.rotulo }))} />
+                      {form.tipo_escala === '12x36' && (
+                        <div className="grade-campos">
+                          <Selecao rotulo="Turno" value={form.escala_turno_id} onChange={mudar('escala_turno_id')}
+                            ajuda={cadastros.turnos.length === 0 ? 'Nenhum turno cadastrado ainda.' : undefined}>
+                            {!form.escala_turno_id && <option value="">Escolha um turno</option>}
+                            {cadastros.turnos.filter((t) => t.ativo || t.id === form.escala_turno_id).map((t) => (
+                              <option key={t.id} value={t.id}>{t.nome} ({horarioDoTurno(t)}){t.ativo ? '' : ' (desativado)'}</option>
+                            ))}
+                          </Selecao>
+                          <Campo rotulo="Primeiro dia de trabalho" type="date" value={form.escala_referencia} onChange={mudar('escala_referencia')}
+                            ajuda={form.escala_referencia
+                              ? `Próximos plantões: ${proximosPlantoes12x36(form.escala_referencia).map((d) => formatarData(d).slice(0, 5)).join(', ')}`
+                              : 'A pessoa trabalha neste dia, folga no seguinte, e assim por diante.'} />
+                        </div>
+                      )}
+                      {form.tipo_escala === 'calendario' && (
+                        <p className="suave pequeno">
+                          Os dias de trabalho ficam na grade do mês, em <Link to="/gestao/escalas?aba=calendario" className="link">Escalas</Link>. Dia sem turno é folga.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  <Selecao rotulo={form.tipo_escala !== 'semanal' && escalaDisponivel ? 'Jornada (tolerância e banco de horas)' : 'Jornada de trabalho'} opcional value={form.modelo_jornada_id} onChange={mudar('modelo_jornada_id')}
+                    ajuda={form.tipo_escala !== 'semanal' && escalaDisponivel
+                      ? 'Os horários vêm da escala. A jornada escolhida vale só para a tolerância de atraso e para o banco de horas.'
+                      : modeloEscolhido
                       ? `${resumoHorarios(diasDoModelo)} · ${duracao(cargaSemanal(diasParaFormulario(diasDoModelo)))} por semana`
                       : cadastros.modelos.length === 0 ? 'Nenhuma jornada cadastrada ainda.' : 'Os horários previstos de trabalho desta pessoa.'}
                     opcoes={[{ valor: '', rotulo: 'Sem jornada definida' }, ...opcoesDe(cadastros.modelos, form.modelo_jornada_id)]} />

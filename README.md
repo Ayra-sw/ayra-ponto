@@ -24,6 +24,10 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   Saldo e extrato na ficha da pessoa, no "Meu espelho" e na tela "Banco de horas" da equipe.
 - **Afastamentos:** férias, atestado, licença e INSS por período; nesses dias não há falta.
   Só se cancela (com motivo), nunca se apaga. O espelho também avisa quando o intervalo é curto demais.
+- **Escalas:** turnos (Manhã, Tarde, Noite, Plantão 12h...), escala 12x36 (turno e primeiro dia; os
+  plantões são calculados sozinhos) e escala por calendário (grade do mês, clique a clique, com
+  "repetir semana"). Folga da escala não vira falta; na 12x36 o feriado trabalhado só avisa
+  (Súmula 444 do TST). O colaborador vê os próximos turnos em "Minha escala".
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -34,7 +38,6 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 2D:** escalas (12x36 e escala por calendário).
 - **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.

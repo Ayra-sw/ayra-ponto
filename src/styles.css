@@ -720,3 +720,57 @@ a.cartao-linha:hover { border-color: var(--borda-forte); }
   .tabela--espelho th:nth-child(n+4) { width: 52px; }
   .tabela--espelho th.num { font-family: inherit; font-size: 6.5pt; white-space: normal; }
 }
+
+/* ==========================================================================
+   Fase 2D: escalas (turnos e grade do mês)
+   ========================================================================== */
+.celula-escala {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 30px; padding: 0 4px; border-radius: var(--raio-controle);
+  border: 1px solid var(--borda); background: var(--superficie); color: var(--texto);
+  font-family: var(--fonte-mono); font-size: 0.78rem; font-weight: 600; line-height: 1;
+}
+button.celula-escala { cursor: pointer; transition: transform var(--transicao), box-shadow var(--transicao); }
+button.celula-escala:hover { box-shadow: 0 0 0 2px var(--foco); }
+button.celula-escala:focus-visible { outline: 2px solid var(--foco); outline-offset: 1px; }
+.celula-escala--fixa { min-width: 34px; height: 34px; }
+.celula-escala.vazia { color: var(--texto-suave); background: transparent; border-color: transparent; font-weight: 400; }
+button.celula-escala.vazia:hover { background: var(--superficie-2); }
+.turno-cor-0 { background: var(--info-fundo); color: var(--info); border-color: var(--info); }
+.turno-cor-1 { background: var(--ok-fundo); color: var(--ok); border-color: var(--ok); }
+.turno-cor-2 { background: var(--atencao-fundo); color: var(--atencao); border-color: var(--atencao); }
+.turno-cor-3 { background: color-mix(in srgb, var(--dourado) 20%, var(--superficie)); color: var(--dourado-texto); border-color: var(--dourado); }
+.turno-cor-4 { background: color-mix(in srgb, var(--primaria) 16%, var(--superficie)); color: var(--texto); border-color: var(--primaria); }
+.turno-cor-5 { background: var(--superficie-2); color: var(--texto); border-color: var(--borda-forte); }
+
+.pincel { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--borda); border-radius: var(--raio-cartao); background: var(--superficie); }
+.pincel__item {
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; cursor: pointer;
+  border: 1px solid var(--borda); border-radius: var(--raio-redondo); background: var(--superficie); color: var(--texto); font: inherit; font-size: 0.88rem;
+}
+.pincel__item:hover { border-color: var(--primaria); }
+.pincel__item[aria-pressed='true'] { border-color: var(--primaria); box-shadow: 0 0 0 2px var(--primaria); font-weight: 600; }
+.pincel__item:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+
+.grade-escala-envoltorio { overflow-x: auto; border: 1px solid var(--borda); border-radius: var(--raio-cartao); background: var(--superficie); }
+.grade-escala-envoltorio:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.grade-escala { border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
+.grade-escala th, .grade-escala td { padding: 4px 2px; text-align: center; border-bottom: 1px solid var(--borda); background: var(--superficie); }
+.grade-escala tbody tr:last-child th, .grade-escala tbody tr:last-child td { border-bottom: none; }
+.grade-escala thead th { position: sticky; top: 0; font-size: 0.78rem; color: var(--texto-suave); font-weight: 600; }
+.grade-escala__dia small { display: block; font-size: 0.68rem; font-weight: 400; }
+.grade-escala .fim-de-semana { background: var(--superficie-2); }
+.grade-escala .feriado { background: var(--atencao-fundo); }
+.feriado__ponto { display: block; width: 5px; height: 5px; margin: 1px auto 0; border-radius: 50%; background: var(--atencao); }
+.grade-escala__pessoa {
+  position: sticky; left: 0; z-index: 1; min-width: 150px; max-width: 190px; padding: 6px 10px !important; text-align: left !important;
+  border-right: 1px solid var(--borda); font-weight: 400;
+}
+.grade-escala__pessoa strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grade-escala__repetir { background: none; border: none; padding: 0; cursor: pointer; font: inherit; display: inline-flex; align-items: center; gap: 3px; }
+.grade-escala__total { font-size: 0.78rem; color: var(--texto-suave); }
+.grade-escala tfoot th, .grade-escala tfoot td { border-top: 1px solid var(--borda-forte); border-bottom: none; }
+
+@media print {
+  .pincel, .grade-escala__repetir { display: none !important; }
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { BriefcaseBusiness, Building2, CalendarClock, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
+import { BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -12,6 +12,7 @@ const TITULOS = [
   ['/gestao/departamentos', 'Departamentos'],
   ['/gestao/cargos', 'Cargos'],
   ['/gestao/jornadas', 'Jornadas'],
+  ['/gestao/escalas', 'Escalas'],
   ['/gestao/feriados', 'Feriados'],
   ['/gestao/espelhos', 'Horas da equipe'],
   ['/gestao/banco-de-horas', 'Banco de horas'],
@@ -57,6 +58,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao/cargos" icone={BriefcaseBusiness} texto="Cargos" aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Jornada</span>
       <ItemMenu para="/gestao/jornadas" icone={CalendarClock} texto="Jornadas" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/escalas" icone={CalendarRange} texto="Escalas" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/feriados" icone={CalendarDays} texto="Feriados" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/espelhos" icone={FileClock} texto="Horas da equipe" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/banco-de-horas" icone={PiggyBank} texto="Banco de horas" aoClicar={aoNavegar} />

@@ -3,10 +3,12 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import EspelhoMensal from '../components/espelho/EspelhoMensal'
 import BancoHoras from '../components/banco/BancoHoras'
+import MinhaEscala from '../components/escalas/MinhaEscala'
 import PedirAjuste from '../components/marcacoes/PedirAjuste'
 
 const ABAS = [
   { id: 'espelho', rotulo: 'Espelho do mês' },
+  { id: 'escala', rotulo: 'Minha escala' },
   { id: 'banco', rotulo: 'Banco de horas' },
 ]
 
@@ -16,7 +18,11 @@ export default function MeuEspelho() {
   const [busca, setBusca] = useSearchParams()
   const [pedido, setPedido] = useState(null)
   const [versao, setVersao] = useState(0)
-  const aba = busca.get('aba') === 'banco' ? 'banco' : 'espelho'
+  // "Minha escala" só para quem trabalha em 12x36 ou por calendário
+  const temEscala = Boolean(perfil.tipo_escala) && perfil.tipo_escala !== 'semanal'
+  const abas = ABAS.filter((a) => a.id !== 'escala' || temEscala)
+  const pedida = busca.get('aba')
+  const aba = abas.some((a) => a.id === pedida) ? pedida : 'espelho'
 
   return (
     <div className="pagina" style={{ maxWidth: 980 }}>
@@ -27,13 +33,15 @@ export default function MeuEspelho() {
         </div>
       </div>
       <div className="abas nao-imprimir" role="tablist" aria-label="Seções do espelho">
-        {ABAS.map((a) => (
+        {abas.map((a) => (
           <button key={a.id} type="button" role="tab" aria-selected={aba === a.id} className="abas__item"
             onClick={() => setBusca(a.id === 'espelho' ? {} : { aba: a.id }, { replace: true })}>{a.rotulo}</button>
         ))}
       </div>
       {aba === 'banco' ? (
         <BancoHoras perfilId={perfil.id} nomePessoa={perfil.nome_completo} podeLancar={false} />
+      ) : aba === 'escala' ? (
+        <MinhaEscala perfilId={perfil.id} />
       ) : (
         <EspelhoMensal
           perfilId={perfil.id}

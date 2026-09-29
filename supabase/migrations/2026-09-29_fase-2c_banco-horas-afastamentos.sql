@@ -30,8 +30,8 @@
 -- ---------------------------------------------------------------------------
 do $$
 begin
-  if to_regprocedure('public.apurar_periodo(uuid,date,date)') is null
-     or to_regprocedure('public.resumo_equipe(date,date,uuid)') is null then
+  -- (a função apurar_periodo é recriada logo abaixo, então só se exige a resumo_equipe, da 2B)
+  if to_regprocedure('public.resumo_equipe(date,date,uuid)') is null then
     raise exception 'Antes desta migração é preciso aplicar a Fase 2B.';
   end if;
 end $$;

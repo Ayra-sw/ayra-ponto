@@ -1,6 +1,6 @@
 // Apuração das horas (Fase 2B): como mostrar o que a função apurar_periodo
 // devolve. A conta em si é feita no banco, para valer igual em todas as telas.
-import { AlarmClock, CalendarCheck, Plane, CalendarOff, Check, CircleAlert, CircleX, Clock, Hourglass, Minus, PartyPopper, Plus, UserRoundX } from 'lucide-react'
+import { AlarmClock, BedDouble, CalendarCheck, Plane, CalendarOff, Check, CircleAlert, CircleX, Clock, Hourglass, Minus, PartyPopper, Plus, UserRoundX } from 'lucide-react'
 import { duracao } from './formatos'
 import { TIPO_AFASTAMENTO_CURTO } from './bancoHoras'
 
@@ -60,6 +60,7 @@ export function situacaoDoDia(linha) {
       if (linha.extra_min > 0) return { rotulo: 'Hora extra', tom: 'info', icone: Plus }
       return { rotulo: 'Em dia', tom: 'ok', icone: Check }
     case 'afastado': return { rotulo: TIPO_AFASTAMENTO_CURTO[linha.afastamento_tipo] || 'Afastado', tom: 'info', icone: Plane }
+    case 'folga_escala': return { rotulo: 'Folga da escala', tom: 'neutra', icone: BedDouble }
     case 'falta': return { rotulo: 'Falta', tom: 'problema', icone: CircleX }
     case 'abonado': return { rotulo: 'Abonado', tom: 'ok', icone: CalendarCheck }
     case 'folga': return { rotulo: 'Folga aprovada', tom: 'info', icone: CalendarOff }

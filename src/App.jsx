@@ -25,6 +25,7 @@ import MeuHistorico from './pages/MeuHistorico'
 import MeuEspelho from './pages/MeuEspelho'
 import Espelhos from './pages/gestao/Espelhos'
 import BancoHorasEquipe from './pages/gestao/BancoHoras'
+import Escalas from './pages/gestao/Escalas'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="departamentos" element={<Departamentos />} />
         <Route path="cargos" element={<Cargos />} />
         <Route path="jornadas" element={<Jornadas />} />
+        <Route path="escalas" element={<Escalas />} />
         <Route path="feriados" element={<Feriados />} />
         <Route path="espelhos" element={<Espelhos />} />
         <Route path="banco-de-horas" element={<BancoHorasEquipe />} />

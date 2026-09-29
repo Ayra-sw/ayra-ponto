@@ -154,9 +154,12 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                       {visiveis.map((l) => {
                         const s = situacaoDoDia(l)
                         return (
-                          <tr key={l.data} className={l.situacao === 'dia_livre' ? 'linha-suave' : undefined}>
+                          <tr key={l.data} className={l.situacao === 'dia_livre' || l.situacao === 'folga_escala' ? 'linha-suave' : undefined}>
                             <td><strong>{diaCurto(l.data)}</strong></td>
-                            <td><Etiqueta tom={s.tom} icone={s.icone}>{s.rotulo}</Etiqueta></td>
+                            <td>
+                              <Etiqueta tom={s.tom} icone={s.icone}>{s.rotulo}</Etiqueta>
+                              {l.turno && <span className="tabela__secundario">{l.turno}</span>}
+                            </td>
                             <td>
                               <Marcas marcacoes={l.marcacoes} fuso={fuso} />
                               <Avisos alertas={l.alertas} />
@@ -191,11 +194,12 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                 {visiveis.map((l) => {
                   const s = situacaoDoDia(l)
                   return (
-                    <section key={l.data} className={`cartao-linha ${l.situacao === 'dia_livre' ? 'linha-suave' : ''}`} aria-label={diaCurto(l.data)}>
+                    <section key={l.data} className={`cartao-linha ${l.situacao === 'dia_livre' || l.situacao === 'folga_escala' ? 'linha-suave' : ''}`} aria-label={diaCurto(l.data)}>
                       <div className="cartao-linha__topo">
                         <span className="cartao-linha__titulo">{diaCurto(l.data)}</span>
                         <Etiqueta tom={s.tom} icone={s.icone}>{s.rotulo}</Etiqueta>
                       </div>
+                      {l.turno && <span className="pequeno suave">{l.turno}</span>}
                       {l.marcacoes?.length > 0 && <Marcas marcacoes={l.marcacoes} fuso={fuso} />}
                       <Avisos alertas={l.alertas} />
                       {(l.previsto_min > 0 || l.trabalhado_min > 0) && (
