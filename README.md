@@ -28,6 +28,13 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   plantões são calculados sozinhos) e escala por calendário (grade do mês, clique a clique, com
   "repetir semana"). Folga da escala não vira falta; na 12x36 o feriado trabalhado só avisa
   (Súmula 444 do TST). O colaborador vê os próximos turnos em "Minha escala".
+- **Gestor da equipe (por departamento):** o administrador ou o RH escolhe os gestores de cada
+  departamento. O gestor acompanha a equipe (espelho, marcações, banco de horas, escala) em
+  "Equipe" e aprova ou recusa os pedidos de ajuste e folga dela, sem ver CPF, telefone ou atestados.
+- **Central de solicitações:** pendentes, aprovadas, recusadas, canceladas e todas, com busca e
+  filtros; comentário na resposta (obrigatório para recusar); a pessoa pode cancelar o próprio pedido.
+- **Atestado anexado** ao pedido de abono e ao afastamento (PDF ou foto, até 5 MB), num
+  armazenamento privado: só a própria pessoa, o RH e o administrador abrem. Abonos são analisados pelo RH.
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -38,7 +45,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
+- **Fase 3B:** relatórios, avisos dentro do sistema (sininho) e histórico de alterações.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.
 

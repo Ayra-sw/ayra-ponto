@@ -50,7 +50,7 @@ function Avisos({ alertas }) {
 // Espelho de ponto de uma pessoa, mês a mês. As contas vêm prontas do banco
 // (função apurar_periodo). Com "aoPedirAjuste" aparece o botão de pedir ajuste
 // nos dias com problema (só na tela da própria pessoa).
-export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm }) {
+export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial }) {
   const { empresa, unidades } = useEmpresa()
   const [mes, setMes] = useState(() => lerMes(mesInicial))
   const [linhas, setLinhas] = useState([])
@@ -68,13 +68,14 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
       supabase.from('perfis').select('id, nome_completo, cpf, matricula, cargo, filial_id, modelo_jornada_id, data_admissao').eq('id', perfilId).maybeSingle(),
     ])
     if (apuracao.error) { setErro(traduzirErro(apuracao.error)); setLinhas([]) } else setLinhas(apuracao.data || [])
-    setPessoa(quem.data || null)
+    // o gestor não lê o cadastro completo: usa o nome que já veio da lista da equipe
+    setPessoa(quem.data || pessoaInicial || null)
     if (quem.data?.modelo_jornada_id) {
       const j = await supabase.from('modelos_jornada').select('nome').eq('id', quem.data.modelo_jornada_id).maybeSingle()
       setJornada(j.data?.nome || null)
     } else setJornada(null)
     setCarregando(false)
-  }, [perfilId, mes])
+  }, [perfilId, mes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { carregar() }, [carregar, atualizarEm])
 
@@ -129,7 +130,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
             <Alerta tom="atencao" titulo={`${totais.diasComAlerta} ${totais.diasComAlerta === 1 ? 'dia precisa' : 'dias precisam'} de atenção`}>
               {aoPedirAjuste
                 ? 'Veja os avisos nos dias marcados. Se esqueceu de bater o ponto, use “Pedir ajuste” no próprio dia.'
-                : 'Veja os avisos nos dias marcados. Peça ao colaborador que solicite o ajuste, ou aprove o pedido que já estiver na tela Solicitações.'}
+                : 'Veja os avisos nos dias marcados. Peça ao colaborador que solicite o ajuste, ou analise o pedido que já estiver na lista de solicitações.'}
             </Alerta>
           )}
 

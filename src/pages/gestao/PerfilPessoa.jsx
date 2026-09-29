@@ -369,7 +369,7 @@ export default function PerfilPessoa() {
         <Afastamentos perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeRegistrar={!ehEuMesmo} />
       ) : (
         <div className="pilha">
-          <ListaSolicitacoes perfilId={pessoa.id} textoVazio="Esta pessoa ainda não enviou pedidos de ajuste, abono ou folga." />
+          <ListaSolicitacoes perfilId={pessoa.id} podeAbrirAnexo podeCancelar={ehEuMesmo} textoVazio="Esta pessoa ainda não enviou pedidos de ajuste, abono ou folga." />
           <p className="suave pequeno">Para aprovar ou recusar, use a tela <Link to="/gestao/solicitacoes" className="link">Solicitações</Link>.</p>
         </div>
       )}

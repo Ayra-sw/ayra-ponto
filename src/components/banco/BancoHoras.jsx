@@ -16,7 +16,7 @@ const POR_PAGINA = 40
 
 // Saldo e extrato do banco de horas de uma pessoa. Com "podeLancar" (administrador
 // e RH vendo outra pessoa) aparece o botão de novo lançamento.
-export default function BancoHoras({ perfilId, nomePessoa, podeLancar = false }) {
+export default function BancoHoras({ perfilId, nomePessoa, podeLancar = false, textoSemBanco }) {
   const [banco, setBanco] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -43,7 +43,7 @@ export default function BancoHoras({ perfilId, nomePessoa, podeLancar = false })
       <EstadoVazio icone={PiggyBank} titulo="A jornada desta pessoa não usa banco de horas">
         {podeLancar
           ? <>Para usar, ligue o banco de horas na jornada (tela <Link to="/gestao/jornadas" className="link">Jornadas</Link>) e escolha essa jornada no cadastro da pessoa. As horas extras e os atrasos continuam aparecendo no espelho.</>
-          : 'Suas horas extras e atrasos aparecem no seu espelho de ponto.'}
+          : (textoSemBanco || 'Suas horas extras e atrasos aparecem no seu espelho de ponto.')}
       </EstadoVazio>
     )
   }

@@ -5,7 +5,7 @@ import { rotuloMarcacao } from './marcacoes'
 export const OPCOES_SOLICITACAO = [
   { valor: 'inclusao_esquecida', titulo: 'Esqueci de bater o ponto', descricao: 'Peça para incluir uma marcação que faltou.' },
   { valor: 'correcao_marcacao', titulo: 'Bati no horário errado', descricao: 'Peça para corrigir o horário de uma marcação que você fez.' },
-  { valor: 'abono', titulo: 'Abonar falta ou atraso', descricao: 'Atestado, declaração ou outro motivo justificado. Pode ser mais de um dia.' },
+  { valor: 'abono', titulo: 'Abonar falta ou atraso', descricao: 'Atestado, declaração ou outro motivo justificado. Pode ser mais de um dia. Quem analisa é o RH.' },
   { valor: 'folga', titulo: 'Pedir folga', descricao: 'Dias em que você não vai trabalhar.' },
 ]
 
@@ -13,6 +13,7 @@ export const STATUS_SOLICITACAO = {
   pendente: { rotulo: 'Aguardando análise', tom: 'atencao' },
   aprovado: { rotulo: 'Aprovada', tom: 'ok' },
   rejeitado: { rotulo: 'Recusada', tom: 'problema' },
+  cancelado: { rotulo: 'Cancelada', tom: 'neutra' },
 }
 
 // Uma frase com o que a pessoa pediu

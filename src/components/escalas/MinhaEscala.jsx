@@ -11,7 +11,7 @@ import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
 const DIAS_A_FRENTE = 21
 
 // Os próximos dias da escala de quem trabalha em 12x36 ou por calendário.
-export default function MinhaEscala({ perfilId }) {
+export default function MinhaEscala({ perfilId, deOutraPessoa = false }) {
   const [linhas, setLinhas] = useState(null)
   const [erro, setErro] = useState('')
 
@@ -31,14 +31,14 @@ export default function MinhaEscala({ perfilId }) {
   if (!linhas.some((l) => l.turno)) {
     return (
       <EstadoVazio icone={CalendarRange} titulo="Nenhum turno nos próximos dias">
-        Quando a empresa marcar os seus turnos, eles aparecem aqui.
+        {deOutraPessoa ? 'Quando o RH marcar os turnos desta pessoa, eles aparecem aqui.' : 'Quando a empresa marcar os seus turnos, eles aparecem aqui.'}
       </EstadoVazio>
     )
   }
 
   return (
     <div className="pilha">
-      <p className="suave pequeno" style={{ margin: 0 }}>Seus turnos e folgas nos próximos {DIAS_A_FRENTE} dias.</p>
+      <p className="suave pequeno" style={{ margin: 0 }}>{deOutraPessoa ? 'Turnos e folgas' : 'Seus turnos e folgas'} nos próximos {DIAS_A_FRENTE} dias.</p>
       <div className="lista-cartoes">
         {linhas.map((l) => {
           const folga = !l.turno

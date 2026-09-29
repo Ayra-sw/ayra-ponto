@@ -39,6 +39,7 @@ export default function MeuHistorico() {
           atualizarEm={versao}
           aoCarregar={(lista) => setPendentes(lista.filter((a) => a.status === 'pendente').length)}
           textoVazio="Se esqueceu de bater o ponto ou registrou errado, use o botão “Pedir ajuste”."
+          podeCancelar podeAbrirAnexo
         />
       )}
 

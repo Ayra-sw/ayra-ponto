@@ -26,6 +26,8 @@ import MeuEspelho from './pages/MeuEspelho'
 import Espelhos from './pages/gestao/Espelhos'
 import BancoHorasEquipe from './pages/gestao/BancoHoras'
 import Escalas from './pages/gestao/Escalas'
+import MinhaEquipe from './pages/equipe/MinhaEquipe'
+import PessoaDaEquipe from './pages/equipe/PessoaDaEquipe'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -54,6 +56,8 @@ export default function App() {
         <Route index element={<FuncionarioDashboard />} />
         <Route path="historico" element={<MeuHistorico />} />
         <Route path="espelho" element={<MeuEspelho />} />
+        <Route path="equipe" element={<MinhaEquipe />} />
+        <Route path="equipe/:id" element={<PessoaDaEquipe />} />
         <Route path="conta" element={<MinhaConta />} />
       </Route>
 

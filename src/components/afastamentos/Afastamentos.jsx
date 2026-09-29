@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Plane, Plus } from 'lucide-react'
+import { Paperclip, Plane, Plus } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { abrirAtestado, enviarAtestado } from '../../lib/atestados'
+import CampoAnexo from '../solicitacoes/CampoAnexo'
 import { supabase } from '../../lib/supabaseClient'
 import { useAvisos } from '../../contexts/AvisosContext'
 import { traduzirErro } from '../../lib/mensagensErro'
@@ -25,7 +28,7 @@ export default function Afastamentos({ perfilId, nomePessoa, podeRegistrar = fal
   const carregar = useCallback(async () => {
     setErro('')
     const { data, error } = await supabase.from('afastamentos')
-      .select('id, tipo, data_inicio, data_fim, observacao, cancelado_em, motivo_cancelamento, criado_em')
+      .select('*')
       .eq('perfil_id', perfilId).order('data_inicio', { ascending: false }).limit(200)
     if (error) { setErro(traduzirErro(error)); setLista(null) } else setLista(data || [])
   }, [perfilId])
@@ -63,9 +66,13 @@ export default function Afastamentos({ perfilId, nomePessoa, podeRegistrar = fal
                 <span>{a.data_inicio === a.data_fim ? formatarData(a.data_inicio) : `${formatarData(a.data_inicio)} a ${formatarData(a.data_fim)}`}</span>
                 {a.observacao && <span className="suave pequeno">{a.observacao}</span>}
                 {a.cancelado_em && a.motivo_cancelamento && <span className="suave pequeno">Motivo do cancelamento: {a.motivo_cancelamento}</span>}
-                {podeRegistrar && !a.cancelado_em && (
-                  <div className="linha">
-                    <Botao variante="secundario" tamanho="pequeno" onClick={() => setCancelando(a)}>Cancelar afastamento</Botao>
+                {((podeRegistrar && a.anexo_path) || (podeRegistrar && !a.cancelado_em)) && (
+                  <div className="linha" style={{ flexWrap: 'wrap' }}>
+                    {a.anexo_path && (
+                      <Botao variante="secundario" tamanho="pequeno" icone={Paperclip}
+                        onClick={async () => { const p = await abrirAtestado(a.anexo_path); if (p) avisar(p, 'problema') }}>Ver anexo</Botao>
+                    )}
+                    {!a.cancelado_em && <Botao variante="secundario" tamanho="pequeno" onClick={() => setCancelando(a)}>Cancelar afastamento</Botao>}
                   </div>
                 )}
               </div>
@@ -81,6 +88,9 @@ export default function Afastamentos({ perfilId, nomePessoa, podeRegistrar = fal
 }
 
 function NovoAfastamento({ aberto, aoFechar, aoSalvo, perfilId, nomePessoa }) {
+  const { perfil } = useAuth()
+  const [anexo, setAnexo] = useState(null)
+  const [erroAnexo, setErroAnexo] = useState('')
   const [tipo, setTipo] = useState('ferias')
   const [inicio, setInicio] = useState('')
   const [fim, setFim] = useState('')
@@ -90,7 +100,7 @@ function NovoAfastamento({ aberto, aoFechar, aoSalvo, perfilId, nomePessoa }) {
 
   useEffect(() => {
     if (!aberto) return
-    setTipo('ferias'); setInicio(''); setFim(''); setObs(''); setErro('')
+    setTipo('ferias'); setInicio(''); setFim(''); setObs(''); setErro(''); setAnexo(null); setErroAnexo('')
   }, [aberto])
 
   if (!aberto) return null
@@ -100,9 +110,17 @@ function NovoAfastamento({ aberto, aoFechar, aoSalvo, perfilId, nomePessoa }) {
     setErro('')
     if (!inicio || !fim) return setErro('Informe o primeiro e o último dia do afastamento.')
     if (fim < inicio) return setErro('O último dia não pode ser antes do primeiro.')
+    if (erroAnexo) return setErro(erroAnexo)
     setSalvando(true)
+    let anexo_path = null
+    if (anexo) {
+      const envio = await enviarAtestado(anexo, perfil.empresa_id, perfilId)
+      if (envio.erro) { setSalvando(false); return setErro(envio.erro) }
+      anexo_path = envio.caminho
+    }
     const { error } = await supabase.from('afastamentos').insert({
       perfil_id: perfilId, tipo, data_inicio: inicio, data_fim: fim, observacao: obs.trim() || null,
+      ...(anexo_path ? { anexo_path } : {}),
     })
     setSalvando(false)
     if (error) return setErro(traduzirErro(error))
@@ -131,6 +149,9 @@ function NovoAfastamento({ aberto, aoFechar, aoSalvo, perfilId, nomePessoa }) {
         </div>
         <AreaTexto rotulo="Observação" opcional value={obs} onChange={(e) => setObs(e.target.value)} maxLength={300} rows={3}
           placeholder="Ex.: férias do período 2025/2026" ajuda={`${obs.length}/300 caracteres. Não escreva diagnóstico nem CID.`} />
+        <CampoAnexo rotulo="Atestado ou documento" arquivo={anexo} erro={erroAnexo}
+          aoEscolher={(f, problema) => { setAnexo(problema ? null : f); setErroAnexo(problema); setErro('') }}
+          ajuda="PDF ou foto, até 5 MB. Só a própria pessoa, o RH e o administrador abrem este arquivo." />
         {erro && <Alerta tom="problema">{erro}</Alerta>}
       </form>
     </PainelLateral>

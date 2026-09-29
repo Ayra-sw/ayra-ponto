@@ -774,3 +774,38 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 @media print {
   .pincel, .grade-escala__repetir { display: none !important; }
 }
+
+/* ==========================================================================
+   Fase 3A: equipe do gestor, central de solicitações e atestado
+   ========================================================================== */
+.barra-inferior__icone { position: relative; display: inline-flex; }
+.barra-inferior__contador, .navegacao-topo__contador {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: var(--raio-redondo); background: var(--dourado); color: #fff; font-size: 0.68rem; font-weight: 700; line-height: 1;
+}
+.barra-inferior__contador { position: absolute; top: -6px; right: -12px; }
+.navegacao-topo__contador { margin-left: 6px; }
+.barra-inferior--5 { padding-left: 2px; padding-right: 2px; }
+.barra-inferior--5 .barra-inferior__item { flex: 1 1 0; min-width: 0; padding: 6px 2px; text-align: center; }
+
+.resposta-analise {
+  display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 8px 10px;
+  border-radius: var(--raio-controle); background: var(--superficie-2); font-size: 0.9rem;
+}
+.resposta-analise svg { width: 16px; height: 16px; flex: none; margin-top: 3px; color: var(--texto-suave); }
+.pedidos { display: grid; gap: 10px; }
+.pedido p { margin: 0; overflow-wrap: anywhere; }
+
+.anexo-botao { justify-self: start; }
+.anexo-escolhido {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; min-width: 0;
+  border: 1px solid var(--borda); border-radius: var(--raio-controle); background: var(--superficie-2);
+}
+.anexo-escolhido svg { width: 18px; height: 18px; flex: none; }
+.anexo-escolhido__nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.anexo-escolhido__tirar {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex: none;
+  border: none; border-radius: var(--raio-controle); background: transparent; color: var(--texto-suave); cursor: pointer;
+}
+.anexo-escolhido__tirar:hover { background: var(--superficie); color: var(--texto); }
+.anexo-escolhido__tirar:focus-visible { outline: 2px solid var(--foco); outline-offset: 1px; }

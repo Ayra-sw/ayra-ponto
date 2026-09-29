@@ -9,6 +9,9 @@ import Botao from '../ui/Botao'
 import Alerta from '../ui/Alerta'
 import { AreaTexto, Campo, Selecao } from '../ui/Campo'
 import { PainelLateral } from '../ui/Dialogo'
+import CampoAnexo from '../solicitacoes/CampoAnexo'
+import { useAuth } from '../../contexts/AuthContext'
+import { enviarAtestado } from '../../lib/atestados'
 
 const MAX_MOTIVO = 500
 
@@ -16,6 +19,9 @@ const MAX_MOTIVO = 500
 // "inicial": { data: 'AAAA-MM-DD', registros: [...] } quando vem de um dia do histórico.
 export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, inicial }) {
   const avisar = useAvisos()
+  const { perfil } = useAuth()
+  const [anexo, setAnexo] = useState(null)
+  const [erroAnexo, setErroAnexo] = useState('')
   const [tipo, setTipo] = useState('')
   const [dia, setDia] = useState(diaIso())
   const [diaFim, setDiaFim] = useState('')
@@ -37,6 +43,8 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
     setRegistroId('')
     setMotivo('')
     setErro('')
+    setAnexo(null)
+    setErroAnexo('')
     setRegistrosDoDia(inicial?.registros || [])
   }, [aberto, inicial])
 
@@ -86,11 +94,20 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
       }
     }
 
+    if (erroAnexo) return setErro(erroAnexo)
+
     setEnviando(true)
+    if (tipo === 'abono' && anexo) {
+      const envio = await enviarAtestado(anexo, perfil.empresa_id, perfilId)
+      if (envio.erro) { setEnviando(false); return setErro(envio.erro) }
+      pedido.anexo_path = envio.caminho
+    }
     const { error } = await supabase.from('ajustes_ponto').insert(pedido)
     setEnviando(false)
     if (error) return setErro(traduzirErro(error))
-    avisar('Pedido enviado. O RH vai analisar e você vê a resposta em "Meus pedidos".')
+    avisar(tipo === 'abono'
+      ? 'Pedido enviado. O RH vai analisar e você vê a resposta em "Meus pedidos".'
+      : 'Pedido enviado. Seu gestor ou o RH vai analisar, e você vê a resposta em "Meus pedidos".')
     aoEnviado?.()
     aoFechar()
   }
@@ -99,8 +116,8 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
     <PainelLateral
       aberto
       aoFechar={aoFechar}
-      titulo="Pedir ajuste ao RH"
-      subtitulo="Sua marcação original nunca é apagada. O RH analisa e responde."
+      titulo="Pedir ajuste"
+      subtitulo="Sua marcação original nunca é apagada. Seu gestor ou o RH analisa e responde."
       rodape={
         <>
           <Botao variante="secundario" onClick={aoFechar}>Cancelar</Botao>
@@ -159,9 +176,14 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
 
             <AreaTexto
               rotulo="Motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={MAX_MOTIVO} rows={4} required
-              placeholder={tipo === 'abono' ? 'Ex.: consulta médica, atestado entregue ao RH' : 'Conte o que aconteceu'}
+              placeholder={tipo === 'abono' ? 'Ex.: consulta médica, atestado anexado' : 'Conte o que aconteceu'}
               ajuda={`${motivo.length}/${MAX_MOTIVO} caracteres`}
             />
+            {tipo === 'abono' && (
+              <CampoAnexo arquivo={anexo} erro={erroAnexo}
+                aoEscolher={(f, problema) => { setAnexo(problema ? null : f); setErroAnexo(problema); setErro('') }}
+                ajuda="PDF ou foto, até 5 MB. Só você, o RH e o administrador abrem este arquivo. Não é preciso escrever o diagnóstico no motivo." />
+            )}
           </div>
         )}
 

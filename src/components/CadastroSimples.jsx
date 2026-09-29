@@ -16,7 +16,7 @@ import { Esqueleto, EstadoErro, EstadoVazio } from './ui/Estados'
 //   tabela: tabela do banco · coluna: coluna em "perfis" que aponta para ela
 export default function CadastroSimples({
   tabela, coluna, trilha, titulo, subtitulo, singular, artigoNovo = 'Novo', icone: Icone,
-  textoVazio, exemploNome, exemploDescricao,
+  textoVazio, exemploNome, exemploDescricao, colunaExtra, acaoExtra, versao = 0,
 }) {
   const { perfil } = useAuth()
   const avisar = useAvisos()
@@ -41,7 +41,7 @@ export default function CadastroSimples({
     setCarregando(false)
   }, [tabela, coluna, perfil.empresa_id])
 
-  useEffect(() => { carregar() }, [carregar])
+  useEffect(() => { carregar() }, [carregar, versao])
 
   const uso = useMemo(() => {
     const mapa = {}
@@ -95,6 +95,7 @@ export default function CadastroSimples({
     const u = uso[item.id] || { ativas: 0, total: 0 }
     return (
       <div className="acoes">
+        {acaoExtra?.(item)}
         <Botao variante="secundario" tamanho="pequeno" onClick={() => setEditando({ id: item.id, nome: item.nome, descricao: item.descricao || '' })}>Editar</Botao>
         <Botao variante="discreto" tamanho="pequeno" onClick={() => setMudandoSituacao(item)}>{item.ativo ? 'Desativar' : 'Ativar'}</Botao>
         <Botao variante="discreto" tamanho="pequeno" onClick={() => setExcluindo(item)} disabled={u.total > 0}
@@ -130,11 +131,12 @@ export default function CadastroSimples({
           <div className="so-computador">
             <div className="tabela-envoltorio">
               <table className="tabela">
-                <thead><tr><th>Nome</th><th>Pessoas</th><th>Situação</th><th></th></tr></thead>
+                <thead><tr><th>Nome</th>{colunaExtra && <th>{colunaExtra.titulo}</th>}<th>Pessoas</th><th>Situação</th><th></th></tr></thead>
                 <tbody>
                   {itens.map((item) => (
                     <tr key={item.id}>
                       <td>{item.nome}{item.descricao && <span className="tabela__secundario">{item.descricao}</span>}</td>
+                      {colunaExtra && <td>{colunaExtra.render(item)}</td>}
                       <td>{textoPessoas(item)}</td>
                       <td>{situacao(item)}</td>
                       <td><Acoes item={item} /></td>
@@ -152,7 +154,10 @@ export default function CadastroSimples({
                   {situacao(item)}
                 </div>
                 {item.descricao && <p className="suave">{item.descricao}</p>}
-                <div className="cartao-linha__detalhes"><span>{textoPessoas(item)}</span></div>
+                <div className="cartao-linha__detalhes">
+                  <span>{textoPessoas(item)}</span>
+                  {colunaExtra && <span>{colunaExtra.titulo}: {colunaExtra.render(item)}</span>}
+                </div>
                 <Acoes item={item} />
               </div>
             ))}
