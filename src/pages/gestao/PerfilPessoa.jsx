@@ -16,6 +16,8 @@ import { Confirmacao } from '../../components/ui/Dialogo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
 import HistoricoMarcacoes from '../../components/marcacoes/HistoricoMarcacoes'
 import EspelhoMensal from '../../components/espelho/EspelhoMensal'
+import BancoHoras from '../../components/banco/BancoHoras'
+import Afastamentos from '../../components/afastamentos/Afastamentos'
 import ListaSolicitacoes from '../../components/marcacoes/ListaSolicitacoes'
 
 const TOM_SITUACAO = { ativo: 'ok', afastado: 'atencao', desligado: 'neutra' }
@@ -25,6 +27,8 @@ const ABAS = [
   { id: 'acesso', rotulo: 'Acesso', formulario: true },
   { id: 'marcacoes', rotulo: 'Marcações' },
   { id: 'espelho', rotulo: 'Espelho' },
+  { id: 'banco', rotulo: 'Banco de horas' },
+  { id: 'afastamentos', rotulo: 'Afastamentos' },
   { id: 'solicitacoes', rotulo: 'Solicitações' },
 ]
 
@@ -312,6 +316,10 @@ export default function PerfilPessoa() {
       ) : aba === 'espelho' ? (
         <EspelhoMensal perfilId={pessoa.id} mesInicial={busca.get('mes')}
           aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />
+      ) : aba === 'banco' ? (
+        <BancoHoras perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeLancar={!ehEuMesmo} />
+      ) : aba === 'afastamentos' ? (
+        <Afastamentos perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeRegistrar={!ehEuMesmo} />
       ) : (
         <div className="pilha">
           <ListaSolicitacoes perfilId={pessoa.id} textoVazio="Esta pessoa ainda não enviou pedidos de ajuste, abono ou folga." />

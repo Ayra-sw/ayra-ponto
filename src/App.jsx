@@ -24,6 +24,7 @@ import Feriados from './pages/gestao/Feriados'
 import MeuHistorico from './pages/MeuHistorico'
 import MeuEspelho from './pages/MeuEspelho'
 import Espelhos from './pages/gestao/Espelhos'
+import BancoHorasEquipe from './pages/gestao/BancoHoras'
 
 const GESTAO = ['administrador', 'rh']
 
@@ -65,6 +66,7 @@ export default function App() {
         <Route path="jornadas" element={<Jornadas />} />
         <Route path="feriados" element={<Feriados />} />
         <Route path="espelhos" element={<Espelhos />} />
+        <Route path="banco-de-horas" element={<BancoHorasEquipe />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
         <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />

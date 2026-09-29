@@ -18,6 +18,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   horas extras, faltas, feriados, folgas e abonos (ajuste aprovado vale no cálculo, sem mexer na
   marcação original). O colaborador vê o próprio espelho; administrador e RH veem o de cada pessoa
   e o resumo da equipe, com impressão/PDF e planilha.
+- **Banco de horas (opcional por jornada):** horas extras viram crédito, horas a menos consomem o
+  crédito mais antigo, e o crédito não compensado no prazo (padrão 6 meses) vence e fica "a pagar".
+  Lançamentos de saldo inicial, compensação, pagamento e ajuste (nunca apagados nem editados).
+  Saldo e extrato na ficha da pessoa, no "Meu espelho" e na tela "Banco de horas" da equipe.
+- **Afastamentos:** férias, atestado, licença e INSS por período; nesses dias não há falta.
+  Só se cancela (com motivo), nunca se apaga. O espelho também avisa quando o intervalo é curto demais.
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -28,7 +34,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 2C:** banco de horas e escalas.
+- **Fase 2D:** escalas (12x36 e escala por calendário).
 - **Fase 3:** papel Gestor, central de solicitações, relatórios, notificações, histórico.
 - **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.

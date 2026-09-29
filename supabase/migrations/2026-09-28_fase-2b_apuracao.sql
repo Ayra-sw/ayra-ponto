@@ -58,7 +58,10 @@ create index if not exists ajustes_ponto_original_idx
 --   * O intervalo previsto NÃO é descontado sozinho: só vale o que a pessoa
 --     marcou. Sem marcação de intervalo, o dia recebe um alerta.
 -- ---------------------------------------------------------------------------
-create or replace function public.apurar_periodo(
+-- (recriada sempre do zero: a Fase 2C acrescentou uma coluna ao resultado)
+drop function if exists public.apurar_periodo(uuid, date, date);
+
+create function public.apurar_periodo(
   p_perfil_id uuid,
   p_inicio    date,
   p_fim       date

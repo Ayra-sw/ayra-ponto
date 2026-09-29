@@ -4,7 +4,8 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
 import { traduzirErro } from '../../lib/mensagensErro'
-import { duracao } from '../../lib/formatos'
+import { duracao, data as formatarData } from '../../lib/formatos'
+import { diaIso } from '../../lib/ajustes'
 import {
   DIAS_SEMANA, MODELOS_PRONTOS, ORDEM_DIAS, cargaSemanal, diasEmBranco, diasParaBanco, diasParaFormulario,
   minutosPrevistos, resumoHorarios, textoIntervalo, validarDia,
@@ -12,7 +13,7 @@ import {
 import Botao from '../../components/ui/Botao'
 import Etiqueta from '../../components/ui/Etiqueta'
 import Alerta from '../../components/ui/Alerta'
-import { AreaTexto, Campo } from '../../components/ui/Campo'
+import { AreaTexto, Campo, Selecao } from '../../components/ui/Campo'
 import { Confirmacao, PainelLateral } from '../../components/ui/Dialogo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
 
@@ -70,6 +71,7 @@ export default function Jornadas() {
       descricao: pronto?.descricao || '',
       tolerancia: String(pronto?.tolerancia ?? 10),
       ativo: true,
+      usaBanco: false, bancoMeses: '6', bancoInicio: '',
       dias: pronto ? pronto.dias() : diasEmBranco(),
       erro: '',
     })
@@ -82,6 +84,7 @@ export default function Jornadas() {
       descricao: m.descricao || '',
       tolerancia: String(m.tolerancia_minutos),
       ativo: copia ? true : m.ativo,
+      usaBanco: Boolean(m.usa_banco_horas), bancoMeses: String(m.banco_horas_validade_meses || 6), bancoInicio: m.banco_horas_inicio || '',
       dias: diasParaFormulario(diasDo[m.id]),
       erro: '',
     })
@@ -97,14 +100,33 @@ export default function Jornadas() {
     if (!f.dias.some((d) => d.trabalha)) return setEditando({ ...f, erro: 'Marque pelo menos um dia de trabalho.' })
     const ruim = f.dias.find((d) => validarDia(d))
     if (ruim) return setEditando({ ...f, erro: `${DIAS_SEMANA[ruim.dia_semana].longo}: ${validarDia(ruim)}` })
+    const meses = Number(f.bancoMeses)
+    if (f.usaBanco && !f.bancoInicio) return setEditando({ ...f, erro: 'Informe a partir de que dia o banco de horas passa a valer.' })
+    if (f.usaBanco && (!Number.isInteger(meses) || meses < 1 || meses > 12)) return setEditando({ ...f, erro: 'O prazo do banco de horas vai de 1 a 12 meses.' })
 
     setSalvando(true)
-    const { error } = await supabase.rpc('salvar_modelo_jornada', {
+    const { data: idSalvo, error } = await supabase.rpc('salvar_modelo_jornada', {
       p_id: f.id, p_nome: nome, p_descricao: f.descricao.trim() || null,
       p_tolerancia: tolerancia, p_ativo: f.ativo, p_dias: diasParaBanco(f.dias),
     })
+    if (error) { setSalvando(false); return setEditando({ ...f, erro: traduzirErro(error) }) }
+    // O banco de horas é gravado logo em seguida (só quando há o que gravar)
+    let erroBanco = null
+    if (f.id || f.usaBanco) {
+      const r = await supabase.from('modelos_jornada').update({
+        usa_banco_horas: f.usaBanco,
+        banco_horas_validade_meses: f.usaBanco ? meses : Number(f.bancoMeses) || 6,
+        banco_horas_inicio: f.bancoInicio || null,
+      }).eq('id', f.id || idSalvo)
+      erroBanco = r.error
+    }
     setSalvando(false)
-    if (error) return setEditando({ ...f, erro: traduzirErro(error) })
+    if (erroBanco) {
+      avisar(`A jornada foi salva, mas o banco de horas não: ${traduzirErro(erroBanco)} Abra a jornada e tente de novo.`, 'problema')
+      setEditando(null)
+      carregar()
+      return
+    }
     avisar(f.id ? 'Jornada atualizada.' : 'Jornada criada.')
     setEditando(null)
     carregar()
@@ -163,6 +185,10 @@ export default function Jornadas() {
                   <dt>Intervalo</dt><dd>{textoIntervalo(linhas)}</dd>
                   <dt>Carga</dt><dd><strong className="mono">{duracao(cargaSemanal(diasParaFormulario(linhas)))}</strong> por semana</dd>
                   <dt>Tolerância</dt><dd>{m.tolerancia_minutos} min por dia</dd>
+                  <dt>Banco de horas</dt>
+                  <dd>{m.usa_banco_horas
+                    ? `Sim, ${m.banco_horas_validade_meses} ${m.banco_horas_validade_meses === 1 ? 'mês' : 'meses'} para compensar (desde ${formatarData(m.banco_horas_inicio)})`
+                    : 'Não usa'}</dd>
                   <dt>Pessoas</dt><dd>{n} {n === 1 ? 'pessoa' : 'pessoas'}</dd>
                 </dl>
                 <div className="acoes">
@@ -240,6 +266,25 @@ function EditorJornada({ editando, aoMudar, aoFechar, aoSalvar, salvando, aoUsar
               <input type="checkbox" checked={f.ativo} onChange={(e) => mudar('ativo', e.target.checked)} />
               <span><span className="opcao__titulo">Jornada ativa</span><br /><span className="opcao__desc">Desativada, ela não aparece para novas escolhas. Quem já usa continua com ela.</span></span>
             </label>
+          )}
+        </div>
+
+        <div className="secao-formulario">
+          <h3>Banco de horas</h3>
+          <label className="opcao" style={{ alignItems: 'center' }}>
+            <input type="checkbox" checked={f.usaBanco}
+              onChange={(e) => aoMudar({ ...f, erro: '', usaBanco: e.target.checked, bancoInicio: e.target.checked && !f.bancoInicio ? diaIso() : f.bancoInicio })} />
+            <span><span className="opcao__titulo">Usar banco de horas nesta jornada</span><br />
+              <span className="opcao__desc">As horas extras viram saldo e as horas a menos saem dele. O que não for compensado no prazo vence e fica “a pagar”.</span></span>
+          </label>
+          {f.usaBanco && (
+            <>
+              <Selecao rotulo="Prazo para compensar" value={f.bancoMeses} onChange={(e) => mudar('bancoMeses', e.target.value)}
+                opcoes={Array.from({ length: 12 }, (_, i) => ({ valor: String(i + 1), rotulo: `${i + 1} ${i === 0 ? 'mês' : 'meses'}${i === 5 ? ' (padrão)' : ''}` }))}
+                dica="A CLT permite compensar em até 6 meses por acordo individual por escrito, e em até 12 meses por acordo ou convenção coletiva. Confirme com seu contador ou advogado o que vale na sua empresa." />
+              <Campo rotulo="O banco vale a partir de" type="date" value={f.bancoInicio} onChange={(e) => mudar('bancoInicio', e.target.value)} required
+                dica="Só os dias a partir desta data entram no saldo. Para levar um saldo antigo, use “Saldo inicial” na ficha da pessoa." />
+            </>
           )}
         </div>
 
