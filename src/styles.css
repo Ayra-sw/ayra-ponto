@@ -387,7 +387,7 @@ button.cartao-linha:hover { border-color: var(--borda-forte); }
 
 /* ------------------------------------------------------ Estrutura: gestão */
 .shell { min-height: 100%; display: grid; grid-template-columns: 1fr; }
-.shell__conteudo { min-width: 0; display: grid; grid-template-rows: auto 1fr; }
+.shell__conteudo { min-width: 0; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); }
 .pagina { padding: 24px 16px 48px; width: 100%; max-width: 1180px; margin: 0 auto; display: grid; gap: 24px; align-content: start; }
 .pagina__cabecalho { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
 .pagina__titulo { display: grid; gap: 4px; }
@@ -823,4 +823,62 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
   .relatorio .indicadores { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .relatorio .indicador { padding: 6px 8px; border: 1px solid #bbb; box-shadow: none; }
   .relatorio .etiqueta { background: none !important; color: #000 !important; padding: 0; }
+}
+
+/* ==========================================================================
+   Fase 3C: sininho e histórico
+   ========================================================================== */
+.sininho { position: relative; }
+.sininho__botao { position: relative; }
+.sininho__contador {
+  position: absolute; top: 2px; right: 0; min-width: 18px; height: 18px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--raio-redondo);
+  background: var(--problema); color: #fff; font-size: 0.66rem; font-weight: 700; line-height: 1;
+  border: 2px solid var(--superficie);
+}
+.sininho__painel {
+  position: absolute; top: calc(100% + 8px); right: -48px; z-index: 60; width: min(380px, calc(100vw - 24px));
+  max-height: min(520px, calc(100vh - 90px)); overflow: auto; background: var(--superficie);
+  border: 1px solid var(--borda); border-radius: var(--raio-cartao); box-shadow: var(--sombra-flutuante);
+}
+.sininho__topo {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px; background: var(--superficie); border-bottom: 1px solid var(--borda);
+}
+.sininho__todos { background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font: inherit; }
+.sininho__todos svg { width: 15px; height: 15px; }
+.sininho__lista { list-style: none; margin: 0; padding: 4px 0; }
+.sininho__aviso {
+  display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 10px 14px; text-align: left;
+  background: none; border: none; cursor: pointer; font: inherit; color: var(--texto);
+}
+.sininho__aviso:hover { background: var(--superficie-2); }
+.sininho__aviso:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.sininho__aviso--novo { background: color-mix(in srgb, var(--info-fundo) 60%, var(--superficie)); }
+.sininho__icone { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--superficie-2); color: var(--texto-suave); }
+.sininho__icone svg { width: 17px; height: 17px; }
+.sininho__texto { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.sininho__titulo { font-size: 0.9rem; font-weight: 500; }
+.sininho__aviso--novo .sininho__titulo { font-weight: 700; }
+.sininho__detalhe { font-size: 0.82rem; color: var(--texto-suave); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sininho__quando { font-size: 0.75rem; color: var(--texto-suave); }
+.sininho__ponto { flex: none; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--info); }
+.sininho__vazio { display: grid; justify-items: center; gap: 6px; padding: 24px 18px; text-align: center; }
+.sininho__vazio svg { width: 28px; height: 28px; color: var(--texto-suave); }
+@media (max-width: 600px) {
+  .sininho__painel { position: fixed; top: 62px; left: 12px; right: 12px; width: auto; }
+}
+@media print { .sininho { display: none !important; } }
+
+.historico { display: grid; gap: 10px; }
+.historico__item { display: grid; gap: 6px; }
+.historico__cabeca { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.historico__frase { margin: 0; overflow-wrap: anywhere; }
+.historico__quando { white-space: nowrap; font-size: 0.8rem; color: var(--texto-suave); font-family: var(--fonte-mono); }
+.historico__mudancas { margin: 0; padding: 8px 10px; list-style: none; display: grid; gap: 4px; border-radius: var(--raio-controle); background: var(--superficie-2); font-size: 0.85rem; }
+.historico__mudancas li { overflow-wrap: anywhere; }
+.historico__campo { color: var(--texto-suave); }
+.historico__antes { text-decoration: line-through; color: var(--texto-suave); }
+@media (max-width: 600px) {
+  .historico__cabeca { flex-direction: column; gap: 2px; }
 }

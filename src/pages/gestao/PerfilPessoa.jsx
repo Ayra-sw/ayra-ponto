@@ -20,6 +20,7 @@ import HistoricoMarcacoes from '../../components/marcacoes/HistoricoMarcacoes'
 import EspelhoMensal from '../../components/espelho/EspelhoMensal'
 import BancoHoras from '../../components/banco/BancoHoras'
 import Afastamentos from '../../components/afastamentos/Afastamentos'
+import ListaHistorico from '../../components/historico/ListaHistorico'
 import ListaSolicitacoes from '../../components/marcacoes/ListaSolicitacoes'
 
 const TOM_SITUACAO = { ativo: 'ok', afastado: 'atencao', desligado: 'neutra' }
@@ -32,6 +33,7 @@ const ABAS = [
   { id: 'banco', rotulo: 'Banco de horas' },
   { id: 'afastamentos', rotulo: 'Afastamentos' },
   { id: 'solicitacoes', rotulo: 'Solicitações' },
+  { id: 'historico', rotulo: 'Histórico' },
 ]
 
 function formularioDe(p) {
@@ -365,6 +367,11 @@ export default function PerfilPessoa() {
           aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />
       ) : aba === 'banco' ? (
         <BancoHoras perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeLancar={!ehEuMesmo} />
+      ) : aba === 'historico' ? (
+        <div className="pilha">
+          <p className="suave pequeno" style={{ margin: 0 }}>Tudo o que mudou no cadastro, nos pedidos, na escala, nos afastamentos e no banco de horas desta pessoa.</p>
+          <ListaHistorico pessoaId={pessoa.id} textoVazio="Nenhuma alteração anotada para esta pessoa ainda. O histórico começa a ser anotado a partir da instalação da Fase 3C." />
+        </div>
       ) : aba === 'afastamentos' ? (
         <Afastamentos perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeRegistrar={!ehEuMesmo} />
       ) : (

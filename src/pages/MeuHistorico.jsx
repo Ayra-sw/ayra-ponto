@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MessageSquarePlus } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Botao from '../components/ui/Botao'
@@ -9,7 +10,8 @@ import PedirAjuste from '../components/marcacoes/PedirAjuste'
 // Histórico do próprio colaborador: marcações por dia e pedidos de ajuste.
 export default function MeuHistorico() {
   const { perfil } = useAuth()
-  const [aba, setAba] = useState('marcacoes')
+  const [busca] = useSearchParams()
+  const [aba, setAba] = useState(busca.get('aba') === 'pedidos' ? 'pedidos' : 'marcacoes')
   const [pedido, setPedido] = useState(null) // null = fechado; {} = aberto
   const [versao, setVersao] = useState(0)
   const [pendentes, setPendentes] = useState(0)
