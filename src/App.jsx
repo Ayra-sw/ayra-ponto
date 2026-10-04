@@ -12,7 +12,7 @@ import { telas, preCarregar } from './telas'
 import AvisoSemInternet from './components/app/AvisoSemInternet'
 import ErroNaTela from './components/app/ErroNaTela'
 
-const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda } = telas
+const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
 
 const GESTAO = ['administrador', 'rh']
 
@@ -75,6 +75,7 @@ export default function App() {
         <Route path="solicitacoes" element={<Solicitacoes />} />
         <Route path="relatorios" element={<RelatoriosGestao />} />
         <Route path="historico" element={<Historico />} />
+        <Route path="arquivos-fiscais" element={<ArquivosFiscais />} />
         <Route path="reconhecimento" element={<Reconhecimento />} />
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
         <Route path="configuracoes/empresa" element={<Empresa />} />

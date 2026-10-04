@@ -36,6 +36,7 @@ const REGRAS = [
   { teste: /departamento_gestores_pkey/i, msg: () => 'Essa pessoa já é gestora deste departamento.' },
   { teste: /ajustes_comentario_tamanho/i, msg: () => 'O comentário pode ter no máximo 500 caracteres.' },
   { teste: /could not find the function .*(relatorio_frequencia|relatorio_banco_horas|relatorio_marcacoes)/i, msg: () => 'Os relatórios ainda não foram instalados no banco. Rode a migração da Fase 3B no Supabase (passo a passo no guia da fase).' },
+  { teste: /could not find the function .*gerar_(afd|aej)/i, msg: () => 'Os arquivos fiscais ainda não foram instalados no banco. Rode a migração da Fase 5A no Supabase (passo a passo no guia da fase).' },
   { teste: /could not find the table .*(historico_alteracoes|avisos)|could not find the function .*atualizar_meus_avisos/i, msg: () => 'O histórico e os avisos ainda não foram instalados no banco. Rode a migração da Fase 3C no Supabase (passo a passo no guia da fase).' },
   { teste: /duplicate key/i, msg: () => 'Esse cadastro já existe.' },
   { teste: /payload too large|exceeded the maximum allowed size|entity too large/i, msg: () => 'A foto ficou grande demais. Tente de novo.' },

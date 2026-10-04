@@ -39,7 +39,8 @@ export default function ListaHistorico({ pessoaId, inicio, fim, grupo, termo = '
   const [erro, setErro] = useState('')
 
   const buscar = useCallback(async (de) => {
-    let q = supabase.from('historico_alteracoes').select('*')
+    // sem as anotações do contador de NSR (gravadas por engano a cada marcação, corrigido na Fase 5A)
+    let q = supabase.from('historico_alteracoes').select('*').or('campos.is.null,campos.neq.{proximo_nsr}')
     if (pessoaId) q = q.eq('pessoa_id', pessoaId)
     if (inicio) q = q.gte('em', new Date(`${inicio}T00:00:00`).toISOString())
     if (fim) q = q.lt('em', new Date(new Date(`${fim}T00:00:00`).getTime() + 86400000).toISOString())

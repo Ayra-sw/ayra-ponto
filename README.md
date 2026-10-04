@@ -47,12 +47,15 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
 - **Primeiros passos:** lista na Visão geral (empresa, unidade, jornada, feriados, departamentos,
   convite, jornada de cada pessoa e primeira marcação), marcada sozinha conforme a empresa configura.
   Boas-vindas curtas para o colaborador no primeiro acesso.
-- **Central de ajuda:** 40 artigos curtos (`src/lib/ajuda/`), com busca, e o botão "?" em todas as
+- **Central de ajuda:** 41 artigos curtos (`src/lib/ajuda/`), com busca, e o botão "?" em todas as
   telas mostrando a ajuda daquela tela. Suporte por WhatsApp e e-mail para administrador e RH
   (contato em `src/lib/suporte.js`); o colaborador é orientado a falar com o RH da empresa.
 - **App instalável (PWA):** ícone na tela do celular e abertura em tela cheia (`public/manifest.webmanifest`,
   `public/sw.js`). O service worker guarda só os arquivos do site, nunca dados do Supabase. Sem internet, o
   app avisa e **não registra o ponto** (a hora e o NSR vêm sempre do servidor).
+- **Arquivos fiscais (Portaria 671):** AFD (leiaute 004, com CRC-16 e SHA-256 encadeado) e AEJ (leiaute 002)
+  por unidade e período, para administrador e RH. Cada linha do AFD é gravada no momento do fato e nunca muda
+  (tabela `afd_registros`); cadastros da empresa e das pessoas usam a mesma sequência de NSR das marcações.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
@@ -66,7 +69,8 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 ## Próximas fases
 
 - **Contato do suporte:** WhatsApp e e-mail em `src/lib/suporte.js` (antes do lançamento).
-- **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.
+- **Fase 5B:** assinatura digital ICP-Brasil (AFD e AEJ em .p7s; comprovante e espelho em PDF assinado).
+- **Registro no INPI** e dados do desenvolvedor em `ayra_sistema`.
 
 ## Como rodar localmente (opcional)
 

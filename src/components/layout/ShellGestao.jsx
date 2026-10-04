@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
+import { FileArchive, LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -24,6 +24,7 @@ const TITULOS = [
   ['/gestao/solicitacoes', 'Solicitações'],
   ['/gestao/relatorios', 'Relatórios'],
   ['/gestao/historico', 'Histórico de alterações'],
+  ['/gestao/arquivos-fiscais', 'Arquivos fiscais'],
   ['/gestao/reconhecimento', 'Reconhecimento facial'],
   ['/gestao/configuracoes/empresa', 'Empresa'],
   ['/gestao/configuracoes/unidades', 'Unidades'],
@@ -72,6 +73,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao/solicitacoes" icone={Inbox} texto="Solicitações" contador={pendentes} aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/relatorios" icone={BarChart3} texto="Relatórios" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/historico" icone={ScrollText} texto="Histórico de alterações" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/arquivos-fiscais" icone={FileArchive} texto="Arquivos fiscais" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/reconhecimento" icone={ScanFace} texto="Reconhecimento facial" contador={pendentesFacial} aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Configurações</span>
       <ItemMenu para="/gestao/configuracoes/empresa" icone={Building2} texto="Empresa" aoClicar={aoNavegar} />

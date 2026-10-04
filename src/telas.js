@@ -27,6 +27,7 @@ const IMPORTS = {
   MinhaEquipe: () => import('./pages/equipe/MinhaEquipe'),
   PessoaDaEquipe: () => import('./pages/equipe/PessoaDaEquipe'),
   CentralAjuda: () => import('./pages/CentralAjuda'),
+  ArquivosFiscais: () => import('./pages/gestao/ArquivosFiscais'),
 }
 
 // Se uma versão nova do site foi publicada enquanto a pessoa estava com a aba

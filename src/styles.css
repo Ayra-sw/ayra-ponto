@@ -951,3 +951,6 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .convite-app > svg { width: 24px; height: 24px; color: var(--dourado-texto); flex: none; }
 .convite-app p { margin: 0; flex: 1 1 200px; font-size: 0.9rem; }
 .convite-app__acoes { display: flex; gap: 6px; }
+
+/* ------------------------------------------------- Arquivos fiscais (5A) */
+.arquivo-fiscal__icone { width: 32px; height: 32px; color: var(--dourado-texto); flex: none; }

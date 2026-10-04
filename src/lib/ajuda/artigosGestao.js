@@ -424,6 +424,35 @@ const ARTIGOS_GESTAO = [
     ],
   },
   {
+    id: 'arquivos-fiscais',
+    categoria: 'lei',
+    publico: ['gestao'],
+    titulo: 'Arquivos fiscais: AFD e AEJ',
+    resumo: 'O que são, quando a fiscalização pede e como baixar.',
+    palavras: ['afd', 'aej', 'fiscalizacao', 'auditor', 'ministerio do trabalho', 'arquivo fonte de dados', 'arquivo eletronico de jornada', 'portaria 671', 'nsr'],
+    telas: ['/gestao/arquivos-fiscais'],
+    corpo: [
+      'Numa fiscalização, o auditor do trabalho pode pedir dois arquivos, no formato oficial da Portaria 671:',
+      { tipo: 'lista', itens: [
+        '**AFD (Arquivo Fonte de Dados):** todas as marcações **exatamente como foram feitas**, em ordem de NSR, com o código de integridade de cada uma. Também traz os cadastros da empresa e das pessoas no ponto. Ajustes aprovados **não** mudam o AFD.',
+        '**AEJ (Arquivo Eletrônico de Jornada):** a jornada **já tratada**: horários contratuais, marcações com os ajustes aprovados (a original aparece como desconsiderada, e a nova com o motivo), faltas e movimentos do banco de horas.',
+      ] },
+      { tipo: 'sub', titulo: 'Como baixar' },
+      { tipo: 'passos', itens: [
+        'Abra [Arquivos fiscais](/gestao/arquivos-fiscais), no menu Gestão.',
+        'Se houver mais de uma unidade, escolha a unidade: cada uma tem a própria sequência de NSR e o próprio arquivo.',
+        'Escolha o período (há os botões **Este mês** e **Mês passado**).',
+        'Clique em **Baixar AFD** ou **Baixar AEJ**. O arquivo de texto é salvo no seu computador.',
+      ] },
+      { tipo: 'lista', itens: [
+        'O AFD pode ter até 1 ano por arquivo; o AEJ, até 3 meses (gere em partes, se precisar).',
+        'Só o administrador e o RH baixam esses arquivos.',
+        'O CNPJ da empresa precisa estar cadastrado em [Empresa](/gestao/configuracoes/empresa).',
+      ] },
+      { tipo: 'atencao', texto: 'A assinatura digital ICP-Brasil dos arquivos (o arquivo .p7s que os acompanha) chega na próxima atualização do Ayra Ponto. Guarde os arquivos como foram baixados: qualquer mudança no texto invalida o código de integridade.' },
+    ],
+  },
+  {
     id: 'portaria-671',
     categoria: 'lei',
     publico: ['gestao'],
@@ -439,6 +468,7 @@ const ARTIGOS_GESTAO = [
         'Marcações **nunca são apagadas nem alteradas**. Correções viram pedidos de ajuste, aprovados por outra pessoa, e a marcação original fica guardada.',
         'A pessoa recebe um comprovante a cada marcação.',
         'O sistema nunca impede a marcação por causa da localização, da câmera ou da sugestão de tipo.',
+        'Os arquivos oficiais **AFD** e **AEJ** são gerados em [Arquivos fiscais](/gestao/arquivos-fiscais).',
       ] },
       { tipo: 'atencao', texto: 'Regras de jornada, banco de horas e feriados podem variar conforme o acordo ou a convenção coletiva da sua categoria. Em caso de dúvida, confirme com o seu contador ou advogado trabalhista.' },
     ],

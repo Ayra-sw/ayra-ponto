@@ -25,6 +25,7 @@ const ESCONDIDOS = new Set([
   'id', 'empresa_id', 'perfil_id', 'modelo_id', 'criado_por', 'analisado_por', 'analisado_em', 'analisada_por', 'analisada_em',
   'conferida_por', 'conferida_em', 'cancelado_por', 'registro_original_id', 'registro_id', 'referencia_id', 'foto_path',
   'modelo', 'qualidade', 'similaridade', 'limiar', 'antispoof', 'vivacidade', 'piscou', 'motor', 'versao_hash',
+  'proximo_nsr',
 ])
 
 const NOMES = {
@@ -126,6 +127,8 @@ export function detalhes(g, mapas) {
 export function agrupar(lista) {
   const grupos = []
   for (const item of lista) {
+    // "alterou" só com campos técnicos (ex.: o contador de NSR da unidade): não é mudança de verdade
+    if (item.acao === 'alterou' && (item.campos || []).length && (item.campos || []).every((c) => ESCONDIDOS.has(c))) continue
     const ultimo = grupos[grupos.length - 1]
     // Dias de uma jornada (mesmo modelo) ou da escala de uma pessoa, mudados juntos, viram uma linha só
     const mesmoDono = item.tabela === 'escala_dias'
