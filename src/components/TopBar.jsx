@@ -4,10 +4,11 @@ import { useAuth } from '../contexts/AuthContext'
 import { iniciais } from '../lib/formatos'
 import BotaoTema from './layout/BotaoTema'
 import Sininho from './sininho/Sininho'
+import BotaoAjuda from './ajuda/BotaoAjuda'
 import Botao from './ui/Botao'
 
 // Barra superior compartilhada pelas áreas de gestão e do colaborador.
-export default function TopBar({ titulo, aoAbrirMenu, esquerda, acoes, linkConta = '/conta' }) {
+export default function TopBar({ titulo, aoAbrirMenu, esquerda, acoes, linkConta = '/conta', ajuda = { contexto: 'colaborador' } }) {
   const { perfil } = useAuth()
   return (
     <header className="barra-superior">
@@ -20,6 +21,7 @@ export default function TopBar({ titulo, aoAbrirMenu, esquerda, acoes, linkConta
       {titulo && <div className="barra-superior__titulo">{titulo}</div>}
       <div className="barra-superior__acoes">
         {acoes}
+        <BotaoAjuda {...ajuda} />
         <Sininho />
         <BotaoTema />
         <Link to={linkConta} className="avatar" title="Minha conta" aria-label={`Minha conta (${perfil?.nome_completo || ''})`}>

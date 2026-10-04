@@ -44,6 +44,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
 - **Histórico de alterações:** quem criou, alterou ou excluiu o quê e quando (cadastros, pedidos,
   jornadas, escalas, afastamentos, banco de horas, organização e reconhecimento facial). Ninguém
   apaga nem edita. Só administrador e RH veem; CPF e telefone aparecem só como "(alterado)".
+- **Primeiros passos:** lista na Visão geral (empresa, unidade, jornada, feriados, departamentos,
+  convite, jornada de cada pessoa e primeira marcação), marcada sozinha conforme a empresa configura.
+  Boas-vindas curtas para o colaborador no primeiro acesso.
+- **Central de ajuda:** 39 artigos curtos (`src/lib/ajuda/`), com busca, e o botão "?" em todas as
+  telas mostrando a ajuda daquela tela. Suporte por WhatsApp e e-mail para administrador e RH
+  (contato em `src/lib/suporte.js`); o colaborador é orientado a falar com o RH da empresa.
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
 - **Design system próprio** (`src/styles.css` e `src/components/ui/`), tema claro/escuro,
   telas responsivas para computador, tablet e celular.
@@ -54,7 +60,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 ## Próximas fases
 
-- **Fase 4:** central de ajuda, onboarding guiado, acessibilidade, performance, app instalável.
+- **Fase 4B:** app instalável no celular, desempenho e acessibilidade.
 - **Fase 5:** AFD, AEJ e documentos assinados com certificado ICP-Brasil; registro no INPI.
 
 ## Como rodar localmente (opcional)

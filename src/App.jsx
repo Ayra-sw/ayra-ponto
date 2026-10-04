@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import ShellGestao from './components/layout/ShellGestao'
@@ -30,13 +30,19 @@ import RelatoriosGestao from './pages/gestao/Relatorios'
 import Historico from './pages/gestao/Historico'
 import MinhaEquipe from './pages/equipe/MinhaEquipe'
 import PessoaDaEquipe from './pages/equipe/PessoaDaEquipe'
+import CentralAjuda from './pages/CentralAjuda'
 
 const GESTAO = ['administrador', 'rh']
 
 // Administrador e RH começam na visão geral; colaborador, no registro de ponto.
 function AreaColaborador() {
   const { perfil } = useAuth()
-  if (GESTAO.includes(perfil?.tipo)) return <Navigate to="/gestao" replace />
+  const local = useLocation()
+  if (GESTAO.includes(perfil?.tipo)) {
+    // a ajuda tem o mesmo endereço nas duas áreas
+    const ajuda = local.pathname.startsWith('/ajuda') ? local.pathname : ''
+    return <Navigate to={`/gestao${ajuda}${ajuda ? local.search : ''}`} replace />
+  }
   return <ShellColaborador />
 }
 
@@ -61,6 +67,8 @@ export default function App() {
         <Route path="equipe" element={<MinhaEquipe />} />
         <Route path="equipe/:id" element={<PessoaDaEquipe />} />
         <Route path="conta" element={<MinhaConta />} />
+        <Route path="ajuda" element={<CentralAjuda contexto="colaborador" />} />
+        <Route path="ajuda/:id" element={<CentralAjuda contexto="colaborador" />} />
       </Route>
 
       {/* Gestão: administrador e RH */}
@@ -86,6 +94,8 @@ export default function App() {
         <Route path="meu-historico" element={<MeuHistorico />} />
         <Route path="meu-espelho" element={<MeuEspelho />} />
         <Route path="conta" element={<MinhaConta />} />
+        <Route path="ajuda" element={<CentralAjuda contexto="gestao" />} />
+        <Route path="ajuda/:id" element={<CentralAjuda contexto="gestao" />} />
       </Route>
 
       <Route path="*" element={<NaoEncontrada />} />

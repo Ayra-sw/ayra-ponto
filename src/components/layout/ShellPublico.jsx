@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Marca from './Marca'
 import BotaoTema from './BotaoTema'
+import BotaoAjuda from '../ajuda/BotaoAjuda'
 
 // Telas sem login: entrar, criar conta, convite, senha, onboarding.
 export default function ShellPublico({ titulo, subtitulo, children, rodape }) {
@@ -18,7 +19,7 @@ export default function ShellPublico({ titulo, subtitulo, children, rodape }) {
           {children}
         </div>
         {rodape && <div className="publico__rodape">{rodape}</div>}
-        <div className="publico__tema"><BotaoTema comTexto /></div>
+        <div className="publico__tema"><BotaoAjuda contexto="publico" comTexto /><BotaoTema comTexto /></div>
       </div>
     </main>
   )

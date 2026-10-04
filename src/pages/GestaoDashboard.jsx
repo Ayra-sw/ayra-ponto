@@ -4,6 +4,7 @@ import { Check, Coffee, Inbox, RefreshCw, UserPlus, UserRoundX, Users, Clock } f
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import { cnpjValido } from '../lib/cnpj'
+import PrimeirosPassos from '../components/primeiros-passos/PrimeirosPassos'
 import { dataPorExtenso, hora, inicioDeHoje } from '../lib/formatos'
 import { SITUACAO_AGORA, rotuloMarcacao, situacaoAgora } from '../lib/marcacoes'
 import { PAPEL } from '../lib/rotulos'
@@ -29,18 +30,15 @@ export default function GestaoDashboard() {
   const [atualizadoEm, setAtualizadoEm] = useState(null)
   const [filtroUnidade, setFiltroUnidade] = useState('')
   const [convidarAberto, setConvidarAberto] = useState(false)
-  const [temJornada, setTemJornada] = useState(null)
 
   const carregar = useCallback(async () => {
     setErro(false)
-    const [p, r, j] = await Promise.all([
+    const [p, r] = await Promise.all([
       supabase.from('perfis').select('id, nome_completo, tipo, status, filial_id, cargo')
         .eq('empresa_id', perfil.empresa_id).order('nome_completo'),
       supabase.from('registros_ponto').select('perfil_id, tipo, marcado_em, filial_id')
         .gte('marcado_em', inicioDeHoje()).order('marcado_em', { ascending: true }),
-      supabase.from('modelos_jornada').select('id', { count: 'exact', head: true }),
     ])
-    if (!j.error) setTemJornada((j.count || 0) > 0)
     if (p.error || r.error) setErro(true)
     setPessoas(p.data || [])
     setRegistros(r.data || [])
@@ -75,14 +73,6 @@ export default function GestaoDashboard() {
   const semMarcacao = contagem('sem_marcacao')
 
   const cnpjOk = empresa?.cnpj && cnpjValido(empresa.cnpj)
-  const passos = [
-    { feito: Boolean(empresa?.razao_social && cnpjOk && empresa?.cidade), titulo: 'Complete os dados da empresa', detalhe: 'Razão social, CNPJ e endereço aparecem no espelho de ponto.', link: '/gestao/configuracoes/empresa', acao: 'Abrir' },
-    { feito: unidades.some((u) => u.cidade) , titulo: 'Confira suas unidades', detalhe: 'Cada local de trabalho tem sua própria sequência de registros.', link: '/gestao/configuracoes/unidades', acao: 'Abrir' },
-    { feito: temJornada !== false, titulo: 'Cadastre a jornada de trabalho', detalhe: 'Os horários previstos alimentam o cálculo de atrasos e horas extras.', link: '/gestao/jornadas', acao: 'Abrir' },
-    { feito: pessoas.length > 1, titulo: 'Convide sua equipe', detalhe: 'Envie o link de convite. Cada pessoa cria a própria senha.', aoClicar: () => setConvidarAberto(true), acao: 'Convidar' },
-  ]
-  const feitos = passos.filter((p) => p.feito).length
-
   const atencao = []
   if (pendentes > 0) atencao.push({ tom: 'atencao', texto: `${pendentes} ${pendentes === 1 ? 'solicitação espera' : 'solicitações esperam'} sua análise.`, link: '/gestao/solicitacoes', acao: 'Analisar' })
   if (pendentesFacial?.fotos > 0) atencao.push({ tom: 'atencao', texto: `${pendentesFacial.fotos} ${pendentesFacial.fotos === 1 ? 'foto de rosto espera' : 'fotos de rosto esperam'} aprovação.`, link: '/gestao/reconhecimento', acao: 'Ver fotos' })
@@ -118,29 +108,8 @@ export default function GestaoDashboard() {
         </section>
       )}
 
-      {feitos < passos.length && (
-        <section className="cartao" aria-labelledby="t-config">
-          <div className="cartao__cabecalho">
-            <div>
-              <h2 id="t-config">Vamos configurar seu Ayra Ponto</h2>
-              <p className="suave pequeno">{feitos} de {passos.length} etapas concluídas. Você pode fazer na ordem que preferir.</p>
-            </div>
-          </div>
-          <div className="progresso" style={{ marginBottom: 16 }} aria-hidden="true"><span style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
-          <ul className="checklist">
-            {passos.map((p) => (
-              <li key={p.titulo} className={`checklist__item${p.feito ? ' checklist__item--feito' : ''}`}>
-                <span className="checklist__marca" aria-hidden="true">{p.feito && <Check />}</span>
-                <span className="checklist__texto">
-                  <strong>{p.titulo}</strong><span className="suave pequeno">{p.feito ? 'Concluído' : p.detalhe}</span>
-                </span>
-                {!p.feito && (p.link
-                  ? <Link to={p.link} className="btn btn--secundario btn--pequeno">{p.acao}</Link>
-                  : <Botao variante="secundario" tamanho="pequeno" onClick={p.aoClicar}>{p.acao}</Botao>)}
-              </li>
-            ))}
-          </ul>
-        </section>
+      {!carregando && (
+        <PrimeirosPassos empresa={empresa} unidades={unidades} pessoas={pessoas.length} aoConvidar={() => setConvidarAberto(true)} />
       )}
 
       {carregando ? (

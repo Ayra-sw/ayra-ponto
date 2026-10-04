@@ -382,7 +382,7 @@ button.cartao-linha:hover { border-color: var(--borda-forte); }
 .publico__cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-cartao); padding: 28px 24px; display: grid; gap: 20px; }
 .publico__cabecalho { display: grid; gap: 6px; }
 .publico__rodape { text-align: center; font-size: 0.86rem; color: var(--texto-suave); display: grid; gap: 8px; justify-items: center; }
-.publico__tema { display: flex; justify-content: center; }
+.publico__tema { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; }
 @media (min-width: 480px) { .publico__cartao { padding: 32px; } }
 
 /* ------------------------------------------------------ Estrutura: gestão */
@@ -882,3 +882,57 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 @media (max-width: 600px) {
   .historico__cabeca { flex-direction: column; gap: 2px; }
 }
+
+/* ------------------------------------------------- Central de ajuda (4A) */
+.icone-inline { width: 16px; height: 16px; vertical-align: -3px; flex: none; }
+.ajuda-titulo { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-suave); margin: 0; }
+.ajuda-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ajuda-lista__item {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;
+  padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio-controle);
+  background: var(--superficie); color: var(--texto); font: inherit; cursor: pointer; transition: border-color var(--transicao), background var(--transicao);
+}
+.ajuda-lista__item:hover { border-color: var(--borda-forte); background: var(--superficie-2); }
+.ajuda-lista__item > span { display: grid; gap: 2px; min-width: 0; }
+.ajuda-lista__item svg { width: 18px; height: 18px; color: var(--texto-suave); flex: none; }
+.ajuda-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ajuda-links .link, .ajuda-resultados .link { font-weight: 500; }
+.ajuda-resultados { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.ajuda-resultados li { display: grid; gap: 2px; }
+.ajuda-categorias { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); align-items: start; }
+.ajuda-busca-grande .entrada { min-height: 48px; font-size: 1.05rem; }
+.pagina__trilha.link--suave { display: inline-flex; align-items: center; gap: 4px; }
+
+.artigo { display: grid; gap: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.artigo p { margin: 0; }
+.artigo__sub { font-size: 1rem; margin: 6px 0 -4px; }
+.artigo__passos, .artigo__lista { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; }
+.artigo__passos li::marker { font-weight: 600; color: var(--dourado-texto); }
+.artigo__nota { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--raio-controle); border: 1px solid; }
+.artigo__nota svg { width: 18px; height: 18px; flex: none; margin-top: 3px; }
+.artigo__nota--dica { background: var(--info-fundo); border-color: color-mix(in srgb, var(--info) 30%, transparent); }
+.artigo__nota--dica svg { color: var(--info); }
+.artigo__nota--atencao { background: var(--atencao-fundo); border-color: color-mix(in srgb, var(--atencao) 30%, transparent); }
+.artigo__nota--atencao svg { color: var(--atencao); }
+
+.suporte { display: grid; gap: 6px; padding: 16px; border: 1px dashed var(--borda-forte); border-radius: var(--raio-cartao); }
+.suporte p { margin: 0; }
+.suporte--compacto { padding: 12px 14px; }
+.suporte .btn svg { width: 16px; height: 16px; }
+
+/* Primeiros passos e boas-vindas (4A) */
+.checklist__acoes { display: flex; align-items: center; gap: 4px; flex: none; }
+.checklist__texto strong { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.primeiros-passos--pronto { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-color: color-mix(in srgb, var(--ok) 40%, var(--borda)); }
+.primeiros-passos--pronto h2 { margin: 0; }
+.primeiros-passos__festa { width: 32px; height: 32px; color: var(--dourado); flex: none; }
+@media (max-width: 480px) {
+  .primeiros-passos .checklist__item { flex-wrap: wrap; }
+  .primeiros-passos .checklist__texto { flex: 1 1 calc(100% - 40px); }
+  .primeiros-passos .checklist__acoes { margin-left: 36px; }
+}
+.boas-vindas { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.boas-vindas li { display: flex; gap: 12px; align-items: flex-start; }
+.boas-vindas li > span:last-child { display: grid; gap: 2px; }
+.boas-vindas__icone { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--superficie-2); color: var(--dourado-texto); }
+.boas-vindas__icone svg { width: 18px; height: 18px; }

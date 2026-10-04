@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { LogOut } from 'lucide-react'
+import { LifeBuoy, LogOut } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import { useAvisos } from '../contexts/AvisosContext'
@@ -25,6 +26,7 @@ export default function MinhaConta() {
   const [confirmar, setConfirmar] = useState('')
   const [erroSenha, setErroSenha] = useState('')
   const [salvandoSenha, setSalvandoSenha] = useState(false)
+  const naGestao = useLocation().pathname.startsWith('/gestao')
 
   useEffect(() => {
     if (!perfil.filial_id) return
@@ -111,6 +113,14 @@ export default function MinhaConta() {
             </label>
           ))}
         </fieldset>
+      </section>
+
+      <section className="cartao" aria-labelledby="t-ajuda">
+        <div className="cartao__cabecalho"><h2 id="t-ajuda">Ajuda</h2></div>
+        <p className="suave pequeno" style={{ marginTop: 0 }}>
+          Respostas rápidas sobre ponto, pedidos, horas e conta. {naGestao ? '' : 'Para dúvidas sobre as suas horas, fale com o RH da sua empresa.'}
+        </p>
+        <Link to={naGestao ? '/gestao/ajuda' : '/ajuda'} className="btn btn--secundario"><LifeBuoy aria-hidden="true" /> Abrir a central de ajuda</Link>
       </section>
 
       <div><Botao variante="secundario" icone={LogOut} onClick={signOut}>Sair da conta</Botao></div>

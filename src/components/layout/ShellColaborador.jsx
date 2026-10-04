@@ -4,6 +4,7 @@ import { FileClock, History, House, UserRound, Users } from 'lucide-react'
 import useEquipe from '../../hooks/useEquipe'
 import TopBar from '../TopBar'
 import Marca from './Marca'
+import BoasVindas from '../BoasVindas'
 
 const ITENS = [
   { para: '/', texto: 'Início', icone: House, fim: true },
@@ -31,6 +32,7 @@ export default function ShellColaborador() {
       <div className="shell__conteudo">
         <TopBar
           esquerda={<Marca />}
+          ajuda={{ contexto: 'colaborador', ehGestor: equipe.ehGestor }}
           acoes={
             <nav className="navegacao-topo" aria-label="Menu principal">
               {itens.map((i) => (
@@ -45,6 +47,7 @@ export default function ShellColaborador() {
         <main id="conteudo" tabIndex={-1}>
           <Outlet context={{ equipe }} />
         </main>
+        <BoasVindas ehGestor={equipe.ehGestor} />
       </div>
       <nav className={`barra-inferior${itens.length > 4 ? ' barra-inferior--5' : ''}`} aria-label="Menu principal">
         {itens.map(({ para, texto, icone: Icone, fim }) => (

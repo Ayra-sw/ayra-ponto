@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
+import { LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -26,6 +26,7 @@ const TITULOS = [
   ['/gestao/configuracoes/unidades', 'Unidades'],
   ['/gestao/meu-ponto', 'Meu ponto'],
   ['/gestao/conta', 'Minha conta'],
+  ['/gestao/ajuda', 'Central de ajuda'],
   ['/gestao', 'Visão geral'],
 ]
 
@@ -77,6 +78,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
         <ItemMenu para="/gestao/meu-historico" icone={History} texto="Meu histórico" aoClicar={aoNavegar} />
         <ItemMenu para="/gestao/meu-espelho" icone={FileClock} texto="Meu espelho" aoClicar={aoNavegar} />
         <ItemMenu para="/gestao/conta" icone={UserRound} texto="Minha conta" aoClicar={aoNavegar} />
+        <ItemMenu para="/gestao/ajuda" icone={LifeBuoy} texto="Central de ajuda" aoClicar={aoNavegar} />
         <button type="button" className="menu-lateral__item" onClick={signOut} title="Sair" style={{ background: 'none', border: 'none', width: '100%', font: 'inherit', cursor: 'pointer' }}>
           <LogOut aria-hidden="true" />
           <span className="menu-lateral__texto">Sair</span>
@@ -138,6 +140,7 @@ export default function ShellGestao() {
           titulo={titulo}
           aoAbrirMenu={() => setGavetaAberta(true)}
           linkConta="/gestao/conta"
+          ajuda={{ contexto: 'gestao', empresa: dadosEmpresa.empresa?.nome }}
           acoes={!naTelaDePonto && (
             <Link to="/gestao/meu-ponto" className="btn btn--primario btn--pequeno" aria-label="Registrar ponto">
               <Clock aria-hidden="true" /> <span>Registrar ponto</span>
