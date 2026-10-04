@@ -4,6 +4,7 @@ import RegistrarPonto from '../../components/ponto/RegistrarPonto'
 export default function MeuPonto() {
   return (
     <div className="pagina" style={{ maxWidth: 640 }}>
+      <h1 className="sr-only">Meu ponto: registrar ponto</h1>
       <RegistrarPonto />
     </div>
   )

@@ -120,7 +120,7 @@ export default function Feriados() {
           <div className="so-computador">
             <div className="tabela-envoltorio">
               <table className="tabela">
-                <thead><tr><th>Data</th><th>Feriado</th><th>Tipo</th><th>Vale para</th><th></th></tr></thead>
+                <thead><tr><th>Data</th><th>Feriado</th><th>Tipo</th><th>Vale para</th><th><span className="sr-only">Ações</span></th></tr></thead>
                 <tbody>
                   {lista.map((f) => (
                     <tr key={f.id}>

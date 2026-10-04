@@ -12,6 +12,9 @@ import { AuthProvider } from './contexts/AuthContext.jsx'
 import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import { AvisosProvider } from './contexts/AvisosContext.jsx'
 import './styles.css'
+import { iniciarPwa } from './lib/pwa'
+
+iniciarPwa()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

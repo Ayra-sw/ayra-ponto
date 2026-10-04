@@ -1,36 +1,18 @@
+import { Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import ShellGestao from './components/layout/ShellGestao'
 import ShellColaborador from './components/layout/ShellColaborador'
+import { Esqueleto } from './components/ui/Estados'
 import Login from './pages/Login'
-import RedefinirSenha from './pages/RedefinirSenha'
-import Onboarding from './pages/Onboarding'
 import NaoEncontrada from './pages/NaoEncontrada'
 import FuncionarioDashboard from './pages/FuncionarioDashboard'
-import GestaoDashboard from './pages/GestaoDashboard'
-import MinhaConta from './pages/MinhaConta'
-import Pessoas from './pages/gestao/Pessoas'
-import Solicitacoes from './pages/gestao/Solicitacoes'
-import Empresa from './pages/gestao/Empresa'
-import Unidades from './pages/gestao/Unidades'
-import MeuPonto from './pages/gestao/MeuPonto'
-import Reconhecimento from './pages/gestao/Reconhecimento'
-import PerfilPessoa from './pages/gestao/PerfilPessoa'
-import Departamentos from './pages/gestao/Departamentos'
-import Cargos from './pages/gestao/Cargos'
-import Jornadas from './pages/gestao/Jornadas'
-import Feriados from './pages/gestao/Feriados'
-import MeuHistorico from './pages/MeuHistorico'
-import MeuEspelho from './pages/MeuEspelho'
-import Espelhos from './pages/gestao/Espelhos'
-import BancoHorasEquipe from './pages/gestao/BancoHoras'
-import Escalas from './pages/gestao/Escalas'
-import RelatoriosGestao from './pages/gestao/Relatorios'
-import Historico from './pages/gestao/Historico'
-import MinhaEquipe from './pages/equipe/MinhaEquipe'
-import PessoaDaEquipe from './pages/equipe/PessoaDaEquipe'
-import CentralAjuda from './pages/CentralAjuda'
+import { telas, preCarregar } from './telas'
+import AvisoSemInternet from './components/app/AvisoSemInternet'
+import ErroNaTela from './components/app/ErroNaTela'
+
+const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda } = telas
 
 const GESTAO = ['administrador', 'rh']
 
@@ -47,7 +29,14 @@ function AreaColaborador() {
 }
 
 export default function App() {
+  const { perfil } = useAuth()
+  // Depois que a tela abre, baixa em segundo plano as telas mais usadas de cada perfil
+  useEffect(() => { if (perfil?.tipo) preCarregar(GESTAO.includes(perfil.tipo) ? 'gestao' : 'colaborador') }, [perfil?.tipo])
   return (
+    <>
+    <AvisoSemInternet />
+    <ErroNaTela>
+    <Suspense fallback={<div className="pagina"><Esqueleto blocos={1} linhas={4} /></div>}>
     <Routes>
       {/* Acesso */}
       <Route path="/entrar" element={<Login modo="entrar" />} />
@@ -100,5 +89,8 @@ export default function App() {
 
       <Route path="*" element={<NaoEncontrada />} />
     </Routes>
+    </Suspense>
+    </ErroNaTela>
+    </>
   )
 }

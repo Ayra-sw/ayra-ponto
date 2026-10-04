@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Clock, History, ScanFace } from 'lucide-react'
+import { Clock, History, ScanFace, WifiOff } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
 import useRosto from '../../hooks/useRosto'
 import { obterLocalizacao } from '../../lib/localizacao'
 import { traduzirErro } from '../../lib/mensagensErro'
+import { useConexao } from '../../lib/pwa'
 import { duracao, hora, inicioDeHoje, nsr, primeiroNome } from '../../lib/formatos'
 import {
   TIPOS_MARCACAO, SITUACAO_AGORA, acaoMarcacao, minutosTrabalhados,
@@ -18,14 +19,17 @@ import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import Alerta from '../ui/Alerta'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
-import PontoFacial from '../rosto/PontoFacial'
 import { EtiquetaVerificacao } from '../rosto/EtiquetaVerificacao'
+
+// A câmera e o reconhecimento facial só são baixados quando a empresa usa e a pessoa vai marcar
+const PontoFacial = lazy(() => import('../rosto/PontoFacial'))
 
 // Tela principal de marcação: um botão com a próxima marcação sugerida e,
 // se a pessoa precisar, "Registrar outro tipo". A sugestão nunca bloqueia.
 export default function RegistrarPonto() {
   const { perfil } = useAuth()
   const avisar = useAvisos()
+  const online = useConexao()
   const [registros, setRegistros] = useState([])
   const [unidade, setUnidade] = useState(null)
   const [empresa, setEmpresa] = useState(null)
@@ -87,6 +91,8 @@ export default function RegistrarPonto() {
 
   async function registrar() {
     setErro('')
+    // Sem internet não há registro: a hora e o NSR precisam vir do servidor.
+    if (navigator.onLine === false) { setErro('Sem internet. O ponto precisa de conexão para registrar o horário certo. Tente de novo quando a internet voltar.'); return }
     if (usaRosto) {
       setFluxoFacial(true)
       return
@@ -123,7 +129,9 @@ export default function RegistrarPonto() {
         <Comprovante registro={comprovante} verificacao={verificacoes[comprovante.id]} perfil={perfil} unidade={unidade} empresa={empresa} aoFechar={() => setComprovante(null)} />
       )}
       {fluxoFacial && (
-        <PontoFacial tipo={tipo} rosto={rosto} aoConcluir={concluirFacial} aoFechar={() => setFluxoFacial(false)} />
+        <Suspense fallback={null}>
+          <PontoFacial tipo={tipo} rosto={rosto} aoConcluir={concluirFacial} aoFechar={() => setFluxoFacial(false)} />
+        </Suspense>
       )}
 
       <section className="cartao ponto" aria-labelledby="titulo-ponto">
@@ -146,9 +154,14 @@ export default function RegistrarPonto() {
               {tipoEscolhido && tipoEscolhido !== sugerido ? 'Você escolheu: ' : 'Próxima marcação esperada: '}
               <strong>{rotuloMarcacao(tipo)}</strong>
             </p>
-            <Botao tamanho="grande" bloco icone={usaRosto ? ScanFace : Clock} onClick={registrar} carregando={Boolean(etapa)}>
-              {textoBotao}
+            <Botao tamanho="grande" bloco icone={!online ? WifiOff : usaRosto ? ScanFace : Clock} onClick={registrar} carregando={Boolean(etapa)} disabled={!online}>
+              {online ? textoBotao : 'Sem internet'}
             </Botao>
+            {!online && (
+              <Alerta tom="atencao" titulo="Sem internet no momento">
+                Para registrar o ponto, o celular precisa estar conectado: a hora e o número do registro (NSR) vêm do servidor. Assim que a internet voltar, o botão volta a funcionar.
+              </Alerta>
+            )}
             {usaRosto && !rosto.carregando && !rosto.aprovada && (
               <p className="suave pequeno" style={{ textAlign: 'center' }}>
                 {rosto.pendente

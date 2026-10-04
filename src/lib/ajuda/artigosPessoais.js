@@ -347,6 +347,31 @@ const ARTIGOS_PESSOAIS = [
     ],
   },
   {
+    id: 'instalar-app',
+    categoria: 'conta',
+    publico: ['colaborador'],
+    titulo: 'Instalar o app no celular',
+    resumo: 'Ter o Ayra Ponto na tela inicial, abrindo como um aplicativo.',
+    palavras: ['app', 'aplicativo', 'instalar', 'tela inicial', 'icone', 'atalho', 'android', 'iphone', 'pwa', 'sem internet', 'offline'],
+    telas: ['/conta', '/gestao/conta'],
+    corpo: [
+      'O Ayra Ponto pode ficar na tela do seu celular, com ícone próprio, e abre em tela cheia. Não precisa baixar nada da loja de aplicativos.',
+      { tipo: 'sub', titulo: 'Android' },
+      { tipo: 'passos', itens: [
+        'Abra o Ayra Ponto no **Chrome**.',
+        'Em [Minha conta](rota:conta), toque em **Instalar o app**. Se o botão não aparecer, toque nos três pontinhos do Chrome e em **Instalar app** (ou **Adicionar à tela inicial**).',
+        'Confirme. O ícone aparece na tela do celular.',
+      ] },
+      { tipo: 'sub', titulo: 'iPhone' },
+      { tipo: 'passos', itens: [
+        'Abra o Ayra Ponto no **Safari**.',
+        'Toque em **Compartilhar** (o quadrado com uma seta para cima).',
+        'Toque em **Adicionar à Tela de Início** e depois em **Adicionar**.',
+      ] },
+      { tipo: 'atencao', texto: 'Para bater o ponto, o celular precisa estar com internet, mesmo com o app instalado. Sem conexão, o botão fica desativado: a hora e o número do registro (NSR) sempre vêm do servidor.' },
+    ],
+  },
+  {
     id: 'privacidade',
     categoria: 'lei',
     publico: ['colaborador', 'gestao'],

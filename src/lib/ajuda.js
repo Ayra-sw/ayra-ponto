@@ -119,7 +119,4 @@ export const MAIS_PROCURADOS = {
   publico: ['entrar-convite', 'esqueci-senha', 'nao-recebi-email', 'criar-empresa'],
 }
 
-// Pede ao botão "?" da barra de cima que abra a ajuda (num artigo, se vier)
-export function abrirAjuda(artigo) {
-  window.dispatchEvent(new CustomEvent('ayra:ajuda', { detail: { artigo } }))
-}
+export { abrirAjuda } from './abrirAjuda'

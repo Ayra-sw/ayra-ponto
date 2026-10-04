@@ -92,7 +92,7 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
           <section key={dia.chave} className="cartao cartao--compacto" aria-label={tituloDoDia(dia.chave)}>
             <div className="linha linha--espacada" style={{ marginBottom: 4 }}>
               <div className="linha">
-                <h3 style={{ fontSize: '1rem' }}>{tituloDoDia(dia.chave)}</h3>
+                <h2 style={{ fontSize: '1rem' }}>{tituloDoDia(dia.chave)}</h2>
                 {dia.incompleto && <Etiqueta tom="atencao">Falta a saída</Etiqueta>}
                 {dia.ehHoje && <Etiqueta tom="info" icone={false}>Hoje</Etiqueta>}
               </div>

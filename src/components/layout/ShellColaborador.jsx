@@ -3,6 +3,9 @@ import { useEffect } from 'react'
 import { FileClock, History, House, UserRound, Users } from 'lucide-react'
 import useEquipe from '../../hooks/useEquipe'
 import TopBar from '../TopBar'
+import ErroNaTela from '../app/ErroNaTela'
+import { Suspense } from 'react'
+import { Esqueleto } from '../ui/Estados'
 import Marca from './Marca'
 import BoasVindas from '../BoasVindas'
 
@@ -13,6 +16,7 @@ const ITENS = [
   { para: '/conta', texto: 'Minha conta', icone: UserRound },
 ]
 const EQUIPE = { para: '/equipe', texto: 'Equipe', icone: Users }
+const TITULOS = [['/historico', 'Meu histórico'], ['/espelho', 'Meu espelho'], ['/equipe', 'Minha equipe'], ['/conta', 'Minha conta'], ['/ajuda', 'Central de ajuda']]
 
 // Estrutura das telas do colaborador: simples, com a ação de registrar
 // ponto sempre na primeira tela. Barra inferior no celular.
@@ -22,6 +26,10 @@ export default function ShellColaborador() {
   const local = useLocation()
   const { recarregar } = equipe
   useEffect(() => { recarregar() }, [local.pathname, recarregar])
+  useEffect(() => {
+    const t = TITULOS.find(([c]) => local.pathname.startsWith(c))?.[1] || 'Registrar ponto'
+    document.title = `${t} · Ayra Ponto`
+  }, [local.pathname])
 
   const itens = equipe.ehGestor ? [...ITENS.slice(0, 3), EQUIPE, ITENS[3]] : ITENS
   const contador = (i) => (i.para === '/equipe' && equipe.pendentes > 0 ? equipe.pendentes : 0)
@@ -45,7 +53,11 @@ export default function ShellColaborador() {
           }
         />
         <main id="conteudo" tabIndex={-1}>
-          <Outlet context={{ equipe }} />
+          <ErroNaTela chave={local.pathname}>
+            <Suspense fallback={<div className="pagina"><Esqueleto blocos={1} linhas={4} /></div>}>
+              <Outlet context={{ equipe }} />
+            </Suspense>
+          </ErroNaTela>
         </main>
         <BoasVindas ehGestor={equipe.ehGestor} />
       </div>

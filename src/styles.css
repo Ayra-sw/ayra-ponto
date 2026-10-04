@@ -660,7 +660,7 @@ a.cartao-linha:hover { border-color: var(--borda-forte); }
 .tabela--espelho td { vertical-align: top; }
 .tabela--espelho tfoot th, .tabela--espelho tfoot td { background: var(--superficie-2); font-weight: 600; border-top: 2px solid var(--borda-forte); }
 .tabela--espelho tfoot th { text-align: left; padding: 11px 14px; }
-.linha-suave { opacity: 0.72; }
+.linha-suave, .linha-suave td { color: var(--texto-suave); }
 .cartao-linha--totais { background: var(--superficie-2); }
 .espelho__nota { display: flex; gap: 6px; align-items: flex-start; }
 .espelho__nota-icone { width: 14px; height: 14px; flex: none; margin-top: 3px; color: var(--dourado-texto, var(--dourado)); }
@@ -936,3 +936,18 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .boas-vindas li > span:last-child { display: grid; gap: 2px; }
 .boas-vindas__icone { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--superficie-2); color: var(--dourado-texto); }
 .boas-vindas__icone svg { width: 18px; height: 18px; }
+
+/* ------------------------------------------------- App instalável (4B) */
+.sem-internet {
+  position: sticky; top: 0; z-index: 70; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px; background: var(--atencao-fundo); color: var(--texto);
+  border-bottom: 1px solid color-mix(in srgb, var(--atencao) 40%, transparent); font-size: 0.9rem; text-align: center;
+}
+.sem-internet svg { width: 18px; height: 18px; color: var(--atencao); flex: none; }
+.convite-app {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px;
+  border: 1px solid var(--borda); border-radius: var(--raio-cartao); background: var(--superficie);
+}
+.convite-app > svg { width: 24px; height: 24px; color: var(--dourado-texto); flex: none; }
+.convite-app p { margin: 0; flex: 1 1 200px; font-size: 0.9rem; }
+.convite-app__acoes { display: flex; gap: 6px; }

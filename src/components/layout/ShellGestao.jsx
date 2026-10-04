@@ -6,6 +6,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
 import Marca from './Marca'
 import TopBar from '../TopBar'
+import ErroNaTela from '../app/ErroNaTela'
+import { Suspense } from 'react'
+import { Esqueleto } from '../ui/Estados'
 
 const TITULOS = [
   ['/gestao/pessoas', 'Pessoas'],
@@ -124,6 +127,8 @@ export default function ShellGestao() {
 
   const titulo = TITULOS.find(([caminho]) => local.pathname.startsWith(caminho))?.[1] || ''
   const naTelaDePonto = local.pathname.startsWith('/gestao/meu-ponto')
+  // Título da aba do navegador (e do que o leitor de tela anuncia)
+  useEffect(() => { document.title = titulo ? `${titulo} · Ayra Ponto` : 'Ayra Ponto' }, [titulo])
 
   return (
     <div className="shell shell--gestao">
@@ -148,7 +153,11 @@ export default function ShellGestao() {
           )}
         />
         <main id="conteudo" tabIndex={-1}>
-          <Outlet context={{ ...dadosEmpresa, pendentes, pendentesFacial: facial, atualizarPendentes }} />
+          <ErroNaTela chave={local.pathname}>
+            <Suspense fallback={<div className="pagina"><Esqueleto blocos={1} linhas={4} /></div>}>
+              <Outlet context={{ ...dadosEmpresa, pendentes, pendentesFacial: facial, atualizarPendentes }} />
+            </Suspense>
+          </ErroNaTela>
         </main>
       </div>
     </div>

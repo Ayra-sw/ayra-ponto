@@ -13,6 +13,7 @@ import Alerta from '../components/ui/Alerta'
 import { Campo, CampoSenha } from '../components/ui/Campo'
 import MeuRosto from '../components/rosto/MeuRosto'
 import MeuTrabalho from '../components/MeuTrabalho'
+import { CartaoInstalarApp } from '../components/app/InstalarApp'
 
 export default function MinhaConta() {
   const { session, perfil, recarregarPerfil, signOut } = useAuth()
@@ -114,6 +115,8 @@ export default function MinhaConta() {
           ))}
         </fieldset>
       </section>
+
+      <CartaoInstalarApp />
 
       <section className="cartao" aria-labelledby="t-ajuda">
         <div className="cartao__cabecalho"><h2 id="t-ajuda">Ajuda</h2></div>

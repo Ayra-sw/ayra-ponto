@@ -131,7 +131,7 @@ export default function CadastroSimples({
           <div className="so-computador">
             <div className="tabela-envoltorio">
               <table className="tabela">
-                <thead><tr><th>Nome</th>{colunaExtra && <th>{colunaExtra.titulo}</th>}<th>Pessoas</th><th>Situação</th><th></th></tr></thead>
+                <thead><tr><th>Nome</th>{colunaExtra && <th>{colunaExtra.titulo}</th>}<th>Pessoas</th><th>Situação</th><th><span className="sr-only">Ações</span></th></tr></thead>
                 <tbody>
                   {itens.map((item) => (
                     <tr key={item.id}>
