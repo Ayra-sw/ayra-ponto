@@ -60,6 +60,10 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   .p7s destacado (entregues num .zip) e o Comprovante de Registro de Ponto do Trabalhador em PDF com
   assinatura PAdES (arts. 79 e 80). O certificado A1 fica no Storage privado `certificados` e a senha no
   segredo `CERTIFICADO_SENHA` — nunca no código.
+- **Comprovante por e-mail (Fase 5C):** cada marcação entra na fila `fila_comprovantes_email` e a função
+  `assinar` envia o PDF assinado pelo Resend para o e-mail de login da pessoa (até 48 horas, art. 80). Um
+  agendamento (pg_cron) refaz o que falhou a cada 5 minutos. Cada pessoa liga ou desliga em Minha conta.
+  Segredos: `RESEND_API_KEY`, `EMAIL_REMETENTE` (sem ele, modo teste) e `EMAIL_TESTE`.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
@@ -74,6 +78,7 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 
 - **Contato do suporte:** WhatsApp e e-mail em `src/lib/suporte.js` (antes do lançamento).
 - **Certificado e-CNPJ A1 da Ayra Soluções** no lugar do certificado de teste.
+- **Domínio próprio** verificado no Resend, para o comprovante por e-mail sair do modo teste.
 - **Atestado Técnico e Termo de Responsabilidade** (art. 89), com o advogado.
 - **Registro no INPI** e dados do desenvolvedor em `ayra_sistema`.
 

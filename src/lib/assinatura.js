@@ -20,6 +20,14 @@ export async function chamarAssinatura(corpo) {
   }
 }
 
+// Fase 5C: pede ao servidor para mandar já o comprovante por e-mail.
+// Não espera nem mostra erro: se falhar, o agendamento do banco envia em até 5 minutos.
+export function enviarComprovantePorEmail() {
+  try {
+    supabase.functions.invoke('assinar', { body: { acao: 'processar_fila' } }).catch(() => {})
+  } catch { /* o agendamento cuida */ }
+}
+
 export function base64ParaBytes(b64) {
   const s = atob(b64)
   const b = new Uint8Array(s.length)

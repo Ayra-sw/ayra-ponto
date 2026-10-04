@@ -1,9 +1,10 @@
 // =============================================================================
-// Ayra Ponto — Edge Function "assinar" (Fase 5B)
+// Ayra Ponto — Edge Function "assinar" (Fases 5B e 5C)
 //
 // Assina com o certificado digital A1 da Ayra Soluções (ICP-Brasil):
 //   * AFD e AEJ  → assinatura CAdES em arquivo .p7s destacado (Portaria 671)
 //   * Comprovante de Registro de Ponto do Trabalhador → PDF com assinatura PAdES
+//   * Fase 5C: envia o comprovante de cada marcação por e-mail (Resend)
 //
 // O certificado fica no Storage, no cofre privado "certificados", com o nome
 // "certificado-a1.pfx". A senha fica no segredo CERTIFICADO_SENHA da função.
@@ -16,6 +17,16 @@
 //   { "acao": "status" }
 //   { "acao": "afd" | "aej", "filial": "<uuid>", "inicio": "AAAA-MM-DD", "fim": "AAAA-MM-DD" }
 //   { "acao": "comprovante", "registro": "<uuid>" }
+//   { "acao": "processar_fila" }  → envia os comprovantes por e-mail que estão na fila
+//       - com o login da pessoa: só os dela (o app chama logo depois da marcação);
+//       - com o cabeçalho x-ayra-fila: todos (o agendamento do banco, a cada 5 min).
+//
+// Segredos do e-mail (Edge Functions → Secrets):
+//   RESEND_API_KEY   chave do Resend (obrigatória para enviar)
+//   EMAIL_REMETENTE  ex.: Ayra Ponto <comprovante@seudominio.com.br>
+//                    Sem ele, é o MODO TESTE: sai de onboarding@resend.dev e
+//                    só vai para o EMAIL_TESTE (o Resend só deixa assim).
+//   EMAIL_TESTE      o e-mail da conta do Resend, para o modo teste
 // =============================================================================
 import forge from 'npm:node-forge@1.3.1'
 import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1'
@@ -23,7 +34,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-ayra-fila',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 const ARQUIVO_CERTIFICADO = 'certificado-a1.pfx'
@@ -270,6 +281,108 @@ async function assinarPdf(pdf: any, pagina: any, c: Certificado): Promise<Uint8A
   return saida
 }
 
+
+// ------------------------------------------------------------ comprovante por e-mail (Fase 5C)
+const APP_URL = () => (Deno.env.get('APP_URL') || 'https://ayra-ponto.vercel.app').replace(/\/+$/, '')
+const RESEND_URL = () => (Deno.env.get('RESEND_API_URL') || 'https://api.resend.com').replace(/\/+$/, '') + '/emails'
+
+function html(t: unknown): string {
+  return String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
+}
+
+export function montarEmail(d: any, teste: boolean) {
+  const tipo = ROTULO_TIPO[d.tipo] || d.tipo
+  const hora = String(d.hora || '').slice(0, 5)
+  const nsr = Number(d.nsr)
+  const nome = String(d.trabalhador?.nome || '').trim().split(/\s+/)[0] || ''
+  const empresa = d.empregador?.razao_social || ''
+  const assunto = `${teste ? '[TESTE] ' : ''}Comprovante de ponto: ${tipo} em ${d.data} às ${hora} (NSR ${nsr})`
+  const linhas: [string, string][] = [
+    ['Marcação', tipo], ['Data', d.data], ['Horário', `${d.hora} (UTC${String(d.fuso || '-0300').slice(0, 3)}:${String(d.fuso || '-0300').slice(3)})`],
+    ['NSR', String(nsr).padStart(9, '0')], ['Empresa', empresa], ['Unidade', d.unidade || ''],
+  ]
+  const texto = [
+    `Olá${nome ? ', ' + nome : ''}!`, '', 'Sua marcação de ponto foi registrada.', '',
+    ...linhas.filter(([, v]) => v).map(([r, v]) => `${r}: ${v}`), '',
+    'O Comprovante de Registro de Ponto do Trabalhador, assinado eletronicamente, está anexado em PDF.',
+    'Ele também fica no Ayra Ponto, em Meu histórico.', '',
+    `Não quer receber estes e-mails? Abra o Ayra Ponto (${APP_URL()}), vá em Minha conta e desligue "Comprovante por e-mail".`,
+  ].join('\n')
+  const corpo = `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#1b2a47">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:12px;border:1px solid #e5e7eb">
+<tr><td style="padding:20px 24px;background:#1b2a47;border-radius:12px 12px 0 0;color:#ffffff;font-size:18px;font-weight:bold">Ayra Ponto${teste ? ' <span style="font-size:12px;color:#d6b26e">· TESTE</span>' : ''}</td></tr>
+<tr><td style="padding:24px">
+<p style="margin:0 0 12px;font-size:16px">Olá${nome ? ', ' + html(nome) : ''}!</p>
+<p style="margin:0 0 16px;font-size:15px">Sua marcação de ponto foi registrada.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;border-collapse:collapse">
+${linhas.filter(([, v]) => v).map(([r, v]) => `<tr><td style="padding:6px 0;color:#6b7280;width:110px">${html(r)}</td><td style="padding:6px 0;font-weight:bold">${html(v)}</td></tr>`).join('\n')}
+</table>
+<p style="margin:16px 0 0;font-size:14px">O <strong>Comprovante de Registro de Ponto do Trabalhador</strong>, assinado eletronicamente, está anexado em PDF. Ele também fica no Ayra Ponto, em <em>Meu histórico</em>.</p>
+</td></tr>
+<tr><td style="padding:16px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">Não quer receber estes e-mails? Abra o <a href="${html(APP_URL())}" style="color:#8a6a2f">Ayra Ponto</a>, vá em <strong>Minha conta</strong> e desligue “Comprovante por e-mail”.</td></tr>
+</table></body></html>`
+  return { assunto, texto, html: corpo, arquivo: `comprovante-ponto-NSR-${String(nsr).padStart(9, '0')}.pdf` }
+}
+
+type ResultadoEnvio = { resultado: 'enviado' | 'erro' | 'tentar_de_novo'; erro?: string; id?: string }
+
+async function enviarResend(chave: string, de: string, para: string, idem: string, m: ReturnType<typeof montarEmail>, pdf: Uint8Array): Promise<ResultadoEnvio> {
+  let resp: Response
+  try {
+    resp = await fetch(RESEND_URL(), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json', 'Idempotency-Key': idem },
+      body: JSON.stringify({ from: de, to: [para], subject: m.assunto, text: m.texto, html: m.html, attachments: [{ filename: m.arquivo, content: base64(pdf) }] }),
+    })
+  } catch (e) {
+    return { resultado: 'tentar_de_novo', erro: 'Sem conexão com o Resend: ' + String((e as Error).message).slice(0, 200) }
+  }
+  let corpo: any = {}
+  try { corpo = await resp.json() } catch { /* sem corpo */ }
+  const msg = `Resend ${resp.status}: ${corpo?.message || corpo?.name || resp.statusText || ''}`.slice(0, 400)
+  if (resp.ok) return { resultado: 'enviado', id: corpo?.id }
+  // Mesmo envio pedido de novo (o primeiro já tinha saído)
+  if (resp.status === 409 && corpo?.name !== 'concurrent_idempotent_requests') return { resultado: 'enviado', id: corpo?.id, erro: msg }
+  if (resp.status === 409 || resp.status === 429 || resp.status >= 500) return { resultado: 'tentar_de_novo', erro: msg }
+  return { resultado: 'erro', erro: msg }
+}
+
+export async function processarFila(admin: any, cert: Certificado | null, perfil: string | null) {
+  const chave = Deno.env.get('RESEND_API_KEY') || ''
+  const remetente = (Deno.env.get('EMAIL_REMETENTE') || '').trim()
+  const emailTeste = (Deno.env.get('EMAIL_TESTE') || '').trim().toLowerCase()
+  const modoTeste = !remetente
+  const de = remetente || 'Ayra Ponto <onboarding@resend.dev>'
+  const resumo = { enviados: 0, ignorados: 0, falhas: 0, aguardando: 0, configurado: Boolean(chave), modo_teste: modoTeste }
+  const { data: itens, error } = await admin.rpc('fila_comprovantes_pegar', { p_perfil: perfil, p_limite: 5 })
+  if (error) return { ...resumo, erro: 'A fila do comprovante por e-mail não está instalada (Fase 5C).' }
+  const concluir = (id: string, resultado: string, erro?: string | null, idEnvio?: string | null) =>
+    admin.rpc('fila_comprovantes_concluir', { p_registro: id, p_resultado: resultado, p_erro: erro ?? null, p_id_envio: idEnvio ?? null })
+
+  for (const item of (itens || []) as any[]) {
+    try {
+      if (!chave) { await concluir(item.registro_id, 'pendente', 'Falta o segredo RESEND_API_KEY.'); resumo.aguardando++; continue }
+      const para = String(item.destinatario || '').trim()
+      if (!para) { await concluir(item.registro_id, 'sem_email'); resumo.ignorados++; continue }
+      if (modoTeste && para.toLowerCase() !== emailTeste) {
+        await concluir(item.registro_id, 'ignorado_teste', 'Modo teste: só envia para o EMAIL_TESTE.'); resumo.ignorados++; continue
+      }
+      const { data: d, error: e } = await admin.rpc('comprovante_montar', { p_registro: item.registro_id })
+      if (e || !d) { await concluir(item.registro_id, 'tentar_de_novo', 'Comprovante: ' + (e?.message || 'sem dados')); resumo.falhas++; continue }
+      const pdf = await montarComprovante(d, cert)
+      const r = await enviarResend(chave, de, para, `comprovante-${item.registro_id}`, montarEmail(d, modoTeste), pdf)
+      await concluir(item.registro_id, r.resultado, r.erro, r.id)
+      if (r.resultado === 'enviado') resumo.enviados++
+      else resumo.falhas++
+    } catch (e) {
+      console.error(e)
+      await concluir(item.registro_id, 'tentar_de_novo', String((e as Error).message || e).slice(0, 300))
+      resumo.falhas++
+    }
+  }
+  return resumo
+}
+
 // ------------------------------------------------------------ servidor
 let cacheCert: { em: number; valor: Certificado | null; erro?: string } | null = null
 async function obterCertificado(admin: any): Promise<{ cert: Certificado | null; erro?: string }> {
@@ -306,25 +419,62 @@ function resposta(corpo: unknown, status = 200) {
   return new Response(JSON.stringify(corpo), { status, headers: { ...CORS, 'Content-Type': 'application/json' } })
 }
 
+// Guarda (uma vez por instância) o endereço da função para o agendamento do banco
+let enderecoGuardado = false
+async function guardarEndereco(admin: any, url: string) {
+  if (enderecoGuardado) return
+  enderecoGuardado = true
+  try {
+    const { error } = await admin.rpc('fila_comprovantes_preparar', { p_url: url, p_chave: chaveDoProjeto('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS') })
+    if (error) enderecoGuardado = false
+  } catch { enderecoGuardado = false }
+}
+
 if (typeof Deno !== 'undefined' && Deno.serve && !Deno.env.get('AYRA_SEM_SERVIDOR')) {
   Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
     if (req.method !== 'POST') return resposta({ erro: 'Use POST.' }, 405)
-    const autorizacao = req.headers.get('Authorization') || ''
-    if (!autorizacao) return resposta({ erro: 'É preciso estar logado.' }, 401)
     const url = Deno.env.get('SUPABASE_URL')!
-    const usuario = createClient(url, chaveDoProjeto('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { global: { headers: { Authorization: autorizacao } }, auth: { persistSession: false } })
     const admin = createClient(url, chaveDoProjeto('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEYS'), { auth: { persistSession: false } })
+    await guardarEndereco(admin, url)
 
     let pedido: any
     try { pedido = await req.json() } catch { return resposta({ erro: 'Pedido inválido.' }, 400) }
+
+    // Agendamento do banco: senha da fila no cabeçalho, envia de todos
+    const tokenFila = req.headers.get('x-ayra-fila')
+    if (tokenFila) {
+      if (pedido?.acao !== 'processar_fila') return resposta({ erro: 'Ação desconhecida.' }, 400)
+      const { data: valido } = await admin.rpc('fila_comprovantes_token_ok', { p_token: tokenFila })
+      if (valido !== true) return resposta({ erro: 'Senha da fila inválida.' }, 401)
+      try {
+        const { cert } = await obterCertificado(admin)
+        return resposta(await processarFila(admin, cert, null))
+      } catch (e) {
+        console.error(e)
+        return resposta({ erro: 'Não foi possível enviar agora.' }, 500)
+      }
+    }
+
+    const autorizacao = req.headers.get('Authorization') || ''
+    if (!autorizacao) return resposta({ erro: 'É preciso estar logado.' }, 401)
+    const usuario = createClient(url, chaveDoProjeto('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { global: { headers: { Authorization: autorizacao } }, auth: { persistSession: false } })
 
     try {
       const { cert, erro: erroCert } = await obterCertificado(admin)
       if (pedido.acao === 'status') {
         const { data: u } = await usuario.auth.getUser()
         if (!u?.user) return resposta({ erro: 'É preciso estar logado.' }, 401)
-        return resposta({ configurado: Boolean(cert), aviso: erroCert || null, certificado: cert?.info || null })
+        return resposta({
+          configurado: Boolean(cert), aviso: erroCert || null, certificado: cert?.info || null,
+          email: { configurado: Boolean(Deno.env.get('RESEND_API_KEY')), modo_teste: !(Deno.env.get('EMAIL_REMETENTE') || '').trim() },
+        })
+      }
+
+      if (pedido.acao === 'processar_fila') {
+        const { data: u } = await usuario.auth.getUser()
+        if (!u?.user) return resposta({ erro: 'É preciso estar logado.' }, 401)
+        return resposta(await processarFila(admin, cert, u.user.id))
       }
 
       if (pedido.acao === 'afd' || pedido.acao === 'aej') {

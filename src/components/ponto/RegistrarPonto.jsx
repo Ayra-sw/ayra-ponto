@@ -8,6 +8,7 @@ import useRosto from '../../hooks/useRosto'
 import { obterLocalizacao } from '../../lib/localizacao'
 import { traduzirErro } from '../../lib/mensagensErro'
 import { useConexao } from '../../lib/pwa'
+import { enviarComprovantePorEmail } from '../../lib/assinatura'
 import { duracao, hora, inicioDeHoje, nsr, primeiroNome } from '../../lib/formatos'
 import {
   TIPOS_MARCACAO, SITUACAO_AGORA, acaoMarcacao, minutosTrabalhados,
@@ -87,6 +88,7 @@ export default function RegistrarPonto() {
     setEscolherOutro(false)
     avisar(`${rotuloMarcacao(data.tipo)} registrada às ${hora(data.marcado_em)} · NSR ${Number(data.nsr)}`)
     setRegistros((lista) => [...lista, data])
+    enviarComprovantePorEmail()
   }
 
   async function registrar() {
