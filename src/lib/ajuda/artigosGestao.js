@@ -442,14 +442,14 @@ const ARTIGOS_GESTAO = [
         'Abra [Arquivos fiscais](/gestao/arquivos-fiscais), no menu Gestão.',
         'Se houver mais de uma unidade, escolha a unidade: cada uma tem a própria sequência de NSR e o próprio arquivo.',
         'Escolha o período (há os botões **Este mês** e **Mês passado**).',
-        'Clique em **Baixar AFD** ou **Baixar AEJ**. O arquivo de texto é salvo no seu computador.',
+        'Clique em **Baixar AFD** ou **Baixar AEJ**. Vem um arquivo .zip com o arquivo de texto e a assinatura digital (.p7s), que devem ser entregues juntos.',
       ] },
       { tipo: 'lista', itens: [
         'O AFD pode ter até 1 ano por arquivo; o AEJ, até 3 meses (gere em partes, se precisar).',
         'Só o administrador e o RH baixam esses arquivos.',
         'O CNPJ da empresa precisa estar cadastrado em [Empresa](/gestao/configuracoes/empresa).',
       ] },
-      { tipo: 'atencao', texto: 'A assinatura digital ICP-Brasil dos arquivos (o arquivo .p7s que os acompanha) chega na próxima atualização do Ayra Ponto. Guarde os arquivos como foram baixados: qualquer mudança no texto invalida o código de integridade.' },
+      { tipo: 'atencao', texto: 'O arquivo .p7s é a assinatura digital ICP-Brasil (padrão CAdES) do arquivo de texto. Entregue os dois juntos e não altere o texto: qualquer mudança invalida a assinatura e o código de integridade.' },
     ],
   },
   {

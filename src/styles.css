@@ -954,3 +954,8 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 
 /* ------------------------------------------------- Arquivos fiscais (5A) */
 .arquivo-fiscal__icone { width: 32px; height: 32px; color: var(--dourado-texto); flex: none; }
+
+/* ------------------------------------------------- Assinatura digital (5B) */
+.linha-tempo__fim { display: inline-flex; align-items: center; gap: 2px; }
+.linha-tempo__fim .btn--icone { width: 32px; min-height: 32px; }
+.aviso--atencao svg { color: #F2C14E; }

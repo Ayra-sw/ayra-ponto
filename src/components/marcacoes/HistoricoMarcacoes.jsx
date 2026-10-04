@@ -7,6 +7,7 @@ import { diaIso } from '../../lib/ajustes'
 import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
+import BotaoComprovantePdf from '../ponto/BotaoComprovantePdf'
 
 const nomeDoMes = (d) => {
   const t = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -105,7 +106,10 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
                 <li key={r.id}>
                   <span className="linha-tempo__hora">{hora(r.marcado_em)}</span>
                   <span>{rotuloMarcacao(r.tipo)}</span>
-                  <span className="linha-tempo__nsr" title="Número de registro">NSR {nsr(r.nsr)}</span>
+                  <span className="linha-tempo__fim">
+                    <span className="linha-tempo__nsr" title="Número de registro">NSR {nsr(r.nsr)}</span>
+                    <BotaoComprovantePdf registroId={r.id} nsr={r.nsr} compacto />
+                  </span>
                 </li>
               ))}
             </ul>

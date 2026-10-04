@@ -56,6 +56,10 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
 - **Arquivos fiscais (Portaria 671):** AFD (leiaute 004, com CRC-16 e SHA-256 encadeado) e AEJ (leiaute 002)
   por unidade e período, para administrador e RH. Cada linha do AFD é gravada no momento do fato e nunca muda
   (tabela `afd_registros`); cadastros da empresa e das pessoas usam a mesma sequência de NSR das marcações.
+- **Assinatura digital (Edge Function `supabase/functions/assinar`):** AFD e AEJ com assinatura CAdES em
+  .p7s destacado (entregues num .zip) e o Comprovante de Registro de Ponto do Trabalhador em PDF com
+  assinatura PAdES (arts. 79 e 80). O certificado A1 fica no Storage privado `certificados` e a senha no
+  segredo `CERTIFICADO_SENHA` — nunca no código.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
@@ -69,7 +73,8 @@ A estrutura do banco e as migrações ficam em `supabase/`. Cada fase tem um gui
 ## Próximas fases
 
 - **Contato do suporte:** WhatsApp e e-mail em `src/lib/suporte.js` (antes do lançamento).
-- **Fase 5B:** assinatura digital ICP-Brasil (AFD e AEJ em .p7s; comprovante e espelho em PDF assinado).
+- **Certificado e-CNPJ A1 da Ayra Soluções** no lugar do certificado de teste.
+- **Atestado Técnico e Termo de Responsabilidade** (art. 89), com o advogado.
 - **Registro no INPI** e dados do desenvolvedor em `ayra_sistema`.
 
 ## Como rodar localmente (opcional)
