@@ -1,6 +1,7 @@
-// Apresentação institucional da Ayra Soluções no alto da Visão geral
-// (só administrador e RH). É uma faixa discreta: o painel continua sendo
-// o principal, logo abaixo.
+// Apresentação institucional da Ayra Soluções.
+//   * Visão geral (administrador e RH): faixa completa, com o desenho à direita.
+//   * Início do colaborador: versão compacta (mais baixa), para o relógio e o
+//     botão de bater ponto continuarem aparecendo sem rolar.
 //
 // Para trocar o nome ou o slogan, mude as duas linhas abaixo.
 export const MARCA_EMPRESA = 'AYRA SOLUÇÕES'
@@ -37,10 +38,10 @@ function Grafismo() {
   )
 }
 
-export default function ApresentacaoMarca() {
+export default function ApresentacaoMarca({ compacta = false }) {
   return (
-    <section className="apresentacao" aria-labelledby="apresentacao-nome">
-      <Grafismo />
+    <section className={`apresentacao${compacta ? ' apresentacao--compacta' : ''}`} aria-labelledby="apresentacao-nome">
+      {!compacta && <Grafismo />}
       <div className="apresentacao__conteudo">
         <Emblema />
         <div className="apresentacao__texto">
