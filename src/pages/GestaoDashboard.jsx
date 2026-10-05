@@ -15,6 +15,7 @@ import Alerta from '../components/ui/Alerta'
 import { Selecao } from '../components/ui/Campo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../components/ui/Estados'
 import ConvidarPessoas from '../components/ConvidarPessoas'
+import ApresentacaoMarca from '../components/gestao/ApresentacaoMarca'
 
 const ORDEM = { trabalhando: 0, intervalo: 1, sem_marcacao: 2, encerrado: 3 }
 
@@ -81,6 +82,8 @@ export default function GestaoDashboard() {
 
   return (
     <div className="pagina">
+      {['administrador', 'rh'].includes(perfil.tipo) && <ApresentacaoMarca />}
+
       <div className="pagina__cabecalho">
         <div className="pagina__titulo">
           <h1>Hoje</h1>

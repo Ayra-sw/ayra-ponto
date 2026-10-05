@@ -959,3 +959,47 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .linha-tempo__fim { display: inline-flex; align-items: center; gap: 2px; }
 .linha-tempo__fim .btn--icone { width: 32px; min-height: 32px; }
 .aviso--atencao svg { color: #F2C14E; }
+
+/* ------------------------------------------- Apresentação da marca (Visão geral) */
+.apresentacao {
+  position: relative; overflow: hidden; isolation: isolate;
+  background:
+    linear-gradient(100deg, var(--superficie) 0%, var(--superficie) 46%, color-mix(in srgb, var(--superficie-2) 70%, var(--superficie)) 100%);
+  border: 1px solid var(--borda); border-radius: var(--raio-cartao);
+  padding: 22px 24px;
+}
+.apresentacao::before { /* fio dourado no topo */
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
+  background: linear-gradient(90deg, var(--dourado), color-mix(in srgb, var(--dourado) 20%, transparent) 70%, transparent);
+}
+.apresentacao__conteudo { position: relative; z-index: 1; display: flex; align-items: center; gap: 18px; }
+.apresentacao__emblema { width: 60px; height: 60px; flex: none; }
+.apresentacao__emblema-fundo { fill: #1B2A47; }
+.apresentacao__emblema-traco { stroke: #D2AE5E; }
+.apresentacao__texto { display: grid; gap: 6px; min-width: 0; }
+.apresentacao__nome {
+  margin: 0; font-size: clamp(1.35rem, 1rem + 1.4vw, 1.9rem); font-weight: 600; line-height: 1.1;
+  letter-spacing: 0.14em; color: var(--primaria);
+}
+.apresentacao__fio { display: block; width: 44px; height: 2px; border-radius: 2px; background: var(--dourado); }
+.apresentacao__slogan { margin: 0; color: var(--texto-suave); font-size: 0.98rem; letter-spacing: 0.01em; }
+.apresentacao__grafismo {
+  position: absolute; z-index: 0; right: 0; top: 0; height: 100%; width: min(48%, 420px);
+  pointer-events: none;
+}
+.apresentacao__aneis circle { stroke: var(--primaria); stroke-width: 1; opacity: 0.12; }
+.apresentacao__rede line { stroke: var(--dourado); stroke-width: 1; opacity: 0.35; }
+.apresentacao__no { fill: var(--primaria); opacity: 0.22; }
+.apresentacao__no--destaque { fill: var(--dourado); opacity: 0.75; }
+:root[data-theme='dark'] .apresentacao__emblema-fundo { fill: #1B2A47; stroke: var(--borda-forte); stroke-width: 1; }
+:root[data-theme='dark'] .apresentacao__aneis circle { opacity: 0.18; }
+
+@media (max-width: 640px) {
+  .apresentacao { padding: 18px 16px; }
+  .apresentacao__conteudo { gap: 14px; }
+  .apresentacao__emblema { width: 46px; height: 46px; }
+  .apresentacao__nome { letter-spacing: 0.1em; }
+  .apresentacao__slogan { font-size: 0.9rem; }
+  .apresentacao__grafismo { display: none; }
+}
+@media print { .apresentacao { display: none !important; } }
