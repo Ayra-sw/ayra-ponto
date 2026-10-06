@@ -42,6 +42,7 @@ export default function RegistrarPonto() {
   const [erro, setErro] = useState('')
   const [comprovante, setComprovante] = useState(null)
   const [verificacoes, setVerificacoes] = useState({}) // registro_id -> verificação facial
+  const [localDoComprovante, setLocalDoComprovante] = useState(null) // Fase 6A: aviso gentil
   const [fluxoFacial, setFluxoFacial] = useState(false)
   const rosto = useRosto()
   const local = useLocation()
@@ -82,7 +83,19 @@ export default function RegistrarPonto() {
     finalizar(registro)
   }
 
+  // Fase 6A: se a unidade tem cerca e a pessoa marcou longe (ou sem localização),
+  // mostra um aviso gentil. Nunca atrapalha: qualquer falha é ignorada.
+  async function conferirLocal(registroId) {
+    setLocalDoComprovante(null)
+    try {
+      const { data: local } = await supabase.from('marcacao_local')
+        .select('registro_id, situacao, distancia_m, raio_m').eq('registro_id', registroId).maybeSingle()
+      if (local) setLocalDoComprovante(local)
+    } catch { /* sem a Fase 6A no banco, não há aviso */ }
+  }
+
   function finalizar(data) {
+    conferirLocal(data.id)
     setComprovante(data)
     setTipoEscolhido(null)
     setEscolherOutro(false)
@@ -128,7 +141,7 @@ export default function RegistrarPonto() {
   return (
     <div className="ponto">
       {comprovante && (
-        <Comprovante registro={comprovante} verificacao={verificacoes[comprovante.id]} perfil={perfil} unidade={unidade} empresa={empresa} aoFechar={() => setComprovante(null)} />
+        <Comprovante registro={comprovante} verificacao={verificacoes[comprovante.id]} local={localDoComprovante?.registro_id === comprovante.id ? localDoComprovante : null} perfil={perfil} unidade={unidade} empresa={empresa} aoFechar={() => setComprovante(null)} />
       )}
       {fluxoFacial && (
         <Suspense fallback={null}>

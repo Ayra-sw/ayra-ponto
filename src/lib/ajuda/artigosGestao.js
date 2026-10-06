@@ -88,6 +88,36 @@ const ARTIGOS_GESTAO = [
       ] },
     ],
   },
+  {
+    id: 'cerca-virtual',
+    categoria: 'ponto',
+    publico: ['gestao'],
+    titulo: 'Cerca virtual e “ver no mapa”',
+    resumo: 'Marque o local da unidade e veja quem registrou o ponto longe dele.',
+    palavras: ['cerca', 'geolocalizacao', 'localizacao', 'mapa', 'gps', 'fora do local', 'raio', 'distancia', 'endereco'],
+    telas: ['/gestao/configuracoes/unidades', '/gestao/pessoas'],
+    corpo: [
+      'A cerca virtual é um círculo ao redor da unidade. Quando alguém registra o ponto fora dele, a marcação ganha o selo **Fora do local**, com a distância. Serve só para o RH conferir: **o ponto nunca é bloqueado**, como manda a Portaria 671.',
+      { tipo: 'sub', titulo: 'Ligar a cerca em uma unidade' },
+      { tipo: 'passos', itens: [
+        'Abra [Unidades](/gestao/configuracoes/unidades) e clique em **Editar** na unidade (só o administrador).',
+        'No fim da janela, em **Localização e cerca virtual**, clique em **Buscar pelo endereço**. Se o ponto cair no lugar errado, **clique no mapa** onde fica a entrada.',
+        'Se você estiver na unidade agora, o botão **Estou na unidade agora** marca o ponto pela localização do seu aparelho.',
+        'Escolha o **raio**. O padrão é 200 metros; pode ir de 50 metros a 5 km.',
+        'Clique em **Salvar alterações**. Para desligar, use **Desligar a cerca**.',
+      ] },
+      { tipo: 'sub', titulo: 'Ver as marcações' },
+      'Na ficha da pessoa, aba **Marcações**, cada marcação fora da cerca mostra **Fora do local** e a distância. O ícone de mapa abre o local exato, com o círculo da cerca. Marcações sem localização aparecem como **Sem localização**.',
+      { tipo: 'lista', itens: [
+        'Cada marcação guarda o local e o raio **da época**: se você mudar a unidade de lugar, as marcações antigas não mudam.',
+        'A localização vem do navegador ou do celular e pode errar por algumas dezenas de metros, e mais ainda em computadores. Trate como indício, não como prova.',
+        'Em lugares grandes ou abertos (obra, fábrica, fazenda), use um raio maior.',
+        'A pessoa recebe só um aviso gentil na hora da marcação; o ponto é registrado do mesmo jeito.',
+        'Quem trabalha fora da unidade (visita, entrega) vai aparecer como fora do local. Isso é esperado.',
+      ] },
+      { tipo: 'atencao', texto: 'Avise a equipe que a localização é guardada junto de cada marcação e que o RH pode vê-la. É uma informação pessoal e deve constar na política de privacidade da empresa.' },
+    ],
+  },
   // ------------------------------------------------------------- Pessoas
   {
     id: 'ficha-pessoa',

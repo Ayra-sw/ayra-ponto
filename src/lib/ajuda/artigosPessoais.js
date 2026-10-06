@@ -73,6 +73,26 @@ const ARTIGOS_PESSOAIS = [
     ],
   },
   {
+    id: 'localizacao-ponto',
+    categoria: 'ponto',
+    publico: ['colaborador'],
+    titulo: 'Localização no ponto',
+    resumo: 'Por que o navegador pede a sua localização e o que o aviso “fora do local” significa.',
+    palavras: ['localizacao', 'gps', 'fora do local', 'cerca', 'mapa', 'permitir', 'permissao', 'onde estou', 'privacidade'],
+    telas: ['/', '/gestao/meu-ponto'],
+    corpo: [
+      'Ao bater o ponto, o navegador pode pedir permissão para saber **onde você está**. Se você permitir, o lugar fica guardado junto da marcação e o RH da sua empresa pode vê-lo. Se não permitir, **o ponto é registrado igual**.',
+      { tipo: 'sub', titulo: 'O aviso “a cerca de … da unidade”' },
+      'Algumas empresas marcam o local da unidade no sistema. Se você registrar o ponto longe dele, aparece um aviso gentil no comprovante. Ele **não impede nada**: a marcação vale normalmente. Se você estava em visita, entrega ou outro trabalho externo, está tudo certo.',
+      { tipo: 'lista', itens: [
+        'A localização do computador costuma errar mais do que a do celular.',
+        'Para melhorar, permita a localização no navegador e, no celular, ligue o GPS.',
+        'Sem permissão, o ponto é registrado sem localização, e a empresa pode ver isso.',
+      ] },
+      { tipo: 'dica', texto: 'Dúvidas sobre o uso da sua localização? Fale com o RH da sua empresa.' },
+    ],
+  },
+  {
     id: 'cadastrar-rosto',
     categoria: 'facial',
     publico: ['colaborador'],

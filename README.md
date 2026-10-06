@@ -64,6 +64,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   `assinar` envia o PDF assinado pelo Resend para o e-mail de login da pessoa (até 48 horas, art. 80). Um
   agendamento (pg_cron) refaz o que falhou a cada 5 minutos. Cada pessoa liga ou desliga em Minha conta.
   Segredos: `RESEND_API_KEY`, `EMAIL_REMETENTE` (sem ele, modo teste) e `EMAIL_TESTE`.
+- **Geolocalização (Fase 6A):** cada unidade pode ter um ponto no mapa e uma cerca virtual (raio de 50 m a 5 km,
+  padrão 200 m). A cada marcação, um gatilho grava em `marcacao_local` se foi dentro, fora (com a distância) ou sem
+  localização, com o local e o raio da época. **Nunca bloqueia o ponto.** Administrador e RH veem o selo "Fora do
+  local" e o botão "Ver no mapa" na ficha da pessoa; o colaborador recebe só um aviso gentil no comprovante. O mapa é
+  um componente próprio (`src/components/geo/Mapa.jsx`) sobre os blocos do OpenStreetMap; para trocar o provedor
+  de mapa, mude `MAPA_TILES` em `src/lib/geo.js`.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

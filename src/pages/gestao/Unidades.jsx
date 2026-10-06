@@ -15,6 +15,8 @@ import Alerta from '../../components/ui/Alerta'
 import { Campo, Selecao } from '../../components/ui/Campo'
 import { Confirmacao, PainelLateral } from '../../components/ui/Dialogo'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../../components/ui/Estados'
+import CercaVirtual from '../../components/geo/CercaVirtual'
+import { RAIO_MAX, RAIO_MIN, RAIO_PADRAO } from '../../lib/geo'
 
 const VAZIA = {
   nome: '', tipo_identificador: '', identificador_legal: '', cep: '', logradouro: '', numero: '',
@@ -47,6 +49,9 @@ export default function Unidades() {
       setPessoasPorUnidade(contagem)
     })
   }, [perfil.empresa_id, unidades])
+
+  // as colunas da cerca só existem depois da Fase 6A no banco
+  const suportaCerca = unidades.length === 0 || unidades.some((u) => 'raio_cerca_m' in u)
 
   const ordenadas = useMemo(() => [...unidades].sort((a, b) => Number(b.ativa) - Number(a.ativa)), [unidades])
 
@@ -115,6 +120,9 @@ export default function Unidades() {
                   <dt>Endereço</dt><dd>{endereco || u.endereco || 'Não informado'}</dd>
                   <dt>Pessoas</dt><dd>{pessoas === 0 ? 'Nenhuma' : pessoas === 1 ? '1 pessoa' : `${pessoas} pessoas`}</dd>
                   <dt>Fuso horário</dt><dd>{FUSOS.find((f) => f.valor === u.fuso_horario)?.rotulo || u.fuso_horario}</dd>
+                  {suportaCerca && (
+                    <><dt>Cerca virtual</dt><dd>{u.latitude != null ? `Ligada · raio de ${u.raio_cerca_m} m` : <span className="suave">Desligada</span>}</dd></>
+                  )}
                 </dl>
                 {podeEditar && (
                   <div className="acoes">
@@ -145,6 +153,7 @@ export default function Unidades() {
         <FormularioUnidade
           unidade={editando}
           empresaId={perfil.empresa_id}
+          suportaCerca={suportaCerca}
           aoFechar={() => setEditando(null)}
           aoSalvar={async (nova) => { setEditando(null); await recarregar(); avisar(nova ? 'Unidade cadastrada.' : 'Unidade atualizada.') }}
         />
@@ -165,7 +174,7 @@ export default function Unidades() {
   )
 }
 
-function FormularioUnidade({ unidade, empresaId, aoFechar, aoSalvar }) {
+function FormularioUnidade({ unidade, empresaId, suportaCerca, aoFechar, aoSalvar }) {
   const nova = !unidade.id
   const [form, setForm] = useState(() => {
     const base = { ...VAZIA, ...Object.fromEntries(Object.keys(VAZIA).map((c) => [c, unidade[c] ?? VAZIA[c]])) }
@@ -174,6 +183,11 @@ function FormularioUnidade({ unidade, empresaId, aoFechar, aoSalvar }) {
     base.cep = formatarCep(unidade.cep || '')
     return base
   })
+  const [cerca, setCerca] = useState(() => ({
+    lat: unidade.latitude != null ? Number(unidade.latitude) : null,
+    lon: unidade.longitude != null ? Number(unidade.longitude) : null,
+    raio: String(unidade.raio_cerca_m ?? RAIO_PADRAO),
+  }))
   const [erros, setErros] = useState({})
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -202,6 +216,10 @@ function FormularioUnidade({ unidade, empresaId, aoFechar, aoSalvar }) {
       e2.identificador_legal = 'Informe o número do documento ou escolha "Não informar".'
     }
     if (form.cep && apenasDigitos(form.cep).length !== 8) e2.cep = 'O CEP tem 8 números.'
+    const raio = Number(cerca.raio)
+    if (suportaCerca && cerca.lat != null && !(Number.isInteger(raio) && raio >= RAIO_MIN && raio <= RAIO_MAX)) {
+      e2.raio = `O raio vai de ${RAIO_MIN} metros a 5 km (${RAIO_MAX} metros), em número inteiro.`
+    }
     setErros(e2)
     if (Object.keys(e2).length) return
 
@@ -219,6 +237,11 @@ function FormularioUnidade({ unidade, empresaId, aoFechar, aoSalvar }) {
       cidade: form.cidade.trim() || null,
       uf: form.uf || null,
       fuso_horario: form.fuso_horario || FUSO_PADRAO,
+    }
+    if (suportaCerca) {
+      dados.latitude = cerca.lat
+      dados.longitude = cerca.lon
+      dados.raio_cerca_m = Number.isInteger(raio) && raio >= RAIO_MIN && raio <= RAIO_MAX ? raio : RAIO_PADRAO
     }
     setSalvando(true)
     const { error } = nova
@@ -269,6 +292,14 @@ function FormularioUnidade({ unidade, empresaId, aoFechar, aoSalvar }) {
         <Selecao rotulo="Fuso horário" value={form.fuso_horario} onChange={mudar('fuso_horario')}
           dica="Define o horário local usado nos relatórios e no espelho de ponto desta unidade."
           opcoes={FUSOS.map((f) => ({ valor: f.valor, rotulo: f.rotulo }))} />
+        {suportaCerca && (
+          <CercaVirtual
+            valor={cerca}
+            aoMudar={(v) => { setCerca(v); setErros((x) => ({ ...x, raio: '' })) }}
+            erroRaio={erros.raio}
+            endereco={{ logradouro: form.logradouro, numero: form.numero, bairro: form.bairro, cidade: form.cidade, uf: form.uf, cep: apenasDigitos(form.cep) }}
+          />
+        )}
         {erro && <Alerta tom="problema">{erro}</Alerta>}
       </form>
     </PainelLateral>

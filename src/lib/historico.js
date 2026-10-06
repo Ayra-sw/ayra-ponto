@@ -42,7 +42,7 @@ const NOMES = {
   minutos: 'Horas', motivo_recusa: 'Motivo da recusa', conferencia: 'Conferência', razao_social: 'Razão social', cnpj: 'CNPJ',
   codigo_convite: 'Código de convite', reconhecimento_facial: 'Reconhecimento facial', fuso_horario: 'Fuso horário',
   cidade: 'Cidade', uf: 'UF', cep: 'CEP', logradouro: 'Endereço', numero: 'Número', bairro: 'Bairro', complemento: 'Complemento',
-  empresa: 'Empresa',
+  empresa: 'Empresa', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
 }
 const nomeDoCampo = (c) => NOMES[c] || (c.charAt(0).toUpperCase() + c.slice(1)).replace(/_/g, ' ')
 

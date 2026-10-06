@@ -1011,3 +1011,48 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .apresentacao--compacta .apresentacao__fio { width: 28px; }
 .apresentacao--compacta .apresentacao__slogan { font-size: 0.85rem; }
 @media print { .apresentacao { display: none !important; } }
+
+/* ---------- Fase 6A: mapa e cerca virtual ---------- */
+.mapa {
+  position: relative; overflow: hidden; width: 100%; border: 1px solid var(--borda); border-radius: var(--raio-cartao);
+  background: #E5E3DF; touch-action: none; user-select: none; cursor: grab;
+}
+.mapa--escolher { cursor: crosshair; }
+.mapa:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+.mapa__blocos { position: absolute; inset: 0; }
+.mapa__bloco { position: absolute; max-width: none; pointer-events: none; }
+.mapa__circulo {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  border: 2px dashed var(--dourado-texto); background: color-mix(in srgb, var(--dourado) 18%, transparent);
+}
+.mapa__marcador { position: absolute; width: 34px; height: 34px; transform: translate(-50%, -100%); pointer-events: none; display: block; }
+.mapa__marcador svg { width: 34px; height: 34px; stroke: #FFFFFF; stroke-width: 1.6; fill: currentColor; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45)); }
+.mapa__marcador--unidade { color: var(--primaria, #1B2A47); }
+.mapa__marcador--ok { color: var(--ok); }
+.mapa__marcador--atencao { color: #C2410C; }
+.mapa__zoom { position: absolute; top: 8px; right: 8px; display: grid; gap: 1px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgb(0 0 0 / 0.3); cursor: default; }
+.mapa__zoom button {
+  width: 36px; height: 36px; display: grid; place-items: center; border: 0; padding: 0;
+  background: #FFFFFF; color: #1B2A47; cursor: pointer;
+}
+.mapa__zoom button:hover:not(:disabled) { background: #EEF0F4; }
+.mapa__zoom button:disabled { opacity: 0.45; cursor: default; }
+.mapa__zoom svg { width: 18px; height: 18px; }
+.mapa__credito {
+  position: absolute; right: 0; bottom: 0; padding: 2px 6px; font-size: 0.68rem; color: #333;
+  background: rgb(255 255 255 / 0.8); border-top-left-radius: 6px; text-decoration: none; cursor: default;
+}
+.mapa__credito:hover { text-decoration: underline; }
+
+.cerca { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--borda); border-radius: var(--raio-cartao); background: var(--superficie-2); }
+.cerca__titulo { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1rem; }
+.cerca__titulo svg { width: 18px; height: 18px; color: var(--dourado-texto); }
+.cerca__acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.cerca__coords { margin: 0; font-size: 0.82rem; color: var(--texto-suave); }
+
+.selo-local { display: inline-flex; align-items: center; gap: 4px; }
+.linha-tempo__tipo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.mapa-marcacao { display: grid; gap: 10px; }
+.mapa-marcacao p { margin: 0; }
+.comprovante__local { margin-top: 4px; }
+@media print { .mapa { display: none !important; } }

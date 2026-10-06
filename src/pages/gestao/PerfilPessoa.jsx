@@ -361,7 +361,7 @@ export default function PerfilPessoa() {
           )}
         </form>
       ) : aba === 'marcacoes' ? (
-        <HistoricoMarcacoes perfilId={pessoa.id} />
+        <HistoricoMarcacoes perfilId={pessoa.id} mostrarLocal />
       ) : aba === 'espelho' ? (
         <EspelhoMensal perfilId={pessoa.id} mesInicial={busca.get('mes')}
           aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />

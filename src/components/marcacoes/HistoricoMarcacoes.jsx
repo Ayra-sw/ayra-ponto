@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CalendarX2, ChevronLeft, ChevronRight, Pencil } from 'lucide-react'
+import { CalendarX2, ChevronLeft, ChevronRight, MapPin, MapPinOff, Pencil } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { duracao, hora, nsr } from '../../lib/formatos'
 import { minutosTrabalhados, rotuloMarcacao } from '../../lib/marcacoes'
@@ -8,6 +8,8 @@ import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
 import BotaoComprovantePdf from '../ponto/BotaoComprovantePdf'
+import MapaDaMarcacao from '../geo/MapaDaMarcacao'
+import { comCoordenadas, formatarDistancia } from '../../lib/geo'
 
 const nomeDoMes = (d) => {
   const t = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -26,11 +28,15 @@ function tituloDoDia(chave) {
 
 // Marcações de uma pessoa, mês a mês e dia a dia. Com "aoPedirAjuste" aparecem
 // os botões para pedir correção (só na tela da própria pessoa).
-export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarEm }) {
+// Com "mostrarLocal" (administrador e RH vendo outra pessoa) aparecem o selo
+// "fora do local" e o botão "Ver no mapa".
+export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarEm, mostrarLocal = false }) {
   const [mes, setMes] = useState(() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d })
   const [registros, setRegistros] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(false)
+  const [locais, setLocais] = useState({}) // registro_id -> situação do local (Fase 6A)
+  const [mapa, setMapa] = useState(null)
 
   const carregar = useCallback(async () => {
     setErro(false)
@@ -39,7 +45,7 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
     proximo.setMonth(proximo.getMonth() + 1)
     const { data, error } = await supabase
       .from('registros_ponto')
-      .select('id, nsr, tipo, marcado_em, origem')
+      .select(mostrarLocal ? 'id, nsr, tipo, marcado_em, origem, latitude, longitude' : 'id, nsr, tipo, marcado_em, origem')
       .eq('perfil_id', perfilId)
       .gte('marcado_em', mes.toISOString())
       .lt('marcado_em', proximo.toISOString())
@@ -47,8 +53,18 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
       .limit(1500)
     if (error) setErro(true)
     setRegistros(data || [])
+    if (mostrarLocal) {
+      // sem a Fase 6A no banco a tabela não existe: simplesmente não há selos
+      const l = await supabase.from('marcacao_local')
+        .select('registro_id, situacao, distancia_m, raio_m, filial_latitude, filial_longitude')
+        .eq('perfil_id', perfilId)
+        .gte('criado_em', mes.toISOString())
+        .lt('criado_em', proximo.toISOString())
+        .limit(1500)
+      setLocais(l.error ? {} : Object.fromEntries((l.data || []).map((x) => [x.registro_id, x])))
+    }
     setCarregando(false)
-  }, [perfilId, mes])
+  }, [perfilId, mes, mostrarLocal])
 
   useEffect(() => { carregar() }, [carregar, atualizarEm])
 
@@ -105,8 +121,20 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
               {dia.regs.map((r) => (
                 <li key={r.id}>
                   <span className="linha-tempo__hora">{hora(r.marcado_em)}</span>
-                  <span>{rotuloMarcacao(r.tipo)}</span>
+                  <span className="linha-tempo__tipo">
+                    {rotuloMarcacao(r.tipo)}
+                    {mostrarLocal && locais[r.id]?.situacao === 'fora' && (
+                      <Etiqueta tom="atencao" icone={MapPinOff}>Fora do local · {formatarDistancia(locais[r.id].distancia_m)}</Etiqueta>
+                    )}
+                    {mostrarLocal && locais[r.id]?.situacao === 'sem_localizacao' && (
+                      <Etiqueta tom="neutra" icone={MapPinOff}>Sem localização</Etiqueta>
+                    )}
+                  </span>
                   <span className="linha-tempo__fim">
+                    {mostrarLocal && comCoordenadas(r) && (
+                      <Botao variante="discreto" className="btn--icone" icone={MapPin} aria-label={`Ver no mapa a marcação das ${hora(r.marcado_em)}`}
+                        title="Ver no mapa" onClick={() => setMapa(r)} />
+                    )}
                     <span className="linha-tempo__nsr" title="Número de registro">NSR {nsr(r.nsr)}</span>
                     <BotaoComprovantePdf registroId={r.id} nsr={r.nsr} compacto />
                   </span>
@@ -123,6 +151,7 @@ export default function HistoricoMarcacoes({ perfilId, aoPedirAjuste, atualizarE
           </section>
         ))
       )}
+      {mapa && <MapaDaMarcacao registro={mapa} local={locais[mapa.id] || null} aoFechar={() => setMapa(null)} />}
     </div>
   )
 }
