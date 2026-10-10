@@ -1056,3 +1056,15 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .mapa-marcacao p { margin: 0; }
 .comprovante__local { margin-top: 4px; }
 @media print { .mapa { display: none !important; } }
+
+/* ---------- Fase 6B: entrar com a digital ---------- */
+.entrar-digital { display: grid; gap: 10px; }
+.entrar-digital p { margin: 0; text-align: center; }
+.divisor-ou { display: flex; align-items: center; gap: 10px; color: var(--texto-suave); font-size: 0.82rem; }
+.divisor-ou::before, .divisor-ou::after { content: ''; flex: 1; height: 1px; background: var(--borda); }
+.lista-digitais { list-style: none; margin: 0; padding: 0; display: grid; }
+.lista-digitais li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--borda); }
+.lista-digitais li:last-child { border-bottom: none; }
+.lista-digitais li > svg { width: 22px; height: 22px; flex: none; color: var(--dourado-texto); }
+.lista-digitais__texto { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.convite-app__erro { display: block; margin-top: 4px; color: var(--atencao); font-size: 0.82rem; }

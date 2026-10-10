@@ -1,6 +1,7 @@
 import RegistrarPonto from '../components/ponto/RegistrarPonto'
 import { ConviteInstalarApp } from '../components/app/InstalarApp'
 import ApresentacaoMarca from '../components/gestao/ApresentacaoMarca'
+import OfertaDigital from '../components/conta/OfertaDigital'
 
 // Início do colaborador: registrar ponto é a primeira coisa da tela.
 export default function FuncionarioDashboard() {
@@ -10,6 +11,7 @@ export default function FuncionarioDashboard() {
       <ApresentacaoMarca compacta />
       <ConviteInstalarApp />
       <RegistrarPonto />
+      <OfertaDigital />
     </div>
   )
 }

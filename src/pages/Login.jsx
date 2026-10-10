@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { MailCheck } from 'lucide-react'
+import { Fingerprint, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import { traduzirErro } from '../lib/mensagensErro'
 import { formatarCpf, apenasDigitos } from '../lib/formatos'
 import { guardarConvitePendente } from '../lib/convite'
+import { aparelhoTemDigital, ativadaAqui, entrarComDigital } from '../lib/digital'
 import ShellPublico from '../components/layout/ShellPublico'
 import Botao from '../components/ui/Botao'
 import Alerta from '../components/ui/Alerta'
@@ -45,6 +46,8 @@ export default function Login({ modo = 'entrar' }) {
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [enviado, setEnviado] = useState(null) // 'confirmacao' | 'recuperacao'
+  const [temDigital, setTemDigital] = useState(false) // o aparelho tem leitor de digital/rosto
+  const [entrandoDigital, setEntrandoDigital] = useState(false)
 
   const codigoConvite = (codigoDaUrl || '').trim()
 
@@ -57,12 +60,28 @@ export default function Login({ modo = 'entrar' }) {
     setEnviado(null)
   }, [modo])
 
+  useEffect(() => {
+    if (modo !== 'entrar') return
+    let cancelado = false
+    aparelhoTemDigital().then((sim) => { if (!cancelado) setTemDigital(sim) })
+    return () => { cancelado = true }
+  }, [modo])
+
   // Quem já está logado vai direto para o sistema (o convite fica guardado
   // e aparece preenchido no passo seguinte).
   if (session && modo !== 'recuperar') return <Navigate to="/" replace />
 
   const textos = TEXTOS[modo] || TEXTOS.entrar
   const cadastro = modo === 'criar_empresa' || modo === 'convite'
+  const mostrarDigital = modo === 'entrar' && temDigital
+  // quem já ativou neste aparelho vê a digital primeiro
+  const digitalPrimeiro = mostrarDigital && ativadaAqui()
+  const botaoDigital = mostrarDigital && (
+    <Botao type="button" bloco variante={digitalPrimeiro ? 'primario' : 'secundario'} icone={Fingerprint}
+      carregando={entrandoDigital} onClick={handleDigital}>
+      Entrar com a digital
+    </Botao>
+  )
 
   async function handleEntrar(e) {
     e.preventDefault()
@@ -71,6 +90,15 @@ export default function Login({ modo = 'entrar' }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
     setCarregando(false)
     if (error) return setErro(traduzirErro(error))
+    navigate('/')
+  }
+
+  async function handleDigital() {
+    setErro('')
+    setEntrandoDigital(true)
+    const r = await entrarComDigital()
+    setEntrandoDigital(false)
+    if (!r.ok) { if (r.mensagem) setErro(r.mensagem); return }
     navigate('/')
   }
 
@@ -154,6 +182,14 @@ export default function Login({ modo = 'entrar' }) {
           <Botao type="submit" bloco carregando={carregando}>Enviar link</Botao>
         </form>
       ) : (
+        <>
+        {digitalPrimeiro && (
+          <div className="entrar-digital">
+            {botaoDigital}
+            <p className="suave pequeno">Use a digital ou o rosto, como você desbloqueia o celular.</p>
+            <div className="divisor-ou" aria-hidden="true"><span>ou entre com e-mail e senha</span></div>
+          </div>
+        )}
         <form className="formulario" onSubmit={cadastro ? handleCadastrar : handleEntrar}>
           {cadastro && (
             <>
@@ -184,10 +220,18 @@ export default function Login({ modo = 'entrar' }) {
             </div>
           )}
           {erro && <Alerta tom="problema">{erro}</Alerta>}
-          <Botao type="submit" bloco carregando={carregando}>
+          <Botao type="submit" bloco carregando={carregando} variante={digitalPrimeiro ? 'secundario' : 'primario'}>
             {cadastro ? 'Criar conta' : 'Entrar'}
           </Botao>
         </form>
+        {mostrarDigital && !digitalPrimeiro && (
+          <div className="entrar-digital">
+            <div className="divisor-ou" aria-hidden="true"><span>ou</span></div>
+            {botaoDigital}
+            <p className="suave pequeno">Já ativou a digital em Minha conta? Entre sem digitar a senha.</p>
+          </div>
+        )}
+        </>
       )}
     </ShellPublico>
   )

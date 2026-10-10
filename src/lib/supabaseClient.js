@@ -10,4 +10,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// "passkey": entrar com a digital ou o rosto do aparelho (Fase 6B). No
+// Supabase o recurso ainda é "beta": precisa desta opção ligada.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { experimental: { passkey: true } },
+})

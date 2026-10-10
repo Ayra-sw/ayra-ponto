@@ -15,6 +15,7 @@ import MeuRosto from '../components/rosto/MeuRosto'
 import MeuTrabalho from '../components/MeuTrabalho'
 import { CartaoInstalarApp } from '../components/app/InstalarApp'
 import ComprovantePorEmail from '../components/conta/ComprovantePorEmail'
+import EntrarComDigital from '../components/conta/EntrarComDigital'
 
 export default function MinhaConta() {
   const { session, perfil, recarregarPerfil, signOut } = useAuth()
@@ -93,6 +94,8 @@ export default function MinhaConta() {
       {perfil.empresa_id && <MeuRosto />}
 
       {perfil.empresa_id && <ComprovantePorEmail email={session?.user?.email} />}
+
+      <EntrarComDigital />
 
       <section className="cartao" aria-labelledby="t-senha">
         <div className="cartao__cabecalho"><h2 id="t-senha">Alterar senha</h2></div>

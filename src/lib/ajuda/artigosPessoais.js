@@ -372,6 +372,33 @@ const ARTIGOS_PESSOAIS = [
     ],
   },
   {
+    id: 'entrar-digital',
+    categoria: 'conta',
+    publico: ['colaborador'],
+    titulo: 'Entrar com a digital',
+    resumo: 'Entre no Ayra Ponto com a digital ou o rosto do celular, sem digitar a senha.',
+    palavras: ['digital', 'biometria', 'impressao digital', 'rosto', 'face id', 'passkey', 'chave de acesso', 'senha', 'entrar rapido', 'login'],
+    telas: ['/conta', '/gestao/conta'],
+    corpo: [
+      'Você pode entrar no Ayra Ponto com a **digital** ou o **rosto**, do mesmo jeito que desbloqueia o celular. **O Ayra Ponto não vê nem guarda a sua digital**: quem confere é o próprio aparelho, que só avisa ao sistema que é você.',
+      { tipo: 'sub', titulo: 'Ativar (uma vez em cada celular)' },
+      { tipo: 'passos', itens: [
+        'Entre com e-mail e senha, no celular.',
+        'Toque em **Ativar** no convite da tela inicial, ou vá em [Minha conta](rota:conta), no cartão **Entrar com a digital**, e toque em **Ativar a digital neste aparelho**.',
+        'Confirme com a digital ou o rosto quando o celular pedir.',
+      ] },
+      { tipo: 'sub', titulo: 'Entrar' },
+      'Na tela de entrada, toque em **Entrar com a digital** e confirme. Pronto.',
+      { tipo: 'lista', itens: [
+        'A senha continua valendo. Se a digital falhar, entre com e-mail e senha.',
+        'Ative só no **seu** celular: qualquer digital cadastrada no aparelho consegue entrar na sua conta.',
+        'Trocou ou perdeu o celular? Em Minha conta, remova o aparelho antigo e ative no novo.',
+        'No iPhone, a chave fica guardada no iCloud; no Android, na conta Google. Por isso ela pode funcionar também nos seus outros aparelhos.',
+      ] },
+      { tipo: 'dica', texto: 'O botão não aparece? O seu aparelho ou navegador não tem leitor de digital liberado. No computador, continue usando a senha.' },
+    ],
+  },
+  {
     id: 'minha-conta',
     categoria: 'conta',
     publico: ['colaborador'],

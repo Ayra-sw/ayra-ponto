@@ -70,6 +70,11 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   local" e o botão "Ver no mapa" na ficha da pessoa; o colaborador recebe só um aviso gentil no comprovante. O mapa é
   um componente próprio (`src/components/geo/Mapa.jsx`) sobre os blocos do OpenStreetMap; para trocar o provedor
   de mapa, mude `MAPA_TILES` em `src/lib/geo.js`.
+- **Entrar com a digital (Fase 6B):** passkeys do Supabase Auth (beta; `auth.experimental.passkey` em
+  `src/lib/supabaseClient.js`, supabase-js ≥ 2.110). A digital ou o rosto são conferidos pelo próprio aparelho; o
+  Supabase guarda só a chave pública. Botão no login, cartão em Minha conta (ativar, ver e remover aparelhos) e um
+  convite no celular depois de entrar com a senha. A senha continua valendo. Configuração no Supabase:
+  Authentication → Passkeys (Relying Party ID `ayra-ponto.vercel.app`; mudar o domínio do app invalida as chaves).
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.
