@@ -8,6 +8,7 @@ import { supabase } from './supabaseClient'
 
 const CHAVE_ATIVADA = 'ayra-digital-ativada'
 const CHAVE_OFERTA = 'ayra-digital-oferta'
+const CHAVE_SAIU = 'ayra-saiu-agora'
 
 function ler(chave) { try { return localStorage.getItem(chave) } catch { return null } }
 function gravar(chave, valor) { try { if (valor == null) localStorage.removeItem(chave); else localStorage.setItem(chave, valor) } catch { /* sem armazenamento: tudo bem */ } }
@@ -35,6 +36,22 @@ export const ativadaAqui = () => ler(CHAVE_ATIVADA) === 'sim'
 export const marcarAtivadaAqui = (sim = true) => gravar(CHAVE_ATIVADA, sim ? 'sim' : null)
 export const ofertaDispensada = () => ler(CHAVE_OFERTA) === 'dispensada'
 export const dispensarOferta = () => gravar(CHAVE_OFERTA, 'dispensada')
+
+// Quem tocou em "Sair da conta" não deve ver a digital abrir sozinha logo em
+// seguida (pode querer entrar com outra conta). Vale só para a próxima tela de login.
+export function marcarSaida() { try { sessionStorage.setItem(CHAVE_SAIU, '1') } catch { /* tudo bem */ } }
+export function saiuAgora() {
+  try { const sim = sessionStorage.getItem(CHAVE_SAIU) === '1'; sessionStorage.removeItem(CHAVE_SAIU); return sim } catch { return false }
+}
+
+// A pessoa cancelou, o tempo acabou ou o navegador pediu um toque antes
+// (iPhone): não é erro, só não entrou.
+export function foiCancelado(error) {
+  if (!error) return false
+  const codigo = error.code || error.error_code || ''
+  return codigo === 'ERROR_CEREMONY_ABORTED' || codigo === 'ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY' ||
+    error.cause?.name === 'NotAllowedError' || /NotAllowedError|not allowed|timed out|cancel/i.test(error.message || '')
+}
 
 // O recurso está ligado no Supabase? (Authentication → Passkeys)
 export function recursoDesligado(error) {
@@ -75,7 +92,11 @@ export function mensagemDigital(error, { acao = 'entrar' } = {}) {
 
 export async function entrarComDigital() {
   const { data, error } = await supabase.auth.signInWithPasskey()
-  if (error) return { ok: false, mensagem: mensagemDigital(error), error }
+  if (error) {
+    // a chave deste aparelho não vale mais (foi removida): para de oferecer a digital aqui
+    if (String(error.code || error.error_code || '').startsWith('webauthn_') && error.code !== 'webauthn_challenge_expired') marcarAtivadaAqui(false)
+    return { ok: false, cancelado: foiCancelado(error), mensagem: mensagemDigital(error), error }
+  }
   marcarAtivadaAqui()
   return { ok: true, data }
 }

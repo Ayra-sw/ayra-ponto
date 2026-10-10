@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Fingerprint, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { traduzirErro } from '../lib/mensagensErro'
 import { formatarCpf, apenasDigitos } from '../lib/formatos'
 import { guardarConvitePendente } from '../lib/convite'
-import { aparelhoTemDigital, ativadaAqui, entrarComDigital } from '../lib/digital'
+import { aparelhoTemDigital, ativadaAqui, entrarComDigital, saiuAgora } from '../lib/digital'
 import ShellPublico from '../components/layout/ShellPublico'
 import Botao from '../components/ui/Botao'
 import Alerta from '../components/ui/Alerta'
@@ -60,12 +60,24 @@ export default function Login({ modo = 'entrar' }) {
     setEnviado(null)
   }, [modo])
 
+  // A digital só aparece no aparelho onde ela já foi ativada (assim ninguém vê
+  // o aviso "Nenhuma chave de acesso disponível" do celular).
   useEffect(() => {
     if (modo !== 'entrar') return
     let cancelado = false
-    aparelhoTemDigital().then((sim) => { if (!cancelado) setTemDigital(sim) })
+    aparelhoTemDigital().then((sim) => { if (!cancelado) setTemDigital(sim && ativadaAqui()) })
     return () => { cancelado = true }
   }, [modo])
+
+  // Nesse aparelho, o pedido da digital abre sozinho ao chegar no login
+  // (menos logo depois de "Sair da conta").
+  const tentouSozinho = useRef(false)
+  useEffect(() => {
+    if (modo !== 'entrar' || !temDigital || session || tentouSozinho.current) return
+    tentouSozinho.current = true
+    if (saiuAgora()) return
+    handleDigital(true)
+  }, [modo, temDigital, session]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Quem já está logado vai direto para o sistema (o convite fica guardado
   // e aparece preenchido no passo seguinte).
@@ -74,14 +86,6 @@ export default function Login({ modo = 'entrar' }) {
   const textos = TEXTOS[modo] || TEXTOS.entrar
   const cadastro = modo === 'criar_empresa' || modo === 'convite'
   const mostrarDigital = modo === 'entrar' && temDigital
-  // quem já ativou neste aparelho vê a digital primeiro
-  const digitalPrimeiro = mostrarDigital && ativadaAqui()
-  const botaoDigital = mostrarDigital && (
-    <Botao type="button" bloco variante={digitalPrimeiro ? 'primario' : 'secundario'} icone={Fingerprint}
-      carregando={entrandoDigital} onClick={handleDigital}>
-      Entrar com a digital
-    </Botao>
-  )
 
   async function handleEntrar(e) {
     e.preventDefault()
@@ -93,12 +97,18 @@ export default function Login({ modo = 'entrar' }) {
     navigate('/')
   }
 
-  async function handleDigital() {
+  async function handleDigital(sozinho = false) {
     setErro('')
     setEntrandoDigital(true)
     const r = await entrarComDigital()
     setEntrandoDigital(false)
-    if (!r.ok) { if (r.mensagem) setErro(r.mensagem); return }
+    if (!r.ok) {
+      // aberto sozinho e a pessoa cancelou (ou o iPhone pediu um toque): só mostra o botão
+      if (sozinho && r.cancelado) return
+      if (r.mensagem) setErro(r.mensagem)
+      if (!ativadaAqui()) setTemDigital(false)
+      return
+    }
     navigate('/')
   }
 
@@ -183,9 +193,11 @@ export default function Login({ modo = 'entrar' }) {
         </form>
       ) : (
         <>
-        {digitalPrimeiro && (
+        {mostrarDigital && (
           <div className="entrar-digital">
-            {botaoDigital}
+            <Botao type="button" bloco icone={Fingerprint} carregando={entrandoDigital} onClick={() => handleDigital(false)}>
+              Entrar com a digital
+            </Botao>
             <p className="suave pequeno">Use a digital ou o rosto, como você desbloqueia o celular.</p>
             <div className="divisor-ou" aria-hidden="true"><span>ou entre com e-mail e senha</span></div>
           </div>
@@ -220,17 +232,10 @@ export default function Login({ modo = 'entrar' }) {
             </div>
           )}
           {erro && <Alerta tom="problema">{erro}</Alerta>}
-          <Botao type="submit" bloco carregando={carregando} variante={digitalPrimeiro ? 'secundario' : 'primario'}>
+          <Botao type="submit" bloco carregando={carregando} variante={mostrarDigital ? 'secundario' : 'primario'}>
             {cadastro ? 'Criar conta' : 'Entrar'}
           </Botao>
         </form>
-        {mostrarDigital && !digitalPrimeiro && (
-          <div className="entrar-digital">
-            <div className="divisor-ou" aria-hidden="true"><span>ou</span></div>
-            {botaoDigital}
-            <p className="suave pequeno">Já ativou a digital em Minha conta? Entre sem digitar a senha.</p>
-          </div>
-        )}
         </>
       )}
     </ShellPublico>

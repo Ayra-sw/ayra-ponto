@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { marcarSaida } from '../lib/digital'
 
 const AuthContext = createContext(null)
 
@@ -49,6 +50,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function signOut() {
+    marcarSaida()
     await supabase.auth.signOut()
   }
 

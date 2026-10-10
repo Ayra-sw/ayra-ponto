@@ -388,14 +388,14 @@ const ARTIGOS_PESSOAIS = [
         'Confirme com a digital ou o rosto quando o celular pedir.',
       ] },
       { tipo: 'sub', titulo: 'Entrar' },
-      'Na tela de entrada, toque em **Entrar com a digital** e confirme. Pronto.',
+      'Depois de ativar, ao abrir a tela de entrada nesse celular, ele **já pede a digital sozinho**. É só colocar o dedo. Se não pedir (no iPhone, às vezes), toque em **Entrar com a digital**.',
       { tipo: 'lista', itens: [
         'A senha continua valendo. Se a digital falhar, entre com e-mail e senha.',
         'Ative só no **seu** celular: qualquer digital cadastrada no aparelho consegue entrar na sua conta.',
         'Trocou ou perdeu o celular? Em Minha conta, remova o aparelho antigo e ative no novo.',
         'No iPhone, a chave fica guardada no iCloud; no Android, na conta Google. Por isso ela pode funcionar também nos seus outros aparelhos.',
       ] },
-      { tipo: 'dica', texto: 'O botão não aparece? O seu aparelho ou navegador não tem leitor de digital liberado. No computador, continue usando a senha.' },
+      { tipo: 'dica', texto: 'O botão **Entrar com a digital** só aparece no celular onde a digital já foi ativada. Em outro celular, entre com a senha uma vez e ative. No computador, continue usando a senha.' },
     ],
   },
   {

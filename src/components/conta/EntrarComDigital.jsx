@@ -42,7 +42,7 @@ export default function EntrarComDigital() {
     setAtivando(false)
     if (!r.ok) { if (r.mensagem) setErro(r.mensagem); await carregar(); return }
     await carregar()
-    avisar('Digital ativada. Na próxima vez, toque em "Entrar com a digital".')
+    avisar('Digital ativada. Da próxima vez, o Ayra Ponto já pede a sua digital ao entrar.')
   }
 
   async function confirmarRemocao() {
