@@ -12,7 +12,7 @@ import { telas, preCarregar } from './telas'
 import AvisoSemInternet from './components/app/AvisoSemInternet'
 import ErroNaTela from './components/app/ErroNaTela'
 
-const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
+const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, RegrasCalculo, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
 
 const GESTAO = ['administrador', 'rh']
 
@@ -80,6 +80,7 @@ export default function App() {
         <Route path="configuracoes" element={<Navigate to="/gestao/configuracoes/empresa" replace />} />
         <Route path="configuracoes/empresa" element={<Empresa />} />
         <Route path="configuracoes/unidades" element={<Unidades />} />
+        <Route path="configuracoes/regras" element={<RegrasCalculo />} />
         <Route path="meu-ponto" element={<MeuPonto />} />
         <Route path="meu-historico" element={<MeuHistorico />} />
         <Route path="meu-espelho" element={<MeuEspelho />} />

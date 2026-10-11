@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { FileArchive, LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users } from 'lucide-react'
+import { FileArchive, LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users, Calculator } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -28,6 +28,7 @@ const TITULOS = [
   ['/gestao/reconhecimento', 'Reconhecimento facial'],
   ['/gestao/configuracoes/empresa', 'Empresa'],
   ['/gestao/configuracoes/unidades', 'Unidades'],
+  ['/gestao/configuracoes/regras', 'Regras de cálculo'],
   ['/gestao/meu-ponto', 'Meu ponto'],
   ['/gestao/conta', 'Minha conta'],
   ['/gestao/ajuda', 'Central de ajuda'],
@@ -78,6 +79,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <span className="menu-lateral__grupo">Configurações</span>
       <ItemMenu para="/gestao/configuracoes/empresa" icone={Building2} texto="Empresa" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/configuracoes/unidades" icone={MapPin} texto="Unidades" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/configuracoes/regras" icone={Calculator} texto="Regras de cálculo" aoClicar={aoNavegar} />
       <div className="menu-lateral__rodape">
         <ItemMenu para="/gestao/meu-ponto" icone={Clock} texto="Meu ponto" aoClicar={aoNavegar} />
         <ItemMenu para="/gestao/meu-historico" icone={History} texto="Meu histórico" aoClicar={aoNavegar} />

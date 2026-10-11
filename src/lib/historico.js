@@ -16,7 +16,7 @@ export const GRUPOS = [
   { id: 'afastamentos', rotulo: 'Afastamentos', tabelas: ['afastamentos'] },
   { id: 'banco', rotulo: 'Banco de horas', tabelas: ['banco_horas_lancamentos'] },
   { id: 'organizacao', rotulo: 'Departamentos, cargos e gestores', tabelas: ['departamentos', 'cargos', 'departamento_gestores'] },
-  { id: 'empresa', rotulo: 'Empresa e unidades', tabelas: ['empresas', 'filiais'] },
+  { id: 'empresa', rotulo: 'Empresa, unidades e regras de cálculo', tabelas: ['empresas', 'filiais', 'regras_calculo'] },
   { id: 'facial', rotulo: 'Reconhecimento facial', tabelas: ['rostos_referencia', 'verificacoes_faciais'] },
 ]
 
@@ -25,7 +25,7 @@ const ESCONDIDOS = new Set([
   'id', 'empresa_id', 'perfil_id', 'modelo_id', 'criado_por', 'analisado_por', 'analisado_em', 'analisada_por', 'analisada_em',
   'conferida_por', 'conferida_em', 'cancelado_por', 'registro_original_id', 'registro_id', 'referencia_id', 'foto_path',
   'modelo', 'qualidade', 'similaridade', 'limiar', 'antispoof', 'vivacidade', 'piscou', 'motor', 'versao_hash',
-  'proximo_nsr',
+  'proximo_nsr', 'atualizado_por',
 ])
 
 const NOMES = {
@@ -42,7 +42,13 @@ const NOMES = {
   minutos: 'Horas', motivo_recusa: 'Motivo da recusa', conferencia: 'Conferência', razao_social: 'Razão social', cnpj: 'CNPJ',
   codigo_convite: 'Código de convite', reconhecimento_facial: 'Reconhecimento facial', fuso_horario: 'Fuso horário',
   cidade: 'Cidade', uf: 'UF', cep: 'CEP', logradouro: 'Endereço', numero: 'Número', bairro: 'Bairro', complemento: 'Complemento',
-  empresa: 'Empresa', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
+  empresa: 'Empresa',
+  extra_normal_pct: 'Hora extra em dias normais (%)', extra_especial_pct: 'Hora extra em domingo, feriado e folga (%)',
+  extra_especial_folgas: 'Percentual especial em domingo, feriado e folga', noturno_inicio: 'Início do horário noturno',
+  noturno_fim: 'Fim do horário noturno', noturno_pct: 'Adicional noturno (%)', hora_noturna_reduzida: 'Hora noturna reduzida',
+  prorrogar_noturno: 'Noturno continua depois das 5h', intervalo_pre_assinalado: 'Intervalo pré-assinalado',
+  interjornada_min: 'Descanso mínimo entre dias (minutos)', dsr_perde_falta: 'Perde DSR por falta',
+  dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
 }
 const nomeDoCampo = (c) => NOMES[c] || (c.charAt(0).toUpperCase() + c.slice(1)).replace(/_/g, ' ')
 
@@ -190,6 +196,7 @@ export function frase(g, mapas) {
     case 'turnos': return `${quem} ${verbo} o turno ${v.nome || mapas.turnos[g.registro_id] || ''}`.trim()
     case 'filiais': return `${quem} ${verbo} a unidade ${v.nome || mapas.unidades[g.registro_id] || ''}`.trim()
     case 'empresas': return `${quem} alterou os dados da empresa`
+    case 'regras_calculo': return `${quem} alterou as regras de cálculo`
     case 'departamento_gestores': {
       const dep = mapas.departamentos[v.departamento_id] || 'um departamento'
       return g.acao === 'criou' ? `${quem} colocou ${pessoa} como gestor(a) de ${dep}` : `${quem} tirou ${pessoa} da gestão de ${dep}`

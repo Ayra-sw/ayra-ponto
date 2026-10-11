@@ -1068,3 +1068,13 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .lista-digitais li > svg { width: 22px; height: 22px; flex: none; color: var(--dourado-texto); }
 .lista-digitais__texto { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .convite-app__erro { display: block; margin-top: 4px; color: var(--atencao); font-size: 0.82rem; }
+
+/* ---------- Fase 7A: contas da folha ---------- */
+.para-contador .cartao__cabecalho { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.indicadores--compactos { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.selo-noturno {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 1px 8px; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 600; color: var(--primaria, #1B2A47); background: color-mix(in srgb, var(--primaria, #1B2A47) 10%, transparent);
+}
+:root[data-theme='dark'] .selo-noturno { color: #C9D4EA; background: rgb(201 212 234 / 0.12); }
+.selo-noturno svg { width: 12px; height: 12px; }

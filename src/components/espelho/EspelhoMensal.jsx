@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CalendarX2, ChevronLeft, ChevronRight, Pencil, Printer, TriangleAlert } from 'lucide-react'
+import { CalendarX2, ChevronLeft, ChevronRight, Moon, Pencil, Printer, TriangleAlert } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { traduzirErro } from '../../lib/mensagensErro'
 import { data as formatarData, duracao, formatarCpf } from '../../lib/formatos'
@@ -9,6 +9,7 @@ import {
   saldoTexto, situacaoDoDia, somarMeses, textoDoMes, tomDoSaldo, totaisDoPeriodo,
 } from '../../lib/apuracao'
 import useEmpresa from '../../hooks/useEmpresa'
+import { normalizarRegras } from '../../lib/regrasCalculo'
 import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import Alerta from '../ui/Alerta'
@@ -38,6 +39,43 @@ function Marcas({ marcacoes, fuso }) {
   )
 }
 
+// Fase 7A: resumo do mês com o que a folha de pagamento precisa
+function ParaOContador({ totais, regras }) {
+  if (!totais.clt) return null
+  const r = normalizarRegras(regras)
+  return (
+    <section className="cartao para-contador" aria-labelledby="t-para-contador">
+      <div className="cartao__cabecalho">
+        <h2 id="t-para-contador">Para o contador</h2>
+        <span className="suave pequeno">Calculado com as regras de cálculo da empresa</span>
+      </div>
+      <div className="indicadores indicadores--compactos">
+        <Indicador rotulo={`Extras ${r.extra_normal_pct}%`} valor={duracao(totais.extraNormal)} detalhe="Dias normais" />
+        <Indicador rotulo={`Extras ${r.extra_especial_pct}%`} valor={duracao(totais.extraEspecial)} detalhe="Domingo, feriado e folga" />
+        <Indicador rotulo="Horas noturnas" valor={duracao(r.hora_noturna_reduzida ? totais.noturnoReduzido : totais.noturno)}
+          detalhe={r.hora_noturna_reduzida && totais.noturno > 0 ? `${duracao(totais.noturno)} no relógio · adicional ${r.noturno_pct}%` : `Adicional de ${r.noturno_pct}%`} />
+        <Indicador rotulo="Intervalo a pagar" valor={duracao(totais.intervaloPagar)} detalhe="Com 50% a mais (art. 71)" />
+        <Indicador rotulo="Descanso a pagar" valor={duracao(totais.descansoPagar)} detalhe="Menos de 11h entre dias" />
+        <Indicador rotulo="DSR perdidos" valor={String(totais.dsrPerdidos)} detalhe={totais.dsrPerdidos === 1 ? 'Semana com falta sem justificativa' : 'Semanas com falta sem justificativa'} />
+      </div>
+      {totais.diasBanco > 0 && (
+        <p className="suave pequeno" style={{ margin: 0 }}>
+          A jornada desta pessoa usa <strong>banco de horas</strong>: as horas extras e as horas a menos vão para o banco, em vez de serem pagas ou descontadas.
+        </p>
+      )}
+    </section>
+  )
+}
+
+function Noturno({ linha }) {
+  if (!linha.noturno_min) return null
+  return (
+    <span className="selo-noturno" title={`Horas noturnas: ${duracao(linha.noturno_min)} no relógio, ${duracao(linha.noturno_reduzido_min)} com a hora reduzida`}>
+      <Moon aria-hidden="true" /> Noturno {duracao(linha.noturno_reduzido_min || linha.noturno_min)}
+    </span>
+  )
+}
+
 function Avisos({ alertas }) {
   if (!alertas?.length) return null
   return (
@@ -56,6 +94,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
   const [linhas, setLinhas] = useState([])
   const [pessoa, setPessoa] = useState(null)
   const [jornada, setJornada] = useState(null)
+  const [regras, setRegras] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
@@ -63,10 +102,19 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
     setErro('')
     setCarregando(true)
     const { inicio, fim } = limitesDoMes(mes.ano, mes.mes)
-    const [apuracao, quem] = await Promise.all([
-      supabase.rpc('apurar_periodo', { p_perfil_id: perfilId, p_inicio: inicio, p_fim: fim }),
+    const [clt, quem] = await Promise.all([
+      // Fase 7A: o espelho com as contas da folha; sem a 7A no banco, o espelho de sempre
+      supabase.rpc('apurar_clt', { p_perfil_id: perfilId, p_inicio: inicio, p_fim: fim }),
       supabase.from('perfis').select('id, nome_completo, cpf, matricula, cargo, filial_id, modelo_jornada_id, data_admissao').eq('id', perfilId).maybeSingle(),
     ])
+    let apuracao = clt
+    const semClt = clt.error ? (clt.error.code === 'PGRST202' || /could not find the function/i.test(clt.error.message || '')) : !Array.isArray(clt.data)
+    if (semClt) {
+      apuracao = await supabase.rpc('apurar_periodo', { p_perfil_id: perfilId, p_inicio: inicio, p_fim: fim })
+    } else if (!clt.error && empresa?.id) {
+      const rg = await supabase.rpc('regras_da_empresa', { p_empresa: empresa.id })
+      setRegras(rg.error ? null : rg.data)
+    }
     if (apuracao.error) { setErro(traduzirErro(apuracao.error)); setLinhas([]) } else setLinhas(apuracao.data || [])
     // o gestor não lê o cadastro completo: usa o nome que já veio da lista da equipe
     setPessoa(quem.data || pessoaInicial || null)
@@ -75,7 +123,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
       setJornada(j.data?.nome || null)
     } else setJornada(null)
     setCarregando(false)
-  }, [perfilId, mes]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [perfilId, mes, empresa?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { carregar() }, [carregar, atualizarEm])
 
@@ -126,6 +174,8 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
             <Indicador rotulo="Saldo do mês" valor={saldoTexto(totais.saldo)} detalhe={totais.abonado > 0 ? `Abonado: ${duracao(totais.abonado)}` : 'Extras menos atrasos e faltas'} />
           </div>
 
+          <ParaOContador totais={totais} regras={regras} />
+
           {totais.diasComAlerta > 0 && (
             <Alerta tom="atencao" titulo={`${totais.diasComAlerta} ${totais.diasComAlerta === 1 ? 'dia precisa' : 'dias precisam'} de atenção`}>
               {aoPedirAjuste
@@ -163,6 +213,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                             </td>
                             <td>
                               <Marcas marcacoes={l.marcacoes} fuso={fuso} />
+                              <Noturno linha={l} />
                               <Avisos alertas={l.alertas} />
                               {podeAjustar(l) && (
                                 <Botao variante="discreto" tamanho="pequeno" icone={Pencil} className="nao-imprimir" onClick={() => aoPedirAjuste({ data: l.data })}>Pedir ajuste</Botao>
@@ -171,7 +222,10 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                             <td className="num">{l.previsto_min ? duracao(l.previsto_min) : '—'}</td>
                             <td className="num">{l.trabalhado_min ? duracao(l.trabalhado_min) : '—'}</td>
                             <td className="num">{l.atraso_min + l.falta_min ? duracao(l.atraso_min + l.falta_min) : '—'}</td>
-                            <td className="num">{l.extra_min ? duracao(l.extra_min) : '—'}</td>
+                            <td className="num">
+                              {l.extra_min ? duracao(l.extra_min) : '—'}
+                              {l.extra_especial_min > 0 && <span className="tabela__secundario">{normalizarRegras(regras).extra_especial_pct}%</span>}
+                            </td>
                             <td className="num">{l.situacao === 'incompleto' ? '?' : l.saldo_min ? saldoTexto(l.saldo_min) : '—'}</td>
                           </tr>
                         )
@@ -202,6 +256,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                       </div>
                       {l.turno && <span className="pequeno suave">{l.turno}</span>}
                       {l.marcacoes?.length > 0 && <Marcas marcacoes={l.marcacoes} fuso={fuso} />}
+                      <Noturno linha={l} />
                       <Avisos alertas={l.alertas} />
                       {(l.previsto_min > 0 || l.trabalhado_min > 0) && (
                         <div className="cartao-linha__detalhes">
@@ -209,6 +264,9 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                           <span>Trabalhado <strong className="mono">{l.trabalhado_min ? duracao(l.trabalhado_min) : '—'}</strong></span>
                           {l.situacao !== 'incompleto' && (l.atraso_min + l.falta_min + l.extra_min > 0) && (
                             <span>Saldo <strong className="mono">{saldoTexto(l.saldo_min)}</strong></span>
+                          )}
+                          {l.extra_especial_min > 0 && (
+                            <span>Extra {normalizarRegras(regras).extra_especial_pct}% <strong className="mono">{duracao(l.extra_especial_min)}</strong></span>
                           )}
                         </div>
                       )}

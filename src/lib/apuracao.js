@@ -76,7 +76,12 @@ export function situacaoDoDia(linha) {
 
 // Totais do período (dias que ainda não chegaram não entram no "previsto")
 export function totaisDoPeriodo(linhas) {
-  const t = { previsto: 0, trabalhado: 0, atraso: 0, extra: 0, falta: 0, abonado: 0, diasFalta: 0, diasComAlerta: 0, diasTrabalhados: 0 }
+  const t = {
+    previsto: 0, trabalhado: 0, atraso: 0, extra: 0, falta: 0, abonado: 0, diasFalta: 0, diasComAlerta: 0, diasTrabalhados: 0,
+    // Fase 7A (só quando o espelho vem de apurar_clt)
+    clt: false, extraNormal: 0, extraEspecial: 0, noturno: 0, noturnoReduzido: 0, intervaloPagar: 0, descansoPagar: 0,
+    dsrPerdidos: 0, diasBanco: 0,
+  }
   for (const l of linhas) {
     if (l.situacao !== 'futuro') t.previsto += l.previsto_min
     t.trabalhado += l.trabalhado_min
@@ -87,6 +92,17 @@ export function totaisDoPeriodo(linhas) {
     if (l.situacao === 'falta') t.diasFalta += 1
     if ((l.alertas || []).length > 0) t.diasComAlerta += 1
     if (l.trabalhado_min > 0) t.diasTrabalhados += 1
+    if (l.extra_normal_min !== undefined) {
+      t.clt = true
+      t.extraNormal += l.extra_normal_min || 0
+      t.extraEspecial += l.extra_especial_min || 0
+      t.noturno += l.noturno_min || 0
+      t.noturnoReduzido += l.noturno_reduzido_min || 0
+      t.intervaloPagar += l.intervalo_a_pagar_min || 0
+      t.descansoPagar += l.interjornada_a_pagar_min || 0
+      if (l.dsr_perdido) t.dsrPerdidos += 1
+      if (l.banco) t.diasBanco += 1
+    }
   }
   t.saldo = t.extra - t.atraso - t.falta
   return t

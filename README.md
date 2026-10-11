@@ -75,6 +75,11 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   Supabase guarda só a chave pública. Botão no login, cartão em Minha conta (ativar, ver e remover aparelhos) e um
   convite no celular depois de entrar com a senha. A senha continua valendo. Configuração no Supabase:
   Authentication → Passkeys (Relying Party ID `ayra-ponto.vercel.app`; mudar o domínio do app invalida as chaves).
+- **Regras de cálculo e contas da folha (Fase 7A):** tabela `regras_calculo` por empresa (padrão CLT, só o
+  administrador altera) e função `apurar_clt` (usa `apurar_periodo` sem alterá-la): extras em percentual normal e
+  especial (domingo/feriado/folga), horas noturnas com hora reduzida e prorrogação (Súmula 60), intervalo abaixo do
+  mínimo (art. 71), descanso menor que 11h (art. 66), DSR perdido (Lei 605/49) e semana acima do limite (configurável
+  por causa da PEC do fim da 6x1). Tela "Regras de cálculo" e cartão "Para o contador" no espelho.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

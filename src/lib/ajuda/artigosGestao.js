@@ -118,6 +118,30 @@ const ARTIGOS_GESTAO = [
       { tipo: 'atencao', texto: 'Avise a equipe que a localização é guardada junto de cada marcação e que o RH pode vê-la. É uma informação pessoal e deve constar na política de privacidade da empresa.' },
     ],
   },
+  {
+    id: 'regras-calculo',
+    categoria: 'horas',
+    publico: ['gestao'],
+    titulo: 'Regras de cálculo e o resumo para o contador',
+    resumo: 'Hora extra 50% e 100%, adicional noturno, intervalo, descanso de 11h e DSR: como o Ayra calcula.',
+    palavras: ['regras', 'calculo', 'hora extra', '50%', '100%', 'noturno', 'adicional noturno', 'dsr', 'interjornada', 'intervalo', 'contador', 'folha', 'clt', 'convencao', '6x1', '44 horas'],
+    telas: ['/gestao/configuracoes/regras', '/gestao/espelhos', '/gestao/pessoas'],
+    corpo: [
+      'Em [Regras de cálculo](/gestao/configuracoes/regras) ficam as regras que o espelho usa. **Já vem tudo no padrão da CLT**: só mude se a convenção coletiva ou o contador pedirem outro número. Só o administrador altera, e cada mudança fica no Histórico de alterações.',
+      { tipo: 'sub', titulo: 'O que o espelho calcula' },
+      { tipo: 'lista', itens: [
+        '**Hora extra separada:** dias normais (padrão 50%) e domingo de descanso, feriado e folga trabalhados (padrão 100%). Na escala 12x36 o feriado já é compensado pela escala.',
+        '**Horas noturnas:** das 22h às 5h, com a hora reduzida (52min30s valem 1 hora) e as horas depois das 5h de quem trabalhou a noite toda.',
+        '**Intervalo a pagar:** quando o intervalo foi menor que o mínimo (1h para mais de 6h de trabalho; 15 min entre 4h e 6h). Se a equipe não marca o intervalo, ligue "intervalo pré-assinalado".',
+        '**Descanso a pagar:** quando a pessoa descansou menos de 11h entre um dia e outro.',
+        '**DSR perdido:** semana com falta sem justificativa (jornada semanal, descanso no domingo).',
+        '**Semana acima do limite:** aviso quando a semana passa de 44h (ou do limite que você definir).',
+      ] },
+      'No espelho de cada pessoa aparece o cartão **Para o contador**, com os totais do mês, e cada dia mostra os avisos em português claro.',
+      { tipo: 'dica', texto: 'Se a PEC do fim da escala 6x1 for aprovada, basta trocar o limite da semana para 42h e, depois, 40h.' },
+      { tipo: 'atencao', texto: 'As horas aparecem no relógio (a hora reduzida entra só no total de horas noturnas). Combine com o contador como ele prefere receber.' },
+    ],
+  },
   // ------------------------------------------------------------- Pessoas
   {
     id: 'ficha-pessoa',
