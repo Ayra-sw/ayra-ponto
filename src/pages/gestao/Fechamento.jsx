@@ -84,7 +84,25 @@ function Conferencia({ p, mesTexto }) {
         titulo={p.pedidos_pendentes ? `${plural(p.pedidos_pendentes, 'pedido esperando', 'pedidos esperando')} resposta` : 'Nenhum pedido esperando resposta'}
         detalhe={p.pedidos_pendentes ? 'Ajustes, abonos e folgas deste mês que ainda não foram aprovados ou recusados.' : null}
         acao={p.pedidos_pendentes ? <Link to="/gestao/solicitacoes" className="btn btn--secundario btn--pequeno">Ver pedidos</Link> : null}
-      />
+      >
+        {(p.pedidos || []).length > 0 && (
+          <ul className="pendencias-pessoas">
+            {p.pedidos.map((i) => (
+              <li key={i.perfil_id}>
+                <Link className="link" to={`/gestao/pessoas/${i.perfil_id}?aba=solicitacoes`}>{i.nome}</Link>
+                <span className="suave pequeno"> · {plural(i.quantidade, 'pedido', 'pedidos')}</span>
+                {i.proprio && (
+                  <span className="pequeno pendencias-pessoas__nota">
+                    {p.pode_aprovar_proprio
+                      ? 'É seu. Como você é a única pessoa da gestão, pode aprovar em Solicitações.'
+                      : 'É seu: outro administrador ou o RH precisa analisar. Se não precisar mais, cancele em Meu histórico.'}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </ItemConferencia>
       <ItemConferencia
         feito={semJornada.length === 0}
         titulo={semJornada.length === 0 ? 'Todas as pessoas têm jornada' : `${plural(semJornada.length, 'pessoa', 'pessoas')} sem jornada`}

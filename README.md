@@ -92,6 +92,9 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   pedido de ajuste; pedido para mês fechado marca `espelho_conferencias` como "com problema" e avisa adm./RH).
   Painel de assinaturas e "Lembrar quem falta" no Fechamento do mês. Reabrir guarda as assinaturas como
   substituídas; ao fechar de novo, quem não teve o espelho mudado continua assinado.
+- **Ajuste: administrador único aprova o próprio pedido:** `pode_aprovar_proprio()` é verdadeiro para quem é o único
+  administrador/RH ativo da empresa; aí a regra da análise (Fase 3A) aceita aprovar o próprio pedido (recusar não;
+  cancelar sim). O Fechamento do mês mostra de quem é cada pedido pendente.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

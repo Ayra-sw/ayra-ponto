@@ -1125,3 +1125,6 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .assinaturas__problemas { margin: 0; padding: 12px 14px; list-style: none; display: grid; gap: 8px; border-radius: var(--raio-controle); background: var(--atencao-fundo); }
 .assinaturas__texto { display: block; font-size: 0.9rem; margin-top: 2px; }
 .aviso-assinar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+
+/* ---------- Ajuste: pedidos de quem, no fechamento ---------- */
+.pendencias-pessoas__nota { display: block; color: var(--texto-suave); margin-top: 2px; }

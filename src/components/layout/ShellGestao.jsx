@@ -108,11 +108,14 @@ export default function ShellGestao() {
   const [gavetaAberta, setGavetaAberta] = useState(false)
 
   const atualizarPendentes = useCallback(async () => {
-    const { count } = await supabase
+    // o próprio pedido só conta quando a pessoa pode aprová-lo (única da gestão)
+    const proprio = await supabase.rpc('pode_aprovar_proprio')
+    let consulta = supabase
       .from('ajustes_ponto')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pendente')
-      .neq('perfil_id', perfil.id)
+    if (proprio.data !== true) consulta = consulta.neq('perfil_id', perfil.id)
+    const { count } = await consulta
     setPendentes(count || 0)
     const [fotos, marcacoes] = await Promise.all([
       supabase.from('rostos_referencia').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),

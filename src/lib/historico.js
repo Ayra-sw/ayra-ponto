@@ -182,7 +182,7 @@ export function frase(g, mapas) {
     case 'ajustes_ponto': {
       const t = pedido(v.tipo || g.antes?.tipo)
       if (g.acao === 'criou') return `${quem} pediu ${t}`
-      if (g.depois?.status === 'aprovado') return `${quem} aprovou o pedido de ${t} de ${pessoa}`
+      if (g.depois?.status === 'aprovado') return proprio ? `${quem} aprovou o próprio pedido de ${t}` : `${quem} aprovou o pedido de ${t} de ${pessoa}`
       if (g.depois?.status === 'rejeitado') return `${quem} recusou o pedido de ${t} de ${pessoa}`
       if (g.depois?.status === 'cancelado') return `${quem} cancelou o próprio pedido de ${t}`
       return `${quem} ${verbo} um pedido de ${pessoa}`

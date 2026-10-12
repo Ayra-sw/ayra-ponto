@@ -426,7 +426,7 @@ const ARTIGOS_GESTAO = [
       { tipo: 'lista', itens: [
         'A análise é definitiva e fica registrada com o seu nome e o horário.',
         'A marcação original **nunca é apagada**. O ajuste aprovado entra no cálculo, e o espelho mostra um lápis.',
-        'Ninguém analisa o próprio pedido.',
+        'Ninguém analisa o próprio pedido. A exceção é quando você é a única pessoa da gestão (nenhum outro administrador ou RH ativo): aí você pode aprovar o seu, e isso fica no Histórico de alterações.',
         'Gestores analisam ajustes e folgas da equipe deles. Abonos são sempre do RH e do administrador.',
         'Se duas pessoas analisarem ao mesmo tempo, vale a primeira.',
       ] },

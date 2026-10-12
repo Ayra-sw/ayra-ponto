@@ -30,7 +30,8 @@ const MAX_COMENTARIO = 500
 // Central de solicitações.
 //   modo "gestao": administrador e RH, a empresa toda (com atestado e abono)
 //   modo "gestor": o gestor, só a equipe dele e sem abono (abono é com o RH)
-// Ninguém analisa o próprio pedido: o banco garante.
+// Ninguém analisa o próprio pedido, a não ser o administrador (ou RH) que é a
+// única pessoa da gestão na empresa: aí ele pode aprovar o próprio. O banco garante.
 export default function CentralSolicitacoes({ modo = 'gestao', aoAnalisar, linkDaPessoa }) {
   const { perfil } = useAuth()
   const avisar = useAvisos()
@@ -46,6 +47,7 @@ export default function CentralSolicitacoes({ modo = 'gestao', aoAnalisar, linkD
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [analisando, setAnalisando] = useState(null) // { item, status }
+  const [aprovaProprio, setAprovaProprio] = useState(false)
   const gestor = modo === 'gestor'
 
   const carregar = useCallback(async () => {
@@ -56,13 +58,16 @@ export default function CentralSolicitacoes({ modo = 'gestao', aoAnalisar, linkD
     if (gestor) consulta = consulta.neq('tipo', 'abono').neq('perfil_id', perfil.id)
     consulta = consulta.order('criado_em', { ascending: status === 'pendente' }).limit(LIMITE)
 
-    const [pedidos, quem, deps] = await Promise.all([
+    const [pedidos, quem, deps, proprio] = await Promise.all([
       consulta,
       gestor
         ? supabase.rpc('minha_equipe')
         : supabase.from('perfis').select('id, nome_completo, departamento_id').eq('empresa_id', perfil.empresa_id),
       gestor ? Promise.resolve({ data: [] }) : supabase.from('departamentos').select('id, nome').eq('empresa_id', perfil.empresa_id).order('nome'),
+      // administrador único: pode aprovar o próprio pedido (sem o ajuste no banco, fica como antes)
+      gestor ? Promise.resolve({ data: false }) : supabase.rpc('pode_aprovar_proprio'),
     ])
+    setAprovaProprio(proprio.data === true)
     if (pedidos.error || quem.error) {
       setErro(traduzirErro(pedidos.error || quem.error))
       setLista([])
@@ -101,7 +106,15 @@ export default function CentralSolicitacoes({ modo = 'gestao', aoAnalisar, linkD
 
   function Acoes({ item }) {
     if (item.status !== 'pendente') return null
-    if (item.perfil_id === perfil.id) return <span className="suave pequeno">Seu pedido: outra pessoa precisa analisar</span>
+    if (item.perfil_id === perfil.id) {
+      if (!aprovaProprio) return <span className="suave pequeno">Seu pedido: outra pessoa precisa analisar</span>
+      return (
+        <div className="acoes">
+          <Botao tamanho="pequeno" icone={Check} onClick={() => setAnalisando({ item, status: 'aprovado' })}>Aprovar</Botao>
+          <span className="suave pequeno">Seu pedido. Como você é a única pessoa da gestão, pode aprovar.</span>
+        </div>
+      )
+    }
     return (
       <div className="acoes">
         <Botao tamanho="pequeno" icone={Check} onClick={() => setAnalisando({ item, status: 'aprovado' })}>Aprovar</Botao>
