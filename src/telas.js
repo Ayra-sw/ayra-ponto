@@ -11,6 +11,7 @@ const IMPORTS = {
   Empresa: () => import('./pages/gestao/Empresa'),
   Unidades: () => import('./pages/gestao/Unidades'),
   RegrasCalculo: () => import('./pages/gestao/RegrasCalculo'),
+  Fechamento: () => import('./pages/gestao/Fechamento'),
   MeuPonto: () => import('./pages/gestao/MeuPonto'),
   Reconhecimento: () => import('./pages/gestao/Reconhecimento'),
   PerfilPessoa: () => import('./pages/gestao/PerfilPessoa'),

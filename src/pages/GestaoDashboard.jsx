@@ -17,6 +17,8 @@ import { Esqueleto, EstadoErro, EstadoVazio } from '../components/ui/Estados'
 import ConvidarPessoas from '../components/ConvidarPessoas'
 import ApresentacaoMarca from '../components/gestao/ApresentacaoMarca'
 import OfertaDigital from '../components/conta/OfertaDigital'
+import { competenciaIso, mesAnterior } from '../lib/fechamento'
+import { nomeDoMes } from '../lib/apuracao'
 
 const ORDEM = { trabalhando: 0, intervalo: 1, sem_marcacao: 2, encerrado: 3 }
 
@@ -32,6 +34,18 @@ export default function GestaoDashboard() {
   const [atualizadoEm, setAtualizadoEm] = useState(null)
   const [filtroUnidade, setFiltroUnidade] = useState('')
   const [convidarAberto, setConvidarAberto] = useState(false)
+  const [mesSemFechar, setMesSemFechar] = useState(null)
+
+  // Fase 7B: lembrete quando o mês passado ainda não foi fechado
+  useEffect(() => {
+    if (!['administrador', 'rh'].includes(perfil.tipo) || !empresa?.criado_em) return
+    const anterior = mesAnterior()
+    const inicioDoMes = new Date(); inicioDoMes.setDate(1); inicioDoMes.setHours(0, 0, 0, 0)
+    if (new Date(empresa.criado_em) >= inicioDoMes) return // empresa nova: não há mês passado para fechar
+    supabase.from('fechamentos').select('id').eq('empresa_id', perfil.empresa_id)
+      .eq('competencia', competenciaIso(anterior)).eq('status', 'fechado').limit(1)
+      .then(({ data, error }) => setMesSemFechar(!error && Array.isArray(data) && data.length === 0 ? nomeDoMes(anterior) : null))
+  }, [perfil.tipo, perfil.empresa_id, empresa?.criado_em])
 
   const carregar = useCallback(async () => {
     setErro(false)
@@ -79,6 +93,7 @@ export default function GestaoDashboard() {
   if (pendentes > 0) atencao.push({ tom: 'atencao', texto: `${pendentes} ${pendentes === 1 ? 'solicitação espera' : 'solicitações esperam'} sua análise.`, link: '/gestao/solicitacoes', acao: 'Analisar' })
   if (pendentesFacial?.fotos > 0) atencao.push({ tom: 'atencao', texto: `${pendentesFacial.fotos} ${pendentesFacial.fotos === 1 ? 'foto de rosto espera' : 'fotos de rosto esperam'} aprovação.`, link: '/gestao/reconhecimento', acao: 'Ver fotos' })
   if (pendentesFacial?.marcacoes > 0) atencao.push({ tom: 'atencao', texto: `${pendentesFacial.marcacoes} ${pendentesFacial.marcacoes === 1 ? 'marcação precisa' : 'marcações precisam'} ser conferida${pendentesFacial.marcacoes === 1 ? '' : 's'} (rosto não confirmado).`, link: '/gestao/reconhecimento', acao: 'Conferir' })
+  if (mesSemFechar) atencao.push({ tom: 'info', texto: `${mesSemFechar} ainda não foi fechado. Feche o mês para mandar a planilha ao contador.`, link: '/gestao/fechamento', acao: 'Fechar o mês' })
   if (empresa?.cnpj && !cnpjOk) atencao.push({ tom: 'problema', texto: 'O CNPJ cadastrado não é válido. Corrija para evitar problemas no espelho de ponto.', link: '/gestao/configuracoes/empresa', acao: 'Corrigir' })
 
   return (

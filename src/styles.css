@@ -1078,3 +1078,34 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 }
 :root[data-theme='dark'] .selo-noturno { color: #C9D4EA; background: rgb(201 212 234 / 0.12); }
 .selo-noturno svg { width: 12px; height: 12px; }
+
+/* ---------- Fase 7B: fechamento do mês ---------- */
+.etapas-fechamento { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; counter-reset: etapa; }
+.etapas-fechamento__item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--raio-controle);
+  border: 1px solid var(--borda); background: var(--superficie); font-weight: 600; font-size: 0.9rem; color: var(--texto-suave); min-width: 0;
+}
+.etapas-fechamento__numero {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  border: 1.5px solid var(--borda-forte); font-size: 0.82rem;
+}
+.etapas-fechamento__numero svg { width: 14px; height: 14px; }
+.etapas-fechamento__item--atual { border-color: var(--dourado); color: var(--texto); box-shadow: inset 0 -3px 0 var(--dourado); }
+.etapas-fechamento__item--atual .etapas-fechamento__numero { background: var(--primaria); border-color: var(--primaria); color: var(--sobre-primaria); }
+.etapas-fechamento__item--feita { color: var(--texto); }
+.etapas-fechamento__item--feita .etapas-fechamento__numero { background: var(--ok); border-color: var(--ok); color: #FFFFFF; }
+@media (max-width: 560px) {
+  .etapas-fechamento { gap: 6px; }
+  .etapas-fechamento__item { flex-direction: column; text-align: center; gap: 4px; padding: 8px 6px; font-size: 0.78rem; }
+}
+.fechamento__pronto, .fechamento__acao { display: grid; grid-template-columns: auto 1fr; gap: 12px 16px; align-items: start; }
+.fechamento__pronto { border-color: color-mix(in srgb, var(--dourado) 55%, var(--borda)); }
+.fechamento__pronto .acoes, .fechamento__acao .acoes, .fechamento__nota { grid-column: 1 / -1; margin: 0; }
+.fechamento__pronto-texto { display: grid; gap: 4px; min-width: 0; }
+.fechamento__pronto-texto h2, .fechamento__pronto-texto p { margin: 0; }
+.fechamento__cadeado { width: 36px; height: 36px; padding: 7px; border-radius: 50%; color: var(--dourado-texto); background: color-mix(in srgb, var(--dourado) 14%, transparent); }
+.fechamento .cartao__cabecalho { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.checklist__item--fechamento { align-items: flex-start; }
+.checklist__item--fechamento .checklist__texto { gap: 2px; }
+.pendencias-pessoas { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 0.9rem; }
+.espelho-fechado { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }

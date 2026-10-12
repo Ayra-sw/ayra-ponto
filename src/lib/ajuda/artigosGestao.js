@@ -142,6 +142,37 @@ const ARTIGOS_GESTAO = [
       { tipo: 'atencao', texto: 'As horas aparecem no relógio (a hora reduzida entra só no total de horas noturnas). Combine com o contador como ele prefere receber.' },
     ],
   },
+  {
+    id: 'fechar-mes',
+    categoria: 'horas',
+    publico: ['gestao'],
+    titulo: 'Fechar o mês e mandar a planilha ao contador',
+    resumo: 'Confira o que falta, feche o mês (ele fica travado) e baixe a planilha do contador em Excel.',
+    palavras: ['fechamento', 'fechar', 'fechar mes', 'fechar o mes', 'competencia', 'contador', 'planilha', 'excel', 'xlsx', 'folha', 'travar', 'reabrir', 'pendencias'],
+    telas: ['/gestao/fechamento', '/gestao/espelhos'],
+    corpo: [
+      'Em [Fechamento do mês](/gestao/fechamento) o mês passa por três etapas: **conferir**, **fechar** e **enviar ao contador**. O administrador e o RH fecham; só o administrador reabre.',
+      { tipo: 'sub', titulo: '1. Conferir' },
+      'Depois que o mês termina, o Ayra mostra o que ainda falta resolver:',
+      { tipo: 'lista', itens: [
+        '**Dias sem saída marcada:** clique no nome da pessoa para abrir o espelho dela. Ela pode pedir o ajuste pelo próprio celular.',
+        '**Pedidos esperando resposta:** ajustes, abonos e folgas do mês que ainda não foram aprovados ou recusados.',
+        '**Pessoas sem jornada:** sem jornada, o Ayra não sabe quantas horas eram previstas.',
+      ] },
+      { tipo: 'sub', titulo: '2. Fechar' },
+      'Toque em **Fechar o mês**. Se ainda houver pendências, o Ayra avisa e pergunta se quer fechar mesmo assim. Ao fechar:',
+      { tipo: 'lista', itens: [
+        'O espelho de cada pessoa é **guardado como estava**, com um código de integridade. Mudar uma jornada ou uma regra depois não muda o mês fechado.',
+        'O mês fica **travado**: ninguém aprova pedidos nem muda afastamentos, banco de horas, escalas ou feriados daquele mês. A equipe ainda pode fazer pedidos; eles esperam até o mês ser reaberto.',
+        'Quem abre o espelho de um mês fechado vê o aviso **Mês fechado**.',
+      ] },
+      { tipo: 'sub', titulo: '3. Enviar ao contador' },
+      'Toque em **Baixar planilha para o contador**. O arquivo Excel tem quatro abas: **Resumo** (uma linha por pessoa, em horas:minutos), **Horas decimais** (os mesmos totais em horas decimais, como muitos sistemas de folha pedem), **Dia a dia** e **Sobre** (empresa, quem fechou e as regras de cálculo usadas). Mande o arquivo por e-mail ou WhatsApp para o contador.',
+      { tipo: 'sub', titulo: 'Precisa corrigir um mês fechado?' },
+      'O administrador toca em **Reabrir o mês** e conta o motivo, que fica no Histórico de alterações. Faça os ajustes e feche de novo: a planilha nova sai com os números atualizados. Se a anterior já tinha ido para o contador, avise que vai sair uma nova.',
+      { tipo: 'dica', texto: 'Feche o mês logo nos primeiros dias do mês seguinte, depois de responder os pedidos. Assim o contador recebe tudo no prazo da folha.' },
+    ],
+  },
   // ------------------------------------------------------------- Pessoas
   {
     id: 'ficha-pessoa',

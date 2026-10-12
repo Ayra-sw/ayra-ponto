@@ -12,7 +12,7 @@ import { telas, preCarregar } from './telas'
 import AvisoSemInternet from './components/app/AvisoSemInternet'
 import ErroNaTela from './components/app/ErroNaTela'
 
-const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, RegrasCalculo, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
+const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, RegrasCalculo, Fechamento, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
 
 const GESTAO = ['administrador', 'rh']
 
@@ -73,6 +73,7 @@ export default function App() {
         <Route path="espelhos" element={<Espelhos />} />
         <Route path="banco-de-horas" element={<BancoHorasEquipe />} />
         <Route path="solicitacoes" element={<Solicitacoes />} />
+        <Route path="fechamento" element={<Fechamento />} />
         <Route path="relatorios" element={<RelatoriosGestao />} />
         <Route path="historico" element={<Historico />} />
         <Route path="arquivos-fiscais" element={<ArquivosFiscais />} />

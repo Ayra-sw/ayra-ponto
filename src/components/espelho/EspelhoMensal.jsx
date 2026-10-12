@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CalendarX2, ChevronLeft, ChevronRight, Moon, Pencil, Printer, TriangleAlert } from 'lucide-react'
+import { CalendarX2, ChevronLeft, ChevronRight, Lock, Moon, Pencil, Printer, TriangleAlert } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { traduzirErro } from '../../lib/mensagensErro'
-import { data as formatarData, duracao, formatarCpf } from '../../lib/formatos'
+import { data as formatarData, dataHora, duracao, formatarCpf } from '../../lib/formatos'
 import { rotuloMarcacao } from '../../lib/marcacoes'
 import {
   diaCurto, ehMesAtualOuFuturo, horaNoFuso, limitesDoMes, lerMes, nomeDoMes, origemDaMarcacao,
   saldoTexto, situacaoDoDia, somarMeses, textoDoMes, tomDoSaldo, totaisDoPeriodo,
 } from '../../lib/apuracao'
 import useEmpresa from '../../hooks/useEmpresa'
+import { useAuth } from '../../contexts/AuthContext'
 import { normalizarRegras } from '../../lib/regrasCalculo'
 import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
@@ -85,16 +86,33 @@ function Avisos({ alertas }) {
   )
 }
 
+// Fase 7B: a foto do espelho num mês fechado (ou null se o mês está aberto,
+// se a pessoa não entrou no fechamento ou se a Fase 7B ainda não foi instalada)
+async function fotoDoFechamento(empresaId, perfilId, inicio) {
+  if (!empresaId) return null
+  const f = await supabase.from('fechamentos').select('id, fechado_em, fechado_por_nome, regras')
+    .eq('empresa_id', empresaId).eq('competencia', inicio).eq('status', 'fechado').maybeSingle()
+  if (f.error || !f.data) return null
+  const e = await supabase.from('fechamento_espelhos').select('linhas, hash')
+    .eq('fechamento_id', f.data.id).eq('perfil_id', perfilId).maybeSingle()
+  if (e.error || !e.data) return null
+  return { fechamento: f.data, linhas: e.data.linhas, hash: e.data.hash }
+}
+
 // Espelho de ponto de uma pessoa, mês a mês. As contas vêm prontas do banco
 // (função apurar_periodo). Com "aoPedirAjuste" aparece o botão de pedir ajuste
 // nos dias com problema (só na tela da própria pessoa).
 export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial }) {
   const { empresa, unidades } = useEmpresa()
+  const { perfil: eu } = useAuth()
+  // a empresa de quem está olhando (já vem no login, sem esperar o cadastro da empresa)
+  const empresaId = eu?.empresa_id || empresa?.id
   const [mes, setMes] = useState(() => lerMes(mesInicial))
   const [linhas, setLinhas] = useState([])
   const [pessoa, setPessoa] = useState(null)
   const [jornada, setJornada] = useState(null)
   const [regras, setRegras] = useState(null)
+  const [fechado, setFechado] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
@@ -102,6 +120,22 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
     setErro('')
     setCarregando(true)
     const { inicio, fim } = limitesDoMes(mes.ano, mes.mes)
+    // Fase 7B: mês fechado mostra o espelho guardado no fechamento (a "foto")
+    const foto = await fotoDoFechamento(empresaId, perfilId, inicio)
+    if (foto) {
+      const quem = await supabase.from('perfis').select('id, nome_completo, cpf, matricula, cargo, filial_id, modelo_jornada_id, data_admissao').eq('id', perfilId).maybeSingle()
+      setFechado(foto.fechamento)
+      setRegras(foto.fechamento.regras || null)
+      setLinhas(Array.isArray(foto.linhas) ? foto.linhas : [])
+      setPessoa(quem.data || pessoaInicial || null)
+      if (quem.data?.modelo_jornada_id) {
+        const j = await supabase.from('modelos_jornada').select('nome').eq('id', quem.data.modelo_jornada_id).maybeSingle()
+        setJornada(j.data?.nome || null)
+      } else setJornada(null)
+      setCarregando(false)
+      return
+    }
+    setFechado(null)
     const [clt, quem] = await Promise.all([
       // Fase 7A: o espelho com as contas da folha; sem a 7A no banco, o espelho de sempre
       supabase.rpc('apurar_clt', { p_perfil_id: perfilId, p_inicio: inicio, p_fim: fim }),
@@ -111,8 +145,8 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
     const semClt = clt.error ? (clt.error.code === 'PGRST202' || /could not find the function/i.test(clt.error.message || '')) : !Array.isArray(clt.data)
     if (semClt) {
       apuracao = await supabase.rpc('apurar_periodo', { p_perfil_id: perfilId, p_inicio: inicio, p_fim: fim })
-    } else if (!clt.error && empresa?.id) {
-      const rg = await supabase.rpc('regras_da_empresa', { p_empresa: empresa.id })
+    } else if (!clt.error && empresaId) {
+      const rg = await supabase.rpc('regras_da_empresa', { p_empresa: empresaId })
       setRegras(rg.error ? null : rg.data)
     }
     if (apuracao.error) { setErro(traduzirErro(apuracao.error)); setLinhas([]) } else setLinhas(apuracao.data || [])
@@ -123,7 +157,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
       setJornada(j.data?.nome || null)
     } else setJornada(null)
     setCarregando(false)
-  }, [perfilId, mes, empresa?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [perfilId, mes, empresaId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { carregar() }, [carregar, atualizarEm])
 
@@ -166,6 +200,14 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
         <EstadoErro aoTentarDeNovo={carregar}>{erro}</EstadoErro>
       ) : (
         <>
+          {fechado && (
+            <Alerta tom="ok" titulo="Mês fechado">
+              <span className="espelho-fechado">
+                <Lock aria-hidden="true" style={{ width: 16, height: 16 }} />
+                Fechado em {dataHora(fechado.fechado_em)}{fechado.fechado_por_nome ? ` por ${fechado.fechado_por_nome}` : ''}. Este é o espelho guardado no fechamento.
+              </span>
+            </Alerta>
+          )}
           <div className="indicadores">
             <Indicador rotulo="Horas trabalhadas" valor={duracao(totais.trabalhado)} detalhe={`Previsto até hoje: ${duracao(totais.previsto)}`} />
             <Indicador rotulo="Horas extras" valor={duracao(totais.extra)} detalhe="Acima da jornada" />

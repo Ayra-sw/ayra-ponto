@@ -80,6 +80,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   especial (domingo/feriado/folga), horas noturnas com hora reduzida e prorrogação (Súmula 60), intervalo abaixo do
   mínimo (art. 71), descanso menor que 11h (art. 66), DSR perdido (Lei 605/49) e semana acima do limite (configurável
   por causa da PEC do fim da 6x1). Tela "Regras de cálculo" e cartão "Para o contador" no espelho.
+- **Fechamento do mês (Fase 7B):** tela "Fechamento do mês" em três etapas (conferir, fechar, enviar ao contador).
+  `pendencias_fechamento` lista dias sem saída, pedidos sem resposta e pessoas sem jornada; `fechar_mes`
+  (administrador e RH) guarda uma foto do espelho de cada pessoa (`fechamento_espelhos`, com hash SHA-256) e trava
+  o mês (pedidos, afastamentos, banco de horas, escalas e feriados); `reabrir_mes` só pelo administrador, com motivo
+  no histórico. Planilha Excel do contador gerada no navegador (`src/lib/xlsx.js`, sem dependência nova) com as
+  abas Resumo, Horas decimais, Dia a dia e Sobre. O espelho de um mês fechado mostra a foto guardada.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

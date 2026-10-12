@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { FileArchive, LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users, Calculator } from 'lucide-react'
+import { FileArchive, LifeBuoy, BarChart3, BriefcaseBusiness, Building2, CalendarClock, CalendarRange, CalendarDays, Clock, FileClock, History, Inbox, LayoutDashboard, LogOut, ScrollText, MapPin, Network, PiggyBank, ScanFace, UserRound, Users, Calculator, CalendarCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import useEmpresa from '../../hooks/useEmpresa'
@@ -22,6 +22,7 @@ const TITULOS = [
   ['/gestao/meu-historico', 'Meu histórico'],
   ['/gestao/meu-espelho', 'Meu espelho'],
   ['/gestao/solicitacoes', 'Solicitações'],
+  ['/gestao/fechamento', 'Fechamento do mês'],
   ['/gestao/relatorios', 'Relatórios'],
   ['/gestao/historico', 'Histórico de alterações'],
   ['/gestao/arquivos-fiscais', 'Arquivos fiscais'],
@@ -72,6 +73,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao/banco-de-horas" icone={PiggyBank} texto="Banco de horas" aoClicar={aoNavegar} />
       <span className="menu-lateral__grupo">Gestão</span>
       <ItemMenu para="/gestao/solicitacoes" icone={Inbox} texto="Solicitações" contador={pendentes} aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao/fechamento" icone={CalendarCheck} texto="Fechamento do mês" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/relatorios" icone={BarChart3} texto="Relatórios" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/historico" icone={ScrollText} texto="Histórico de alterações" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/arquivos-fiscais" icone={FileArchive} texto="Arquivos fiscais" aoClicar={aoNavegar} />

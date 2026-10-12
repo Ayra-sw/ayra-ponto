@@ -6,6 +6,13 @@ import { DIAS_SEMANA, TIPO_FERIADO, horaCurta } from './jornadas'
 import { rotuloMarcacao } from './marcacoes'
 import { ROTULO_LANCAMENTO, TIPO_AFASTAMENTO } from './bancoHoras'
 import { ROTULO_ESCALA } from './escalas'
+import { nomeDoMes } from './apuracao'
+
+// "2026-09-01" → "setembro de 2026"
+function mesPorExtenso(iso) {
+  const m = /^(\d{4})-(\d{2})/.exec(iso || '')
+  return m ? nomeDoMes({ ano: Number(m[1]), mes: Number(m[2]) - 1 }).toLowerCase() : 'um mês'
+}
 
 // Grupos que aparecem no filtro "O que mudou"
 export const GRUPOS = [
@@ -18,6 +25,7 @@ export const GRUPOS = [
   { id: 'organizacao', rotulo: 'Departamentos, cargos e gestores', tabelas: ['departamentos', 'cargos', 'departamento_gestores'] },
   { id: 'empresa', rotulo: 'Empresa, unidades e regras de cálculo', tabelas: ['empresas', 'filiais', 'regras_calculo'] },
   { id: 'facial', rotulo: 'Reconhecimento facial', tabelas: ['rostos_referencia', 'verificacoes_faciais'] },
+  { id: 'fechamento', rotulo: 'Fechamento do mês', tabelas: ['fechamentos'] },
 ]
 
 // Campos que não aparecem (técnicos ou repetidos)
@@ -26,6 +34,7 @@ const ESCONDIDOS = new Set([
   'conferida_por', 'conferida_em', 'cancelado_por', 'registro_original_id', 'registro_id', 'referencia_id', 'foto_path',
   'modelo', 'qualidade', 'similaridade', 'limiar', 'antispoof', 'vivacidade', 'piscou', 'motor', 'versao_hash',
   'proximo_nsr', 'atualizado_por',
+  'fechado_por', 'fechado_por_nome', 'reaberto_por', 'regras', 'pessoas',
 ])
 
 const NOMES = {
@@ -48,7 +57,8 @@ const NOMES = {
   noturno_fim: 'Fim do horário noturno', noturno_pct: 'Adicional noturno (%)', hora_noturna_reduzida: 'Hora noturna reduzida',
   prorrogar_noturno: 'Noturno continua depois das 5h', intervalo_pre_assinalado: 'Intervalo pré-assinalado',
   interjornada_min: 'Descanso mínimo entre dias (minutos)', dsr_perde_falta: 'Perde DSR por falta',
-  dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
+  dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', competencia: 'Mês', pendencias: 'Pendências no fechamento', fechado_em: 'Fechado em', reaberto_em: 'Reaberto em',
+  motivo_reabertura: 'Motivo da reabertura', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
 }
 const nomeDoCampo = (c) => NOMES[c] || (c.charAt(0).toUpperCase() + c.slice(1)).replace(/_/g, ' ')
 
@@ -69,6 +79,7 @@ export function valorDoCampo(tabela, campo, v, mapas) {
     if (tabela === 'perfis') return SITUACAO[v] || v
     if (tabela === 'ajustes_ponto') return STATUS_SOLICITACAO[v]?.rotulo || v
     if (tabela === 'rostos_referencia') return SITUACAO_FOTO[v] || v
+    if (tabela === 'fechamentos') return v === 'fechado' ? 'Fechado' : v === 'reaberto' ? 'Reaberto' : v
   }
   if (campo === 'tipo') {
     if (tabela === 'perfis') return PAPEL[v] || v
@@ -77,6 +88,7 @@ export function valorDoCampo(tabela, campo, v, mapas) {
     if (tabela === 'banco_horas_lancamentos') return ROTULO_LANCAMENTO[v] || v
     if (tabela === 'feriados') return TIPO_FERIADO[v] || v
   }
+  if (campo === 'competencia') return mesPorExtenso(v)
   if (campo === 'categoria') return CATEGORIA[v] || v
   if (campo === 'tipo_escala') return ROTULO_ESCALA[v] || v
   if (campo === 'tipo_marcacao') return rotuloMarcacao(v)
@@ -197,6 +209,13 @@ export function frase(g, mapas) {
     case 'filiais': return `${quem} ${verbo} a unidade ${v.nome || mapas.unidades[g.registro_id] || ''}`.trim()
     case 'empresas': return `${quem} alterou os dados da empresa`
     case 'regras_calculo': return `${quem} alterou as regras de cálculo`
+    case 'fechamentos': {
+      const mes = mesPorExtenso(v.competencia)
+      if (g.acao === 'criou') return `${quem} fechou o mês de ${mes}`
+      if (g.depois?.status === 'reaberto' && g.antes?.status !== 'reaberto') return `${quem} reabriu o mês de ${mes}`
+      if (g.depois?.status === 'fechado' && g.antes?.status !== 'fechado') return `${quem} fechou de novo o mês de ${mes}`
+      return `${quem} atualizou o fechamento de ${mes}`
+    }
     case 'departamento_gestores': {
       const dep = mapas.departamentos[v.departamento_id] || 'um departamento'
       return g.acao === 'criou' ? `${quem} colocou ${pessoa} como gestor(a) de ${dep}` : `${quem} tirou ${pessoa} da gestão de ${dep}`
