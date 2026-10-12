@@ -25,7 +25,7 @@ export const GRUPOS = [
   { id: 'organizacao', rotulo: 'Departamentos, cargos e gestores', tabelas: ['departamentos', 'cargos', 'departamento_gestores'] },
   { id: 'empresa', rotulo: 'Empresa, unidades e regras de cálculo', tabelas: ['empresas', 'filiais', 'regras_calculo'] },
   { id: 'facial', rotulo: 'Reconhecimento facial', tabelas: ['rostos_referencia', 'verificacoes_faciais'] },
-  { id: 'fechamento', rotulo: 'Fechamento do mês', tabelas: ['fechamentos'] },
+  { id: 'fechamento', rotulo: 'Fechamento do mês e assinaturas', tabelas: ['fechamentos', 'espelho_conferencias'] },
 ]
 
 // Campos que não aparecem (técnicos ou repetidos)
@@ -35,6 +35,7 @@ const ESCONDIDOS = new Set([
   'modelo', 'qualidade', 'similaridade', 'limiar', 'antispoof', 'vivacidade', 'piscou', 'motor', 'versao_hash',
   'proximo_nsr', 'atualizado_por',
   'fechado_por', 'fechado_por_nome', 'reaberto_por', 'regras', 'pessoas',
+  'fechamento_id', 'hash', 'ip', 'aparelho', 'ajuste_id', 'problema_em',
 ])
 
 const NOMES = {
@@ -58,7 +59,8 @@ const NOMES = {
   prorrogar_noturno: 'Noturno continua depois das 5h', intervalo_pre_assinalado: 'Intervalo pré-assinalado',
   interjornada_min: 'Descanso mínimo entre dias (minutos)', dsr_perde_falta: 'Perde DSR por falta',
   dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', competencia: 'Mês', pendencias: 'Pendências no fechamento', fechado_em: 'Fechado em', reaberto_em: 'Reaberto em',
-  motivo_reabertura: 'Motivo da reabertura', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
+  motivo_reabertura: 'Motivo da reabertura', assinado_em: 'Assinado em', metodo: 'Como confirmou',
+  problema_data: 'Dia com problema', problema_texto: 'Problema apontado', substituida_em: 'Substituída em (mês reaberto)', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
 }
 const nomeDoCampo = (c) => NOMES[c] || (c.charAt(0).toUpperCase() + c.slice(1)).replace(/_/g, ' ')
 
@@ -80,6 +82,7 @@ export function valorDoCampo(tabela, campo, v, mapas) {
     if (tabela === 'ajustes_ponto') return STATUS_SOLICITACAO[v]?.rotulo || v
     if (tabela === 'rostos_referencia') return SITUACAO_FOTO[v] || v
     if (tabela === 'fechamentos') return v === 'fechado' ? 'Fechado' : v === 'reaberto' ? 'Reaberto' : v
+    if (tabela === 'espelho_conferencias') return v === 'assinado' ? 'Assinado' : v === 'com_problema' ? 'Com problema' : v
   }
   if (campo === 'tipo') {
     if (tabela === 'perfis') return PAPEL[v] || v
@@ -209,6 +212,14 @@ export function frase(g, mapas) {
     case 'filiais': return `${quem} ${verbo} a unidade ${v.nome || mapas.unidades[g.registro_id] || ''}`.trim()
     case 'empresas': return `${quem} alterou os dados da empresa`
     case 'regras_calculo': return `${quem} alterou as regras de cálculo`
+    case 'espelho_conferencias': {
+      const mes = mesPorExtenso(v.competencia)
+      if (g.acao === 'alterou' && g.depois?.substituida_em && !g.antes?.substituida_em) return `A conferência de ${pessoa} do espelho de ${mes} foi guardada como substituída (mês reaberto)`
+      if (g.acao === 'alterou' && g.antes?.substituida_em && !g.depois?.substituida_em) return `A assinatura de ${pessoa} do espelho de ${mes} continua valendo (espelho igual ao assinado)`
+      if (v.status === 'assinado' && (g.acao === 'criou' || g.antes?.status !== 'assinado')) return `${proprio ? quem : pessoa} assinou o espelho de ${mes}`
+      if (v.status === 'com_problema') return `${proprio ? quem : pessoa} encontrou um problema no espelho de ${mes}`
+      return `A conferência de ${pessoa} do espelho de ${mes} mudou`
+    }
     case 'fechamentos': {
       const mes = mesPorExtenso(v.competencia)
       if (g.acao === 'criou') return `${quem} fechou o mês de ${mes}`

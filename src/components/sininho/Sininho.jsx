@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, CalendarClock, CheckCheck, Inbox, MessageSquareReply, PiggyBank, ScanFace, UserPlus } from 'lucide-react'
+import { Bell, CalendarClock, CheckCheck, FileSignature, Inbox, MessageSquareReply, MessageSquareWarning, PiggyBank, ScanFace, UserPlus } from 'lucide-react'
 import useSininho from '../../hooks/useSininho'
 
 const ICONE = {
@@ -11,6 +11,8 @@ const ICONE = {
   pessoa_nova: UserPlus,
   foto_para_aprovar: ScanFace,
   foto_analisada: ScanFace,
+  espelho_para_assinar: FileSignature,
+  espelho_com_problema: MessageSquareWarning,
 }
 
 // "há 5 min", "ontem", "12/09"

@@ -86,6 +86,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
   o mês (pedidos, afastamentos, banco de horas, escalas e feriados); `reabrir_mes` só pelo administrador, com motivo
   no histórico. Planilha Excel do contador gerada no navegador (`src/lib/xlsx.js`, sem dependência nova) com as
   abas Resumo, Horas decimais, Dia a dia e Sobre. O espelho de um mês fechado mostra a foto guardada.
+- **Conferência e assinatura do espelho (Fase 7C):** ao fechar o mês, cada pessoa recebe aviso no sininho e um
+  cartão no espelho: "Está certo" (assina com a digital ou a senha; `assinar_espelho` exige confirmação de identidade
+  dos últimos 10 minutos no `amr` do JWT e o mesmo hash da foto) ou "Encontrei um problema" (escolhe o dia e faz o
+  pedido de ajuste; pedido para mês fechado marca `espelho_conferencias` como "com problema" e avisa adm./RH).
+  Painel de assinaturas e "Lembrar quem falta" no Fechamento do mês. Reabrir guarda as assinaturas como
+  substituídas; ao fechar de novo, quem não teve o espelho mudado continua assinado.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

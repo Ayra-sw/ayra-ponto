@@ -11,6 +11,8 @@ import {
 import useEmpresa from '../../hooks/useEmpresa'
 import { useAuth } from '../../contexts/AuthContext'
 import { normalizarRegras } from '../../lib/regrasCalculo'
+import { comoConfirmou } from '../../lib/conferencia'
+import ConferirEspelho from './ConferirEspelho'
 import Botao from '../ui/Botao'
 import Etiqueta from '../ui/Etiqueta'
 import Alerta from '../ui/Alerta'
@@ -96,13 +98,16 @@ async function fotoDoFechamento(empresaId, perfilId, inicio) {
   const e = await supabase.from('fechamento_espelhos').select('linhas, hash')
     .eq('fechamento_id', f.data.id).eq('perfil_id', perfilId).maybeSingle()
   if (e.error || !e.data) return null
-  return { fechamento: f.data, linhas: e.data.linhas, hash: e.data.hash }
+  // Fase 7C: a assinatura (ou o problema apontado) desta foto; sem a 7C, fica sem
+  const c = await supabase.from('espelho_conferencias').select('status, assinado_em, metodo, problema_data, hash')
+    .eq('fechamento_id', f.data.id).eq('perfil_id', perfilId).is('substituida_em', null).maybeSingle()
+  return { fechamento: { ...f.data, hash: e.data.hash, conferencia: c.error ? null : (c.data || null), comAssinatura: !c.error }, linhas: e.data.linhas, hash: e.data.hash }
 }
 
 // Espelho de ponto de uma pessoa, mês a mês. As contas vêm prontas do banco
 // (função apurar_periodo). Com "aoPedirAjuste" aparece o botão de pedir ajuste
 // nos dias com problema (só na tela da própria pessoa).
-export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial }) {
+export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial, podeAssinar = false }) {
   const { empresa, unidades } = useEmpresa()
   const { perfil: eu } = useAuth()
   // a empresa de quem está olhando (já vem no login, sem esperar o cadastro da empresa)
@@ -207,6 +212,19 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                 Fechado em {dataHora(fechado.fechado_em)}{fechado.fechado_por_nome ? ` por ${fechado.fechado_por_nome}` : ''}. Este é o espelho guardado no fechamento.
               </span>
             </Alerta>
+          )}
+          {fechado && podeAssinar && fechado.comAssinatura && (
+            <div className="nao-imprimir">
+              <ConferirEspelho
+                nomeMes={nomeDoMes(mes)}
+                competencia={limitesDoMes(mes.ano, mes.mes).inicio}
+                hash={fechado.hash}
+                conferencia={fechado.conferencia}
+                linhas={linhas}
+                aoAssinar={carregar}
+                aoApontarProblema={aoPedirAjuste}
+              />
+            </div>
           )}
           <div className="indicadores">
             <Indicador rotulo="Horas trabalhadas" valor={duracao(totais.trabalhado)} detalhe={`Previsto até hoje: ${duracao(totais.previsto)}`} />
@@ -336,7 +354,10 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                 {' '}Tolerância, feriados e jornada seguem o cadastro da empresa.
               </p>
               <p className="espelho__impressao-rodape">
-                Documento gerado em {formatarData(new Date())} pelo Ayra Ponto. Conferido por: ______________________________
+                Documento gerado em {formatarData(new Date())} pelo Ayra Ponto.{' '}
+                {fechado?.conferencia?.status === 'assinado'
+                  ? <>Assinado eletronicamente por {pessoa?.nome_completo || 'o colaborador'} em {dataHora(fechado.conferencia.assinado_em)}{fechado.conferencia.metodo ? `, ${comoConfirmou(fechado.conferencia.metodo)}` : ''}. Código de integridade: <span className="mono">{fechado.conferencia.hash}</span></>
+                  : <>Conferido por: ______________________________{fechado?.hash ? <><br />Código de integridade: <span className="mono">{fechado.hash}</span></> : null}</>}
               </p>
             </>
           )}

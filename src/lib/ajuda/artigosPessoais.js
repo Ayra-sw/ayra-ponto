@@ -221,6 +221,31 @@ const ARTIGOS_PESSOAIS = [
     ],
   },
   {
+    id: 'assinar-espelho',
+    categoria: 'horas',
+    publico: ['colaborador'],
+    titulo: 'Conferir e assinar o espelho do mês',
+    resumo: 'Quando a empresa fecha o mês, você confere e assina com a digital ou a senha.',
+    palavras: ['assinar', 'assinatura', 'conferir', 'espelho', 'fechamento', 'mes fechado', 'esta certo', 'problema', 'digital', 'senha'],
+    telas: ['/espelho', '/gestao/meu-espelho', '/'],
+    corpo: [
+      'Todo mês a empresa **fecha o mês**. Aí o seu [espelho](rota:espelho) daquele mês fica pronto para você conferir, e chega um aviso no sininho.',
+      { tipo: 'passos', itens: [
+        'Abra o espelho do mês (pelo aviso, pelo cartão da tela inicial ou em Meu espelho).',
+        'Confira os dias, as marcações e as horas.',
+        'Está tudo certo? Toque em **Está certo** e confirme com a sua **digital** ou a sua **senha**.',
+        'Pronto: aparece "Você assinou o espelho", com a data e a hora.',
+      ] },
+      'Encontrou algo errado? Toque em **Encontrei um problema**, escolha o dia e conte o que aconteceu (esqueceu de marcar, horário errado, atestado). O pedido vai para o RH, e o seu espelho fica marcado como "com problema" até ser resolvido.',
+      { tipo: 'lista', itens: [
+        'A assinatura guarda o código de integridade do espelho: ela vale exatamente para aquela versão.',
+        'Se o RH reabrir o mês e o seu espelho mudar, você recebe um aviso para assinar de novo. Se não mudou nada, a sua assinatura continua valendo.',
+        'Ao imprimir ou salvar em PDF, a folha mostra quando e como você assinou.',
+      ] },
+      { tipo: 'dica', texto: 'Para assinar com a digital, ative a digital neste aparelho em Minha conta. Sem ela, use a senha do Ayra Ponto.' },
+    ],
+  },
+  {
     id: 'meu-banco',
     categoria: 'horas',
     publico: ['colaborador'],

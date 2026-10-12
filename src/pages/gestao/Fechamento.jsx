@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Check, ChevronLeft, ChevronRight, FileSpreadsheet, Lock, LockOpen, CalendarClock } from 'lucide-react'
+import { BellRing, Check, ChevronLeft, ChevronRight, FileSignature, FileSpreadsheet, Lock, LockOpen, CalendarClock } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
@@ -10,6 +10,7 @@ import { ehMesAtualOuFuturo, nomeDoMes, saldoTexto, somarMeses, textoDoMes, lerM
 import { normalizarRegras } from '../../lib/regrasCalculo'
 import { competenciaIso, gerarPlanilhaFechamento, mesAnterior, nomeDoArquivo, totaisDaFoto } from '../../lib/fechamento'
 import { baixarArquivo } from '../../lib/xlsx'
+import { STATUS_CONFERENCIA, comoConfirmou } from '../../lib/conferencia'
 import Botao from '../../components/ui/Botao'
 import Alerta from '../../components/ui/Alerta'
 import Etiqueta from '../../components/ui/Etiqueta'
@@ -101,7 +102,13 @@ function Conferencia({ p, mesTexto }) {
   )
 }
 
-function TotaisDoFechamento({ linhas, regras, mesTexto }) {
+function SeloAssinatura({ c }) {
+  if (c === undefined) return null
+  const s = STATUS_CONFERENCIA[c?.status || 'pendente']
+  return <Etiqueta tom={s.tom}>{c?.status === 'com_problema' ? 'Problema' : s.rotulo}</Etiqueta>
+}
+
+function TotaisDoFechamento({ linhas, regras, mesTexto, conferencias }) {
   const r = normalizarRegras(regras)
   if (!linhas.length) return <p className="suave">Nenhuma pessoa entrou neste fechamento.</p>
   return (
@@ -118,6 +125,7 @@ function TotaisDoFechamento({ linhas, regras, mesTexto }) {
                 <th scope="col" className="num">Noturnas</th>
                 <th scope="col" className="num">Faltas</th>
                 <th scope="col" className="num">Saldo</th>
+                {conferencias && <th scope="col">Assinatura</th>}
               </tr>
             </thead>
             <tbody>
@@ -133,6 +141,7 @@ function TotaisDoFechamento({ linhas, regras, mesTexto }) {
                   <td className="num">{t.noturno ? duracao(t.noturno) : '—'}</td>
                   <td className="num">{t.diasFalta || '—'}</td>
                   <td className="num">{saldoTexto(t.saldo)}</td>
+                  {conferencias && <td><SeloAssinatura c={conferencias[id] || null} /></td>}
                 </tr>
               ))}
             </tbody>
@@ -153,10 +162,64 @@ function TotaisDoFechamento({ linhas, regras, mesTexto }) {
               {t.noturno > 0 && <span>Noturnas <strong className="mono">{duracao(t.noturno)}</strong></span>}
               {t.diasFalta > 0 && <span>Faltas <strong className="mono">{t.diasFalta}</strong></span>}
             </div>
+            {conferencias && <div><SeloAssinatura c={conferencias[id] || null} /></div>}
           </section>
         ))}
       </div>
     </>
+  )
+}
+
+// Fase 7C: quem já conferiu e assinou o espelho do mês
+function Assinaturas({ linhas, conferencias, mesTexto, aoLembrar, lembrando }) {
+  const total = linhas.length
+  const lista = linhas.map((l) => ({ ...l, c: conferencias[l.perfil_id] || null }))
+  const assinaram = lista.filter((l) => l.c?.status === 'assinado').length
+  const problemas = lista.filter((l) => l.c?.status === 'com_problema')
+  const faltam = lista.filter((l) => !l.c).length
+  const pct = total ? Math.round((assinaram / total) * 100) : 0
+  return (
+    <section className="cartao assinaturas" aria-labelledby="t-assinaturas">
+      <div className="cartao__cabecalho">
+        <h2 id="t-assinaturas">Assinaturas dos colaboradores</h2>
+        <span className="suave pequeno">Cada pessoa confere e assina pelo próprio Ayra</span>
+      </div>
+      <div className="assinaturas__resumo">
+        <FileSignature className="fechamento__cadeado" aria-hidden="true" />
+        <div className="assinaturas__numeros">
+          <strong>{assinaram} de {total} {total === 1 ? 'assinou' : 'assinaram'}</strong>
+          <div className="progresso" role="progressbar" aria-label="Assinaturas" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+            <span style={{ width: `${pct}%` }} />
+          </div>
+          <span className="suave pequeno">
+            {faltam > 0 ? `${plural(faltam, 'pessoa ainda não conferiu', 'pessoas ainda não conferiram')}` : 'Todo mundo já conferiu.'}
+            {problemas.length > 0 && ` · ${plural(problemas.length, 'encontrou um problema', 'encontraram um problema')}`}
+          </span>
+        </div>
+        {faltam > 0 && (
+          <Botao variante="secundario" icone={BellRing} onClick={aoLembrar} carregando={lembrando}>Lembrar quem falta</Botao>
+        )}
+      </div>
+      {problemas.length > 0 && (
+        <ul className="assinaturas__problemas">
+          {problemas.map((l) => (
+            <li key={l.perfil_id}>
+              <Link className="link" to={`/gestao/pessoas/${l.perfil_id}?aba=espelho&mes=${mesTexto}`}>{l.nome}</Link>
+              {l.c.problema_data && <span className="suave"> · dia {diaMes(l.c.problema_data)}</span>}
+              {l.c.problema_texto && <span className="assinaturas__texto">“{l.c.problema_texto}”</span>}
+            </li>
+          ))}
+          <li className="suave pequeno">
+            O pedido está em <Link className="link" to="/gestao/solicitacoes">Solicitações</Link>. Com o mês fechado, só dá para aprovar depois de reabrir; ao fechar de novo, quem tinha assinado e não teve mudança continua assinado.
+          </li>
+        </ul>
+      )}
+      {assinaram > 0 && (
+        <p className="suave pequeno" style={{ margin: 0 }}>
+          Última assinatura: {(() => { const u = lista.filter((l) => l.c?.assinado_em).sort((a, b) => (a.c.assinado_em < b.c.assinado_em ? 1 : -1))[0]; return u ? `${u.nome}, ${dataHora(u.c.assinado_em)} ${comoConfirmou(u.c.metodo)}` : '' })()}.
+        </p>
+      )}
+    </section>
   )
 }
 
@@ -186,6 +249,8 @@ export default function Fechamento() {
   const [erroMotivo, setErroMotivo] = useState('')
   const [reabrindo, setReabrindo] = useState(false)
   const [erroAcao, setErroAcao] = useState('')
+  const [conferencias, setConferencias] = useState(null)
+  const [lembrando, setLembrando] = useState(false)
 
   const carregar = useCallback(async () => {
     setErro(''); setErroAcao(''); setCarregando(true)
@@ -198,10 +263,14 @@ export default function Fechamento() {
     const dados = res.data || {}
     setP(dados)
     if (dados.fechamento?.status === 'fechado') {
-      const [f, fs] = await Promise.all([
+      const [f, fs, cf] = await Promise.all([
         supabase.from('fechamentos').select('regras').eq('id', dados.fechamento.id).maybeSingle(),
         supabase.from('fechamento_espelhos').select('perfil_id, totais').eq('fechamento_id', dados.fechamento.id),
+        // Fase 7C: assinaturas (sem a 7C no banco, a tela segue sem esta parte)
+        supabase.from('espelho_conferencias').select('perfil_id, status, assinado_em, metodo, problema_data, problema_texto')
+          .eq('fechamento_id', dados.fechamento.id).is('substituida_em', null),
       ])
+      setConferencias(cf.error || !Array.isArray(cf.data) ? null : Object.fromEntries(cf.data.map((c) => [c.perfil_id, c])))
       const lista = fs.data || []
       const ids = lista.map((x) => x.perfil_id)
       const nomes = ids.length
@@ -210,7 +279,7 @@ export default function Fechamento() {
       const mapa = Object.fromEntries(nomes.map((n) => [n.id, n.nome_completo]))
       setRegras(f.data?.regras || null)
       setFotos(lista.map((x) => ({ ...x, nome: mapa[x.perfil_id] || 'Pessoa' })))
-    } else { setFotos([]); setRegras(null) }
+    } else { setFotos([]); setRegras(null); setConferencias(null) }
     setCarregando(false)
   }, [competencia])
 
@@ -244,6 +313,14 @@ export default function Fechamento() {
       setErroAcao('Não conseguimos montar a planilha. Tente de novo em instantes.')
     }
     setBaixando(false)
+  }
+
+  async function lembrar() {
+    setLembrando(true); setErroAcao('')
+    const { data, error } = await supabase.rpc('lembrar_assinaturas', { p_competencia: competencia })
+    setLembrando(false)
+    if (error) return setErroAcao(traduzirErro(error))
+    avisar(data > 0 ? `Lembrete enviado para ${plural(data, 'pessoa', 'pessoas')}. Aparece no sininho do Ayra.` : 'Todo mundo que falta já recebeu um lembrete hoje.')
   }
 
   async function confirmarReabertura(e) {
@@ -327,9 +404,13 @@ export default function Fechamento() {
                 {!ehAdmin && <p className="suave pequeno fechamento__nota">Só o administrador pode reabrir um mês fechado.</p>}
               </section>
 
+              {conferencias && linhas.length > 0 && (
+                <Assinaturas linhas={linhas} conferencias={conferencias} mesTexto={mesTexto} aoLembrar={lembrar} lembrando={lembrando} />
+              )}
+
               <section className="cartao" aria-labelledby="t-totais">
                 <div className="cartao__cabecalho"><h2 id="t-totais">Totais de {nome.toLowerCase()}</h2></div>
-                <TotaisDoFechamento linhas={linhas} regras={regras} mesTexto={mesTexto} />
+                <TotaisDoFechamento linhas={linhas} regras={regras} mesTexto={mesTexto} conferencias={conferencias} />
               </section>
             </>
           ) : (
@@ -398,7 +479,7 @@ export default function Fechamento() {
         )}
       >
         <form className="pilha" onSubmit={confirmarReabertura} noValidate>
-          <p className="suave" style={{ margin: 0 }}>O mês volta a aceitar ajustes e a planilha guardada deixa de valer. Se a planilha já foi para o contador, avise que vai sair uma nova.</p>
+          <p className="suave" style={{ margin: 0 }}>O mês volta a aceitar ajustes e a planilha guardada deixa de valer. Se a planilha já foi para o contador, avise que vai sair uma nova. As assinaturas ficam guardadas; ao fechar de novo, quem teve o espelho mudado assina outra vez.</p>
           <AreaTexto rotulo="Por que reabrir?" rows={3} maxLength={300} value={motivo}
             onChange={(e) => { setMotivo(e.target.value); setErroMotivo('') }} erro={erroMotivo}
             ajuda="Fica registrado no Histórico de alterações." data-foco-inicial />

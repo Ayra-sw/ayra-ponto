@@ -49,6 +49,7 @@ export default function MeuEspelho() {
           aoMudarMes={(m) => setBusca({ mes: m }, { replace: true })}
           aoPedirAjuste={(inicial) => setPedido(inicial)}
           atualizarEm={versao}
+          podeAssinar
         />
       )}
       <PedirAjuste

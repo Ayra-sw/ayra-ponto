@@ -17,6 +17,7 @@ import { Esqueleto, EstadoErro, EstadoVazio } from '../components/ui/Estados'
 import ConvidarPessoas from '../components/ConvidarPessoas'
 import ApresentacaoMarca from '../components/gestao/ApresentacaoMarca'
 import OfertaDigital from '../components/conta/OfertaDigital'
+import AvisoAssinar from '../components/espelho/AvisoAssinar'
 import { competenciaIso, mesAnterior } from '../lib/fechamento'
 import { nomeDoMes } from '../lib/apuracao'
 
@@ -127,6 +128,8 @@ export default function GestaoDashboard() {
           ))}
         </section>
       )}
+
+      <AvisoAssinar base="/gestao/meu-espelho" />
 
       {!carregando && (
         <PrimeirosPassos empresa={empresa} unidades={unidades} pessoas={pessoas.length} aoConvidar={() => setConvidarAberto(true)} />
