@@ -1186,3 +1186,13 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .suspensa p { margin: 0; max-width: 520px; }
 .suspensa__icone { width: 48px; height: 48px; padding: 10px; border-radius: 50%; color: var(--dourado-texto); background: color-mix(in srgb, var(--dourado) 14%, transparent); }
 .suspensa__acoes { justify-content: center; }
+
+/* Fase 8B: faixa do modo suporte (equipe da Ayra ajustando cadastros) */
+.faixa-suporte {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px;
+  padding: 12px 16px; border-bottom: 1px solid var(--atencao);
+  background: var(--atencao-fundo); color: var(--texto);
+}
+.faixa-suporte svg { width: 20px; height: 20px; color: var(--atencao); flex: none; }
+.faixa-suporte__texto { margin: 0; flex: 1 1 320px; min-width: 0; }
+@media (max-width: 640px) { .faixa-suporte .btn { width: 100%; } }

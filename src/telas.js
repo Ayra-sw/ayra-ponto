@@ -30,6 +30,7 @@ const IMPORTS = {
   PessoaDaEquipe: () => import('./pages/equipe/PessoaDaEquipe'),
   CentralAjuda: () => import('./pages/CentralAjuda'),
   ArquivosFiscais: () => import('./pages/gestao/ArquivosFiscais'),
+  SuporteAyra: () => import('./pages/gestao/SuporteAyra'),
   ShellCentral: () => import('./components/layout/ShellCentral'),
   CentralInicio: () => import('./pages/central/CentralInicio'),
   CentralEmpresa: () => import('./pages/central/CentralEmpresa'),

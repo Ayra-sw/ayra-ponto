@@ -1,18 +1,14 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Building2, Fingerprint, LogOut, MessageCircle, ScrollText, ShieldCheck } from 'lucide-react'
+import { Building2, LogOut, MessageCircle, ScrollText } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
-import { aparelhoTemDigital, ativadaAqui } from '../../lib/digital'
-import { confirmarIdentidade } from '../../lib/conferencia'
 import { pedeConfirmacao } from '../../lib/central'
+import ConfirmarIdentidade from '../conferencia/ConfirmarIdentidade'
 import ErroNaTela from '../app/ErroNaTela'
 import BotaoTema from './BotaoTema'
 import Marca from './Marca'
 import Botao from '../ui/Botao'
-import Alerta from '../ui/Alerta'
-import { CampoSenha } from '../ui/Campo'
-import { Dialogo } from '../ui/Dialogo'
 import { Esqueleto } from '../ui/Estados'
 
 const ITENS = [
@@ -21,69 +17,6 @@ const ITENS = [
   { para: '/central/contato', texto: 'Contato do suporte', icone: MessageCircle },
 ]
 const TITULOS = [['/central/empresas', 'Empresa'], ['/central/registro', 'Registro'], ['/central/contato', 'Contato do suporte'], ['/central', 'Empresas']]
-
-// Janela "Confirme que é você": a Central pede a digital ou a senha de novo
-// de tempos em tempos (o banco confere a hora da confirmação).
-function ConfirmarIdentidade({ aberta, aoConfirmar, aoCancelar }) {
-  const { perfil, session } = useAuth()
-  const [temDigital, setTemDigital] = useState(false)
-  const [usarSenha, setUsarSenha] = useState(true)
-  const [senha, setSenha] = useState('')
-  const [erro, setErro] = useState('')
-  const [enviando, setEnviando] = useState(false)
-
-  useEffect(() => {
-    if (!aberta) return
-    setSenha(''); setErro('')
-    if (ativadaAqui()) aparelhoTemDigital().then((sim) => { setTemDigital(sim); setUsarSenha(!sim) })
-  }, [aberta])
-
-  async function confirmar(e) {
-    e?.preventDefault?.()
-    setErro('')
-    const jeito = usarSenha ? 'senha' : 'digital'
-    if (jeito === 'senha' && !senha) return setErro('Digite a sua senha.')
-    setEnviando(true)
-    const r = await confirmarIdentidade({ jeito, email: session?.user?.email, senha, perfilId: perfil.id })
-    setEnviando(false)
-    if (!r.ok) { if (r.mensagem) setErro(r.mensagem); return }
-    aoConfirmar()
-  }
-
-  return (
-    <Dialogo
-      aberto={aberta}
-      aoFechar={enviando ? undefined : aoCancelar}
-      titulo="Confirme que é você"
-      acoes={usarSenha ? (
-        <>
-          <Botao variante="secundario" onClick={aoCancelar} disabled={enviando}>Cancelar</Botao>
-          <Botao type="submit" form="form-central-confirmar" icone={ShieldCheck} carregando={enviando}>Confirmar</Botao>
-        </>
-      ) : (
-        <>
-          <Botao variante="secundario" onClick={aoCancelar} disabled={enviando}>Cancelar</Botao>
-          <Botao icone={Fingerprint} onClick={confirmar} carregando={enviando} data-foco-inicial>Confirmar com a digital</Botao>
-        </>
-      )}
-    >
-      <div className="pilha">
-        <p className="suave" style={{ margin: 0 }}>Por segurança, a Central Ayra pede a sua digital ou a sua senha de novo de tempos em tempos.</p>
-        {usarSenha && (
-          <form id="form-central-confirmar" onSubmit={confirmar} noValidate>
-            <CampoSenha rotulo="Sua senha da Central" value={senha} onChange={(e) => { setSenha(e.target.value); setErro('') }} autoComplete="current-password" />
-          </form>
-        )}
-        {temDigital && (
-          <button type="button" className="link conferir__trocar" onClick={() => { setUsarSenha((x) => !x); setErro('') }} disabled={enviando}>
-            {usarSenha ? 'Usar a digital' : 'Usar a senha'}
-          </button>
-        )}
-        {erro && <Alerta tom="problema">{erro}</Alerta>}
-      </div>
-    </Dialogo>
-  )
-}
 
 // Estrutura da Central Ayra: barra própria (azul-escuro com dourado), sem o menu dos clientes.
 export default function ShellCentral() {
@@ -135,7 +68,13 @@ export default function ShellCentral() {
           </Suspense>
         </ErroNaTela>
       </main>
-      <ConfirmarIdentidade aberta={confirmando} aoConfirmar={() => fechar(true)} aoCancelar={() => fechar(false)} />
+      <ConfirmarIdentidade
+        aberta={confirmando}
+        aoConfirmar={() => fechar(true)}
+        aoCancelar={() => fechar(false)}
+        texto="Por segurança, a Central Ayra pede a sua digital ou a sua senha de novo de tempos em tempos."
+        rotuloSenha="Sua senha da Central"
+      />
     </div>
   )
 }

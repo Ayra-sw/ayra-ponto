@@ -10,8 +10,9 @@ import { Esqueleto } from '../components/ui/Estados'
 // de redirecionamento (quem ainda não tem empresa É pra estar lá).
 // A segurança de verdade está no banco (RLS); isto só organiza as telas.
 // somenteDono: telas da Central Ayra (Fase 8A); a conta da Central só vê a Central.
+// Fase 8B: no modo suporte, a dona entra só na gestão da empresa liberada.
 export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa = true, somenteDono = false }) {
-  const { session, perfil, perfilStatus, loading, recarregarPerfil, signOut, ehDono } = useAuth()
+  const { session, perfil, perfilStatus, loading, recarregarPerfil, signOut, ehDono, suporte } = useAuth()
 
   if (loading) return <Carregando />
 
@@ -33,7 +34,9 @@ export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa
 
   if (!perfil.empresa_id && ehDono === null) return <Carregando />
   if (somenteDono) return ehDono ? children : <Navigate to="/" replace />
-  if (ehDono) return <Navigate to="/central" replace />
+  if (ehDono && !suporte) return <Navigate to="/central" replace />
+  // no suporte, a dona só usa a gestão da empresa liberada
+  if (ehDono && suporte && !tiposPermitidos) return <Navigate to="/gestao" replace />
 
   if (exigeEmpresa && !perfil.empresa_id) return <Navigate to="/onboarding" replace />
 

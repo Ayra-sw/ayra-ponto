@@ -560,6 +560,25 @@ const ARTIGOS_GESTAO = [
       { tipo: 'atencao', texto: 'Regras de jornada, banco de horas e feriados podem variar conforme o acordo ou a convenção coletiva da sua categoria. Em caso de dúvida, confirme com o seu contador ou advogado trabalhista.' },
     ],
   },
+  {
+    id: 'suporte-ayra',
+    categoria: 'conta',
+    publico: ['gestao'],
+    titulo: 'Liberar o suporte da Ayra',
+    resumo: 'Quando precisar de ajuda para ajustar cadastros, libere o suporte por 1, 3 ou 7 dias e encerre quando quiser.',
+    palavras: ['suporte', 'ajuda', 'ayra', 'liberar suporte', 'encerrar suporte', 'suporte autorizado', 'modo suporte', 'cadastros', 'acesso', 'equipe da ayra'],
+    telas: ['/gestao/configuracoes/suporte'],
+    corpo: [
+      'Em [Suporte da Ayra](/gestao/configuracoes/suporte), você pode liberar, por um prazo que escolhe, a equipe da Ayra para ajudar a ajustar os cadastros da sua empresa.',
+      { tipo: 'lista', itens: [
+        '**Pode:** ver e ajustar pessoas, unidades, departamentos, cargos, jornadas, escalas, feriados, regras de cálculo e os dados da empresa.',
+        '**Não pode:** bater ponto, aprovar ou recusar pedidos, fechar ou reabrir o mês, assinar nada e mudar o tipo de acesso das pessoas.',
+      ] },
+      'Para liberar, o administrador escolhe 1, 3 ou 7 dias e confirma a identidade com a digital ou a senha. O suporte entra só nesse prazo.',
+      'Tudo o que o suporte faz aparece no [Histórico de alterações](/gestao/historico), marcado como **Suporte Ayra**. O histórico do suporte também fica nesta tela.',
+      { tipo: 'atencao', texto: 'Encerre o suporte na mesma tela quando a ajuda terminar. Ele também acaba sozinho quando o prazo passa.' },
+    ],
+  },
 ]
 
 export default ARTIGOS_GESTAO

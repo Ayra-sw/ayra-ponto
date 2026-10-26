@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useOutletContext, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, CircleCheck, KeyRound, Lock, LockOpen, Mail, Undo2 } from 'lucide-react'
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { ArrowLeft, BadgeCheck, CircleCheck, KeyRound, Lock, LockOpen, Mail, ShieldCheck, Undo2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAvisos } from '../../contexts/AvisosContext'
+import { useAuth } from '../../contexts/AuthContext'
 import { traduzirErro } from '../../lib/mensagensErro'
 import { data as formatarData, dataHora, formatarTelefone } from '../../lib/formatos'
 import { SITUACAO_EMPRESA, formatarCnpj, quandoFoi, textoDoRegistro } from '../../lib/central'
@@ -31,14 +32,30 @@ export default function CentralEmpresa() {
   const [linkPara, setLinkPara] = useState(null) // pessoa da gestão
   const [salvando, setSalvando] = useState(false)
   const [erroAcao, setErroAcao] = useState('')
+  const [suporte, setSuporte] = useState(null) // Fase 8B: suporte liberado pela empresa
+  const [entrando, setEntrando] = useState(false)
+  const navegar = useNavigate()
+  const { recarregarPerfil } = useAuth()
 
   const carregar = useCallback(async () => {
     setErro(''); setCarregando(true)
     const r = await chamar('central_empresa', { p_empresa: id })
     if (r.error) setErro(r.error.cancelada ? 'Para ver a empresa, confirme que é você.' : traduzirErro(r.error))
     else setE(r.data)
+    const sp = await chamar('central_suporte', { p_empresa: id })
+    if (!sp.error) setSuporte(sp.data)
     setCarregando(false)
   }, [chamar, id])
+
+  // Fase 8B: entra como suporte (só se a empresa liberou) e vai para a gestão dela
+  async function entrarNoSuporte() {
+    setEntrando(true); setErroAcao('')
+    const r = await chamar('suporte_entrar', { p_empresa: id })
+    setEntrando(false)
+    if (r.error) { if (!r.error.cancelada) setErroAcao(traduzirErro(r.error)); return }
+    await recarregarPerfil()
+    navegar('/gestao', { replace: true })
+  }
 
   useEffect(() => { carregar() }, [carregar])
 
@@ -182,6 +199,27 @@ export default function CentralEmpresa() {
               <li key={i}><span>{textoDoRegistro(r)}</span><span className="suave pequeno">{dataHora(r.em)}{r.dono_nome ? ` · ${r.dono_nome}` : ''}</span></li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="cartao" aria-labelledby="t-suporte-ayra">
+        <div className="cartao__cabecalho"><h2 id="t-suporte-ayra">Suporte da empresa</h2></div>
+        {suporte?.liberado && e.situacao !== 'suspensa' ? (
+          <>
+            <p style={{ margin: 0 }}>
+              Liberado até <strong>{dataHora(suporte.ate)}</strong>{suporte.liberado_nome ? `, por ${suporte.liberado_nome}` : ''}.
+              Ao entrar, você age como suporte: vê e ajusta cadastros, sem bater ponto, aprovar pedidos ou fechar o mês.
+            </p>
+            <div className="acoes">
+              <Botao icone={ShieldCheck} onClick={entrarNoSuporte} carregando={entrando} disabled={entrando}>Entrar como suporte</Botao>
+            </div>
+          </>
+        ) : (
+          <p className="suave" style={{ margin: 0 }}>
+            {e.situacao === 'suspensa'
+              ? 'Empresa suspensa: o suporte não entra enquanto estiver suspensa.'
+              : 'A empresa não liberou o suporte agora. Quando ela liberar, o botão para entrar aparece aqui.'}
+          </p>
         )}
       </section>
 
