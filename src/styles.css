@@ -1128,3 +1128,61 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 
 /* ---------- Ajuste: pedidos de quem, no fechamento ---------- */
 .pendencias-pessoas__nota { display: block; color: var(--texto-suave); margin-top: 2px; }
+
+/* ---------- Fase 8A: Central Ayra ---------- */
+.shell--central { grid-template-rows: auto 1fr; }
+.central-barra {
+  position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding: 10px 16px; background: var(--menu-fundo); color: var(--menu-texto); box-shadow: inset 0 -2px 0 var(--menu-destaque);
+}
+.central-barra__marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.central-barra__selo {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--menu-destaque);
+  border: 1px solid color-mix(in srgb, var(--menu-destaque) 60%, transparent); border-radius: 999px; padding: 2px 8px;
+}
+.central-barra__menu { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto; }
+.central-barra__item {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--raio-controle);
+  color: var(--menu-texto); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+}
+.central-barra__item svg { width: 16px; height: 16px; }
+.central-barra__item:hover { background: var(--menu-hover); color: var(--menu-texto-ativo); }
+.central-barra__item[aria-current='page'] { background: rgba(255, 255, 255, 0.09); color: var(--menu-texto-ativo); box-shadow: inset 0 -2px 0 var(--menu-destaque); }
+.central-barra__acoes { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.central-barra__quem { font-size: 0.85rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.central-barra .btn--discreto { color: var(--menu-texto); }
+.central-barra .btn--discreto:hover:not(:disabled) { background: var(--menu-hover); color: var(--menu-texto-ativo); }
+@media (max-width: 640px) {
+  .central-barra__menu { order: 3; flex-basis: 100%; min-width: 0; overflow-x: auto; flex-wrap: nowrap; }
+  .central-barra__item { padding: 8px 10px; font-size: 0.85rem; }
+  .central-barra { max-width: 100vw; }
+  .central-barra__item span { white-space: nowrap; }
+  .central-barra__quem { display: none; }
+}
+.central-situacao { display: grid; gap: 12px; }
+.central-situacao--suspensa { border-color: color-mix(in srgb, var(--problema) 45%, var(--borda)); }
+.central-dados { margin: 0; display: grid; gap: 10px 24px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.central-dados dt { font-size: 0.8rem; color: var(--texto-suave); }
+.central-dados dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.central-gestao { list-style: none; margin: 0; padding: 0; display: grid; }
+.central-gestao li {
+  display: grid; gap: 6px 16px; grid-template-columns: minmax(160px, 1.2fr) minmax(180px, 1.4fr) minmax(170px, 1.2fr) auto;
+  align-items: center; padding: 12px 0; border-bottom: 1px solid var(--borda);
+}
+.central-gestao li:last-child { border-bottom: none; }
+.central-gestao__quem, .central-gestao__acesso { display: grid; gap: 2px; min-width: 0; }
+.central-gestao__email { display: flex; align-items: center; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.central-gestao__ok { width: 14px; height: 14px; color: var(--ok); vertical-align: -2px; }
+@media (max-width: 860px) { .central-gestao li { grid-template-columns: 1fr; } .central-gestao li .btn { justify-self: start; } }
+.central-registro { list-style: none; margin: 0; padding: 0; display: grid; }
+.central-registro li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 10px 0; border-bottom: 1px solid var(--borda); }
+.central-registro li:last-child { border-bottom: none; }
+.central-nota { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.85rem; }
+.central-nota svg { width: 14px; height: 14px; }
+.suporte--previa { border: 1px dashed var(--borda-forte); border-radius: var(--raio-controle); padding: 12px 14px; }
+.suporte--previa p { margin: 2px 0 8px; }
+.suspensa { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 32px 20px; border-color: color-mix(in srgb, var(--dourado) 55%, var(--borda)); }
+.suspensa h1 { margin: 0; font-size: 1.4rem; }
+.suspensa p { margin: 0; max-width: 520px; }
+.suspensa__icone { width: 48px; height: 48px; padding: 10px; border-radius: 50%; color: var(--dourado-texto); background: color-mix(in srgb, var(--dourado) 14%, transparent); }
+.suspensa__acoes { justify-content: center; }

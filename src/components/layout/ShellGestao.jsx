@@ -9,6 +9,10 @@ import TopBar from '../TopBar'
 import ErroNaTela from '../app/ErroNaTela'
 import { Suspense } from 'react'
 import { Esqueleto } from '../ui/Estados'
+import EmpresaSuspensa from '../gestao/EmpresaSuspensa'
+
+// Empresa suspensa pela Central (Fase 8A): só estas telas pessoais continuam
+const LIBERADAS_SUSPENSA = ['/gestao/meu-ponto', '/gestao/meu-historico', '/gestao/meu-espelho', '/gestao/conta', '/gestao/ajuda']
 
 const TITULOS = [
   ['/gestao/pessoas', 'Pessoas'],
@@ -53,14 +57,15 @@ function ItemMenu({ para, icone: Icone, texto, contador, fim, aoClicar }) {
   )
 }
 
-function Menu({ pendentes, pendentesFacial, aoNavegar }) {
+function Menu({ pendentes, pendentesFacial, aoNavegar, suspensa }) {
   const { signOut } = useAuth()
   return (
     <nav className="menu-lateral" aria-label="Menu principal">
       <Link to="/gestao" className="menu-lateral__marca" onClick={aoNavegar} aria-label="Ayra Ponto, visão geral">
         <Marca clara />
       </Link>
-      <ItemMenu para="/gestao" fim icone={LayoutDashboard} texto="Visão geral" aoClicar={aoNavegar} />
+      <ItemMenu para="/gestao" fim icone={LayoutDashboard} texto={suspensa ? 'Aviso' : 'Visão geral'} aoClicar={aoNavegar} />
+      {!suspensa && (<>
       <span className="menu-lateral__grupo">Pessoas</span>
       <ItemMenu para="/gestao/pessoas" icone={Users} texto="Colaboradores" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/departamentos" icone={Network} texto="Departamentos" aoClicar={aoNavegar} />
@@ -82,6 +87,7 @@ function Menu({ pendentes, pendentesFacial, aoNavegar }) {
       <ItemMenu para="/gestao/configuracoes/empresa" icone={Building2} texto="Empresa" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/configuracoes/unidades" icone={MapPin} texto="Unidades" aoClicar={aoNavegar} />
       <ItemMenu para="/gestao/configuracoes/regras" icone={Calculator} texto="Regras de cálculo" aoClicar={aoNavegar} />
+      </>)}
       <div className="menu-lateral__rodape">
         <ItemMenu para="/gestao/meu-ponto" icone={Clock} texto="Meu ponto" aoClicar={aoNavegar} />
         <ItemMenu para="/gestao/meu-historico" icone={History} texto="Meu histórico" aoClicar={aoNavegar} />
@@ -107,7 +113,9 @@ export default function ShellGestao() {
   const [facial, setFacial] = useState({ fotos: 0, marcacoes: 0 })
   const [gavetaAberta, setGavetaAberta] = useState(false)
 
+  const suspensa = dadosEmpresa.empresa?.situacao === 'suspensa'
   const atualizarPendentes = useCallback(async () => {
+    if (suspensa) { setPendentes(0); setFacial({ fotos: 0, marcacoes: 0 }); return }
     // o próprio pedido só conta quando a pessoa pode aprová-lo (única da gestão)
     const proprio = await supabase.rpc('pode_aprovar_proprio')
     let consulta = supabase
@@ -122,7 +130,7 @@ export default function ShellGestao() {
       supabase.from('verificacoes_faciais').select('id', { count: 'exact', head: true }).eq('conferencia', 'pendente'),
     ])
     setFacial({ fotos: fotos.count || 0, marcacoes: marcacoes.count || 0 })
-  }, [perfil.id])
+  }, [perfil.id, suspensa])
 
   useEffect(() => { atualizarPendentes() }, [atualizarPendentes, local.pathname])
   useEffect(() => { setGavetaAberta(false) }, [local.pathname])
@@ -142,10 +150,10 @@ export default function ShellGestao() {
   return (
     <div className="shell shell--gestao">
       <a href="#conteudo" className="pular-conteudo">Pular para o conteúdo</a>
-      <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} />
+      <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} suspensa={suspensa} />
       {gavetaAberta && (
         <div className="gaveta">
-          <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} aoNavegar={() => setGavetaAberta(false)} />
+          <Menu pendentes={pendentes} pendentesFacial={facial.fotos + facial.marcacoes} aoNavegar={() => setGavetaAberta(false)} suspensa={suspensa} />
           <button type="button" className="gaveta__fundo" aria-label="Fechar menu" onClick={() => setGavetaAberta(false)} />
         </div>
       )}
@@ -164,7 +172,9 @@ export default function ShellGestao() {
         <main id="conteudo" tabIndex={-1}>
           <ErroNaTela chave={local.pathname}>
             <Suspense fallback={<div className="pagina"><Esqueleto blocos={1} linhas={4} /></div>}>
-              <Outlet context={{ ...dadosEmpresa, pendentes, pendentesFacial: facial, atualizarPendentes }} />
+              {suspensa && !LIBERADAS_SUSPENSA.some((c) => local.pathname.startsWith(c))
+                ? <EmpresaSuspensa empresa={dadosEmpresa.empresa?.nome} />
+                : <Outlet context={{ ...dadosEmpresa, pendentes, pendentesFacial: facial, atualizarPendentes }} />}
             </Suspense>
           </ErroNaTela>
         </main>

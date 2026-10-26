@@ -95,6 +95,12 @@ React + Vite + Supabase, publicado na Vercel. Base legal: Portaria 671/2021, cat
 - **Ajuste: administrador único aprova o próprio pedido:** `pode_aprovar_proprio()` é verdadeiro para quem é o único
   administrador/RH ativo da empresa; aí a regra da análise (Fase 3A) aceita aprovar o próprio pedido (recusar não;
   cancelar sim). O Fechamento do mês mostra de quem é cada pedido pendente.
+- **Central Ayra (Fase 8A):** área da dona da plataforma em `/central`, com conta separada (`plataforma_donos`,
+  ligada pelo SQL `plataforma_tornar_dono`). Lista de empresas só com números, situação teste/ativa/suspensa
+  (`empresas.situacao`, protegida por gatilho), suspender/liberar, link de nova senha para a gestão do cliente,
+  registro de tudo (`plataforma_registro`) e contato do suporte (`plataforma_config`, lido por todos). As funções
+  da Central exigem confirmação de identidade recente (`amr` do JWT). Empresa suspensa: `tipo_do_usuario()` trata
+  administrador/RH como colaborador e `equipe_ids()` fica vazio; a gestão vê só um aviso e o ponto continua.
 - **Desempenho e acessibilidade:** cada tela é baixada só quando é aberta (`src/telas.js`), uma tela com erro
   não derruba o app, e as telas passam na varredura automática de acessibilidade (WCAG 2.1 AA, temas claro e escuro).
 - **Ponto com reconhecimento facial** (opcional por empresa) e corrente de integridade das marcações.

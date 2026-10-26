@@ -1,10 +1,27 @@
 // Contato do suporte do Ayra Ponto.
-// Para mudar, troque os valores abaixo. Vazio = o botão não aparece.
+// Desde a Fase 8A, o contato é preenchido na Central Ayra (Contato do suporte) e
+// vale para todos os clientes. Os valores abaixo só são usados se a Central
+// ainda não tiver contato. Vazio = o botão não aparece.
 //   whatsapp: só números, com DDD (ex.: '41999998888'). O 55 do Brasil entra sozinho.
 //   email: endereço completo (ex.: 'suporte@ayra.com.br').
 export const SUPORTE = {
   whatsapp: '',
   email: '',
+}
+
+// Busca o contato salvo na Central Ayra (uma vez, quando o app abre)
+let carregado = null
+export function carregarSuporte(supabase) {
+  if (!carregado) {
+    carregado = supabase.from('plataforma_config').select('whatsapp, email').eq('id', 1).maybeSingle()
+      .then(({ data, error }) => {
+        if (error || !data) return
+        if (data.whatsapp) SUPORTE.whatsapp = data.whatsapp
+        if (data.email) SUPORTE.email = data.email
+      })
+      .catch(() => {})
+  }
+  return carregado
 }
 
 export function numeroWhatsApp(n = SUPORTE.whatsapp) {

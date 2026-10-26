@@ -10,6 +10,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   // 'ocioso' | 'carregando' | 'ok' | 'erro'
   const [perfilStatus, setPerfilStatus] = useState('ocioso')
+  // Fase 8A: dona/dono da plataforma (Central Ayra). null = ainda não sabe
+  const [ehDono, setEhDono] = useState(null)
 
   async function carregarPerfil(userId) {
     setPerfilStatus('carregando')
@@ -24,6 +26,12 @@ export function AuthProvider({ children }) {
       setPerfil(null)
       setPerfilStatus('erro')
     } else {
+      // só quem não tem empresa pode ser da Central (a conta da Central é separada)
+      if (data.empresa_id) setEhDono(false)
+      else {
+        const dono = await supabase.rpc('eh_dono')
+        setEhDono(!dono.error && dono.data === true)
+      }
       setPerfil(data)
       setPerfilStatus('ok')
     }
@@ -43,6 +51,7 @@ export function AuthProvider({ children }) {
       } else {
         setPerfil(null)
         setPerfilStatus('ocioso')
+        setEhDono(null)
       }
     })
 
@@ -61,7 +70,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, perfil, perfilStatus, loading, signOut, recarregarPerfil }}>
+    <AuthContext.Provider value={{ session, perfil, perfilStatus, loading, signOut, recarregarPerfil, ehDono }}>
       {children}
     </AuthContext.Provider>
   )

@@ -36,6 +36,7 @@ const ESCONDIDOS = new Set([
   'proximo_nsr', 'atualizado_por',
   'fechado_por', 'fechado_por_nome', 'reaberto_por', 'regras', 'pessoas',
   'fechamento_id', 'hash', 'ip', 'aparelho', 'ajuste_id', 'problema_em',
+  'situacao_em', 'suspensa_motivo',
 ])
 
 const NOMES = {
@@ -58,7 +59,7 @@ const NOMES = {
   noturno_fim: 'Fim do horário noturno', noturno_pct: 'Adicional noturno (%)', hora_noturna_reduzida: 'Hora noturna reduzida',
   prorrogar_noturno: 'Noturno continua depois das 5h', intervalo_pre_assinalado: 'Intervalo pré-assinalado',
   interjornada_min: 'Descanso mínimo entre dias (minutos)', dsr_perde_falta: 'Perde DSR por falta',
-  dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', competencia: 'Mês', pendencias: 'Pendências no fechamento', fechado_em: 'Fechado em', reaberto_em: 'Reaberto em',
+  dsr_perde_atraso: 'Perde DSR por atraso', limite_semanal_min: 'Limite da semana (minutos)', competencia: 'Mês', situacao: 'Situação no Ayra', pendencias: 'Pendências no fechamento', fechado_em: 'Fechado em', reaberto_em: 'Reaberto em',
   motivo_reabertura: 'Motivo da reabertura', assinado_em: 'Assinado em', metodo: 'Como confirmou',
   problema_data: 'Dia com problema', problema_texto: 'Problema apontado', substituida_em: 'Substituída em (mês reaberto)', latitude: 'Latitude da unidade', longitude: 'Longitude da unidade', raio_cerca_m: 'Raio da cerca (metros)',
 }
@@ -92,6 +93,7 @@ export function valorDoCampo(tabela, campo, v, mapas) {
     if (tabela === 'feriados') return TIPO_FERIADO[v] || v
   }
   if (campo === 'competencia') return mesPorExtenso(v)
+  if (campo === 'situacao' && tabela === 'empresas') return { teste: 'Em teste', ativa: 'Ativa', suspensa: 'Suspensa' }[v] || v
   if (campo === 'categoria') return CATEGORIA[v] || v
   if (campo === 'tipo_escala') return ROTULO_ESCALA[v] || v
   if (campo === 'tipo_marcacao') return rotuloMarcacao(v)
@@ -210,7 +212,9 @@ export function frase(g, mapas) {
     case 'feriados': return `${quem} ${verbo} o feriado ${v.nome || ''}`.trim()
     case 'turnos': return `${quem} ${verbo} o turno ${v.nome || mapas.turnos[g.registro_id] || ''}`.trim()
     case 'filiais': return `${quem} ${verbo} a unidade ${v.nome || mapas.unidades[g.registro_id] || ''}`.trim()
-    case 'empresas': return `${quem} alterou os dados da empresa`
+    case 'empresas':
+      if ((g.campos || []).includes('situacao')) return `A Central Ayra mudou a situação da empresa para ${valorDoCampo('empresas', 'situacao', g.depois?.situacao, mapas).toLowerCase()}`
+      return `${quem} alterou os dados da empresa`
     case 'regras_calculo': return `${quem} alterou as regras de cálculo`
     case 'espelho_conferencias': {
       const mes = mesPorExtenso(v.competencia)

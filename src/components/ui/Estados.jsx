@@ -4,7 +4,7 @@ import Botao from './Botao'
 // Carregamento em esqueleto: mostra a forma do conteúdo enquanto chega.
 export function Esqueleto({ linhas = 3, blocos = 0 }) {
   return (
-    <div className="esqueleto" aria-busy="true" aria-label="Carregando">
+    <div className="esqueleto" role="status" aria-busy="true" aria-label="Carregando">
       {Array.from({ length: blocos }, (_, i) => <i key={`b${i}`} className="alto" />)}
       {Array.from({ length: linhas }, (_, i) => <i key={i} style={{ width: `${90 - (i % 3) * 18}%` }} />)}
     </div>

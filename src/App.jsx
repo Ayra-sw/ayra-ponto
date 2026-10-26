@@ -12,7 +12,7 @@ import { telas, preCarregar } from './telas'
 import AvisoSemInternet from './components/app/AvisoSemInternet'
 import ErroNaTela from './components/app/ErroNaTela'
 
-const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, RegrasCalculo, Fechamento, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais } = telas
+const { RedefinirSenha, Onboarding, GestaoDashboard, MinhaConta, Pessoas, Solicitacoes, Empresa, Unidades, RegrasCalculo, Fechamento, MeuPonto, Reconhecimento, PerfilPessoa, Departamentos, Cargos, Jornadas, Feriados, MeuHistorico, MeuEspelho, Espelhos, BancoHorasEquipe, Escalas, RelatoriosGestao, Historico, MinhaEquipe, PessoaDaEquipe, CentralAjuda, ArquivosFiscais, ShellCentral, CentralInicio, CentralEmpresa, CentralRegistro, CentralContato } = telas
 
 const GESTAO = ['administrador', 'rh']
 
@@ -88,6 +88,14 @@ export default function App() {
         <Route path="conta" element={<MinhaConta />} />
         <Route path="ajuda" element={<CentralAjuda contexto="gestao" />} />
         <Route path="ajuda/:id" element={<CentralAjuda contexto="gestao" />} />
+      </Route>
+
+      {/* Central Ayra: só a conta da dona da plataforma (Fase 8A) */}
+      <Route path="/central" element={<ProtectedRoute exigeEmpresa={false} somenteDono><ShellCentral /></ProtectedRoute>}>
+        <Route index element={<CentralInicio />} />
+        <Route path="empresas/:id" element={<CentralEmpresa />} />
+        <Route path="registro" element={<CentralRegistro />} />
+        <Route path="contato" element={<CentralContato />} />
       </Route>
 
       <Route path="*" element={<NaoEncontrada />} />

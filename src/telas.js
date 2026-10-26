@@ -30,6 +30,11 @@ const IMPORTS = {
   PessoaDaEquipe: () => import('./pages/equipe/PessoaDaEquipe'),
   CentralAjuda: () => import('./pages/CentralAjuda'),
   ArquivosFiscais: () => import('./pages/gestao/ArquivosFiscais'),
+  ShellCentral: () => import('./components/layout/ShellCentral'),
+  CentralInicio: () => import('./pages/central/CentralInicio'),
+  CentralEmpresa: () => import('./pages/central/CentralEmpresa'),
+  CentralRegistro: () => import('./pages/central/CentralRegistro'),
+  CentralContato: () => import('./pages/central/CentralContato'),
 }
 
 // Se uma versão nova do site foi publicada enquanto a pessoa estava com a aba

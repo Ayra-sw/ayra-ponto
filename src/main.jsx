@@ -13,8 +13,11 @@ import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import { AvisosProvider } from './contexts/AvisosContext.jsx'
 import './styles.css'
 import { iniciarPwa } from './lib/pwa'
+import { supabase } from './lib/supabaseClient'
+import { carregarSuporte } from './lib/suporte'
 
 iniciarPwa()
+carregarSuporte(supabase)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

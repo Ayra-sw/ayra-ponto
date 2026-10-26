@@ -9,8 +9,9 @@ import { Esqueleto } from '../components/ui/Estados'
 // exigeEmpresa: false na tela de onboarding, pra não entrar em loop
 // de redirecionamento (quem ainda não tem empresa É pra estar lá).
 // A segurança de verdade está no banco (RLS); isto só organiza as telas.
-export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa = true }) {
-  const { session, perfil, perfilStatus, loading, recarregarPerfil, signOut } = useAuth()
+// somenteDono: telas da Central Ayra (Fase 8A); a conta da Central só vê a Central.
+export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa = true, somenteDono = false }) {
+  const { session, perfil, perfilStatus, loading, recarregarPerfil, signOut, ehDono } = useAuth()
 
   if (loading) return <Carregando />
 
@@ -29,6 +30,10 @@ export default function ProtectedRoute({ children, tiposPermitidos, exigeEmpresa
     }
     return <Carregando />
   }
+
+  if (!perfil.empresa_id && ehDono === null) return <Carregando />
+  if (somenteDono) return ehDono ? children : <Navigate to="/" replace />
+  if (ehDono) return <Navigate to="/central" replace />
 
   if (exigeEmpresa && !perfil.empresa_id) return <Navigate to="/onboarding" replace />
 
