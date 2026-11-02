@@ -12,6 +12,7 @@ import { PainelLateral } from '../ui/Dialogo'
 import CampoAnexo from '../solicitacoes/CampoAnexo'
 import { useAuth } from '../../contexts/AuthContext'
 import { enviarAtestado } from '../../lib/atestados'
+import MinhaJornada from './MinhaJornada'
 
 const MAX_MOTIVO = 500
 
@@ -126,14 +127,19 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
       }
     >
       <form id="form-ajuste" className="formulario" onSubmit={enviar}>
-        <fieldset className="opcoes">
-          <legend className="campo__rotulo" style={{ marginBottom: 8 }}>O que você precisa?</legend>
-          {OPCOES_SOLICITACAO.map((o) => (
-            <label key={o.valor} className="opcao">
-              <input type="radio" name="tipo-ajuste" value={o.valor} checked={tipo === o.valor} onChange={() => setTipo(o.valor)} />
-              <span><span className="opcao__titulo">{o.titulo}</span><br /><span className="opcao__desc">{o.descricao}</span></span>
-            </label>
-          ))}
+        <MinhaJornada />
+
+        <fieldset>
+          <legend className="campo__rotulo" style={{ marginBottom: 8 }}>Justificativa</legend>
+          <div className="lista-opcoes">
+            {OPCOES_SOLICITACAO.map((o) => (
+              <label key={o.valor} className="lista-opcoes__item">
+                <span>{o.titulo}</span>
+                <input type="radio" name="tipo-ajuste" value={o.valor} checked={tipo === o.valor} onChange={() => { setTipo(o.valor); setErro('') }} />
+              </label>
+            ))}
+          </div>
+          {tipo && <p className="suave pequeno" style={{ margin: '6px 0 0' }}>{OPCOES_SOLICITACAO.find((o) => o.valor === tipo)?.descricao}</p>}
         </fieldset>
 
         {tipo && (
@@ -175,12 +181,12 @@ export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, ini
             )}
 
             <AreaTexto
-              rotulo="Motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={MAX_MOTIVO} rows={4} required
+              rotulo="Qual o motivo da solicitação?" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={MAX_MOTIVO} rows={4} required
               placeholder={tipo === 'abono' ? 'Ex.: consulta médica, atestado anexado' : tipo === 'fora_do_local' ? 'Ex.: visita a cliente das 9h às 12h' : 'Conte o que aconteceu'}
               ajuda={`${motivo.length}/${MAX_MOTIVO} caracteres`}
             />
             {tipo === 'abono' && (
-              <CampoAnexo arquivo={anexo} erro={erroAnexo}
+              <CampoAnexo arquivo={anexo} erro={erroAnexo} doisBotoes rotulo="Gostaria de anexar algum arquivo?"
                 aoEscolher={(f, problema) => { setAnexo(problema ? null : f); setErroAnexo(problema); setErro('') }}
                 ajuda="PDF ou foto, até 5 MB. Só você, o RH e o administrador abrem este arquivo. Não é preciso escrever o diagnóstico no motivo." />
             )}

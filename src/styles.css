@@ -1215,3 +1215,13 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .dia-linha__valor { font-family: var(--fonte-mono); font-size: 1.05rem; }
 .dia-linha__valor--negativo { color: var(--atencao); }
 .dia-linha__numeros--painel { padding: 12px; border: 1px solid var(--borda); border-radius: var(--raio-controle); }
+
+/* Pedir ajuste: jornada da pessoa e lista compacta de justificativas */
+.minha-jornada { margin: 0; padding: 0 0 12px; border-bottom: 1px solid var(--borda); font-size: 0.93rem; }
+.lista-opcoes { border: 1px solid var(--borda-forte); border-radius: var(--raio-controle); background: var(--superficie); overflow: hidden; }
+.lista-opcoes__item { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 10px 14px; cursor: pointer; }
+.lista-opcoes__item + .lista-opcoes__item { border-top: 1px solid var(--borda); }
+.lista-opcoes__item:hover { background: var(--superficie-2); }
+.lista-opcoes__item:has(input:checked) { background: var(--superficie-2); font-weight: 600; }
+.lista-opcoes__item input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--primaria); }
+.anexo-dois { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
