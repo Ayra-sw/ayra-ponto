@@ -7,6 +7,7 @@ export const OPCOES_SOLICITACAO = [
   { valor: 'correcao_marcacao', titulo: 'Bati no horário errado', descricao: 'Peça para corrigir o horário de uma marcação que você fez.' },
   { valor: 'abono', titulo: 'Abonar falta ou atraso', descricao: 'Atestado, declaração ou outro motivo justificado. Pode ser mais de um dia. Quem analisa é o RH.' },
   { valor: 'folga', titulo: 'Pedir folga', descricao: 'Dias em que você não vai trabalhar.' },
+  { valor: 'fora_do_local', titulo: 'Estava fora do local', descricao: 'Trabalho externo, visita a cliente ou outro motivo fora da unidade. Quem analisa é o RH.' },
 ]
 
 export const STATUS_SOLICITACAO = {
