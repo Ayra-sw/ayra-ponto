@@ -1,194 +1,51 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
-import { useAvisos } from '../../contexts/AvisosContext'
-import { traduzirErro } from '../../lib/mensagensErro'
-import { hora, nsr } from '../../lib/formatos'
-import { TIPOS_MARCACAO, rotuloMarcacao } from '../../lib/marcacoes'
-import { OPCOES_SOLICITACAO, diaIso, limitesDoDia } from '../../lib/ajustes'
-import Botao from '../ui/Botao'
-import Alerta from '../ui/Alerta'
-import { AreaTexto, Campo, Selecao } from '../ui/Campo'
-import { PainelLateral } from '../ui/Dialogo'
-import CampoAnexo from '../solicitacoes/CampoAnexo'
-import { useAuth } from '../../contexts/AuthContext'
-import { enviarAtestado } from '../../lib/atestados'
+// Solicitações de ajuste de ponto: como cada tipo aparece na tela.
+import { data, dataHora } from './formatos'
+import { rotuloMarcacao } from './marcacoes'
 
-const MAX_MOTIVO = 500
+export const OPCOES_SOLICITACAO = [
+  { valor: 'inclusao_esquecida', titulo: 'Esqueci de bater o ponto', descricao: 'Peça para incluir uma marcação que faltou.' },
+  { valor: 'correcao_marcacao', titulo: 'Bati no horário errado', descricao: 'Peça para corrigir o horário de uma marcação que você fez.' },
+  { valor: 'abono', titulo: 'Abonar falta ou atraso', descricao: 'Atestado, declaração ou outro motivo justificado. Pode ser mais de um dia. Quem analisa é o RH.' },
+  { valor: 'folga', titulo: 'Pedir folga', descricao: 'Dias em que você não vai trabalhar.' },
+  { valor: 'fora_do_local', titulo: 'Estava fora do local', descricao: 'Trabalho externo, visita a cliente ou outro motivo fora da unidade. Quem analisa é o RH.' },
+]
 
-// Formulário para o colaborador pedir ajuste, abono ou folga.
-// "inicial": { data: 'AAAA-MM-DD', registros: [...] } quando vem de um dia do histórico.
-export default function PedirAjuste({ aberto, aoFechar, aoEnviado, perfilId, inicial }) {
-  const avisar = useAvisos()
-  const { perfil } = useAuth()
-  const [anexo, setAnexo] = useState(null)
-  const [erroAnexo, setErroAnexo] = useState('')
-  const [tipo, setTipo] = useState('')
-  const [dia, setDia] = useState(diaIso())
-  const [diaFim, setDiaFim] = useState('')
-  const [horario, setHorario] = useState('')
-  const [tipoMarcacao, setTipoMarcacao] = useState('saida')
-  const [registroId, setRegistroId] = useState('')
-  const [registrosDoDia, setRegistrosDoDia] = useState([])
-  const [motivo, setMotivo] = useState('')
-  const [erro, setErro] = useState('')
-  const [enviando, setEnviando] = useState(false)
+export const STATUS_SOLICITACAO = {
+  pendente: { rotulo: 'Aguardando análise', tom: 'atencao' },
+  aprovado: { rotulo: 'Aprovada', tom: 'ok' },
+  rejeitado: { rotulo: 'Recusada', tom: 'problema' },
+  cancelado: { rotulo: 'Cancelada', tom: 'neutra' },
+}
 
-  useEffect(() => {
-    if (!aberto) return
-    setTipo('')
-    setDia(inicial?.data || diaIso())
-    setDiaFim('')
-    setHorario('')
-    setTipoMarcacao('saida')
-    setRegistroId('')
-    setMotivo('')
-    setErro('')
-    setAnexo(null)
-    setErroAnexo('')
-    setRegistrosDoDia(inicial?.registros || [])
-  }, [aberto, inicial])
-
-  // Para corrigir uma marcação, lista as do dia escolhido
-  useEffect(() => {
-    if (!aberto || tipo !== 'correcao_marcacao' || !dia) return
-    let cancelado = false
-    const [inicio, fim] = limitesDoDia(dia)
-    supabase.from('registros_ponto').select('id, nsr, tipo, marcado_em')
-      .eq('perfil_id', perfilId).gte('marcado_em', inicio).lt('marcado_em', fim).order('marcado_em')
-      .then(({ data }) => {
-        if (cancelado) return
-        setRegistrosDoDia(data || [])
-        setRegistroId((atual) => ((data || []).some((r) => r.id === atual) ? atual : ''))
-      })
-    return () => { cancelado = true }
-  }, [aberto, tipo, dia, perfilId])
-
-  if (!aberto) return null
-
-  const passado = tipo === 'inclusao_esquecida' || tipo === 'correcao_marcacao'
-  const hoje = diaIso()
-
-  async function enviar(e) {
-    e.preventDefault()
-    setErro('')
-    if (!tipo) return setErro('Escolha o que você quer pedir.')
-    if (!dia) return setErro('Informe o dia.')
-    if (motivo.trim().length < 5) return setErro('Conte o motivo com um pouco mais de detalhe.')
-
-    const pedido = { perfil_id: perfilId, tipo, motivo: motivo.trim() }
-    if (passado) {
-      if (!horario) return setErro('Informe o horário.')
-      const quando = new Date(`${dia}T${horario}:00`)
-      if (quando > new Date()) return setErro('Esse horário ainda não aconteceu.')
-      pedido.marcacao_solicitada = quando.toISOString()
-      if (tipo === 'inclusao_esquecida') pedido.tipo_marcacao = tipoMarcacao
-      if (tipo === 'correcao_marcacao') {
-        if (!registroId) return setErro('Escolha qual marcação você quer corrigir.')
-        pedido.registro_original_id = registroId
-      }
-    } else {
-      pedido.data_referencia = dia
-      if (diaFim && diaFim !== dia) {
-        if (diaFim < dia) return setErro('O último dia não pode ser antes do primeiro.')
-        pedido.data_fim = diaFim
-      }
-    }
-
-    if (erroAnexo) return setErro(erroAnexo)
-
-    setEnviando(true)
-    if (tipo === 'abono' && anexo) {
-      const envio = await enviarAtestado(anexo, perfil.empresa_id, perfilId)
-      if (envio.erro) { setEnviando(false); return setErro(envio.erro) }
-      pedido.anexo_path = envio.caminho
-    }
-    const { error } = await supabase.from('ajustes_ponto').insert(pedido)
-    setEnviando(false)
-    if (error) return setErro(traduzirErro(error))
-    avisar(tipo === 'abono'
-      ? 'Pedido enviado. O RH vai analisar e você vê a resposta em "Meus pedidos".'
-      : 'Pedido enviado. Seu gestor ou o RH vai analisar, e você vê a resposta em "Meus pedidos".')
-    aoEnviado?.()
-    aoFechar()
+// Uma frase com o que a pessoa pediu
+export function descreverPedido(a) {
+  if (a.tipo === 'inclusao_esquecida' && a.marcacao_solicitada) {
+    return `${rotuloMarcacao(a.tipo_marcacao)} em ${dataHora(a.marcacao_solicitada)}`
   }
+  if (a.tipo === 'correcao_marcacao' && a.marcacao_solicitada) {
+    return `Corrigir para ${dataHora(a.marcacao_solicitada)}`
+  }
+  if (a.data_referencia) {
+    return a.data_fim && a.data_fim !== a.data_referencia
+      ? `De ${data(a.data_referencia)} a ${data(a.data_fim)}`
+      : data(a.data_referencia)
+  }
+  return a.marcacao_solicitada ? dataHora(a.marcacao_solicitada) : ''
+}
 
-  return (
-    <PainelLateral
-      aberto
-      aoFechar={aoFechar}
-      titulo="Pedir ajuste"
-      subtitulo="Sua marcação original nunca é apagada. Seu gestor ou o RH analisa e responde."
-      rodape={
-        <>
-          <Botao variante="secundario" onClick={aoFechar}>Cancelar</Botao>
-          <Botao type="submit" form="form-ajuste" carregando={enviando}>Enviar pedido</Botao>
-        </>
-      }
-    >
-      <form id="form-ajuste" className="formulario" onSubmit={enviar}>
-        <fieldset className="opcoes">
-          <legend className="campo__rotulo" style={{ marginBottom: 8 }}>O que você precisa?</legend>
-          {OPCOES_SOLICITACAO.map((o) => (
-            <label key={o.valor} className="opcao">
-              <input type="radio" name="tipo-ajuste" value={o.valor} checked={tipo === o.valor} onChange={() => setTipo(o.valor)} />
-              <span><span className="opcao__titulo">{o.titulo}</span><br /><span className="opcao__desc">{o.descricao}</span></span>
-            </label>
-          ))}
-        </fieldset>
+// "YYYY-MM-DD" de hoje (ou de daqui a n dias) no horário do aparelho
+export function diaIso(deslocamento = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + deslocamento)
+  const mes = String(d.getMonth() + 1).padStart(2, '0')
+  const dia = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mes}-${dia}`
+}
 
-        {tipo && (
-          <div className="secao-formulario">
-            <div className="grade-campos">
-              <Campo
-                rotulo={passado ? 'Dia' : 'Primeiro dia'}
-                type="date" value={dia} onChange={(e) => setDia(e.target.value)} required
-                min={diaIso(-90)} max={passado ? hoje : diaIso(365)}
-              />
-              {!passado && (
-                <Campo rotulo="Último dia" opcional type="date" value={diaFim} onChange={(e) => setDiaFim(e.target.value)}
-                  min={dia} max={diaIso(365)} ajuda="Deixe em branco se for só um dia." />
-              )}
-              {passado && (
-                <Campo
-                  rotulo={tipo === 'correcao_marcacao' ? 'Horário correto' : 'Horário'}
-                  type="time" value={horario} onChange={(e) => setHorario(e.target.value)} required
-                />
-              )}
-            </div>
-
-            {tipo === 'inclusao_esquecida' && (
-              <Selecao rotulo="Qual marcação faltou?" value={tipoMarcacao} onChange={(e) => setTipoMarcacao(e.target.value)}
-                opcoes={TIPOS_MARCACAO.map((t) => ({ valor: t.valor, rotulo: t.rotulo }))} />
-            )}
-
-            {tipo === 'correcao_marcacao' && (
-              registrosDoDia.length === 0 ? (
-                <Alerta tom="info">Você não tem marcações neste dia. Se você esqueceu de bater o ponto, escolha "Esqueci de bater o ponto".</Alerta>
-              ) : (
-                <Selecao rotulo="Qual marcação corrigir?" value={registroId} onChange={(e) => setRegistroId(e.target.value)} required>
-                  <option value="">Escolha uma marcação</option>
-                  {registrosDoDia.map((r) => (
-                    <option key={r.id} value={r.id}>{hora(r.marcado_em)} · {rotuloMarcacao(r.tipo)} · NSR {nsr(r.nsr)}</option>
-                  ))}
-                </Selecao>
-              )
-            )}
-
-            <AreaTexto
-              rotulo="Motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={MAX_MOTIVO} rows={4} required
-              placeholder={tipo === 'abono' ? 'Ex.: consulta médica, atestado anexado' : 'Conte o que aconteceu'}
-              ajuda={`${motivo.length}/${MAX_MOTIVO} caracteres`}
-            />
-            {tipo === 'abono' && (
-              <CampoAnexo arquivo={anexo} erro={erroAnexo}
-                aoEscolher={(f, problema) => { setAnexo(problema ? null : f); setErroAnexo(problema); setErro('') }}
-                ajuda="PDF ou foto, até 5 MB. Só você, o RH e o administrador abrem este arquivo. Não é preciso escrever o diagnóstico no motivo." />
-            )}
-          </div>
-        )}
-
-        {erro && <Alerta tom="problema">{erro}</Alerta>}
-      </form>
-    </PainelLateral>
-  )
+// Início e fim (ISO) do dia 'YYYY-MM-DD' no horário do aparelho
+export function limitesDoDia(diaIsoTexto) {
+  const inicio = new Date(`${diaIsoTexto}T00:00:00`)
+  const fim = new Date(inicio)
+  fim.setDate(fim.getDate() + 1)
+  return [inicio.toISOString(), fim.toISOString()]
 }
