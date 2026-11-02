@@ -44,7 +44,7 @@ export default function CalendarioMes({ mes, aoMudarMes, aoIrParaTurnos }) {
     setCarregando(true)
     const [p, t, d, f, dep] = await Promise.all([
       supabase.from('perfis').select('id, nome_completo, matricula, status, departamento_id, tipo_escala, escala_turno_id, escala_referencia')
-        .eq('empresa_id', perfil.empresa_id).neq('tipo_escala', 'semanal').neq('status', 'desligado').order('nome_completo'),
+        .eq('empresa_id', perfil.empresa_id).not('tipo_escala', 'in', '(semanal,horista)').neq('status', 'desligado').order('nome_completo'),
       supabase.from('turnos').select('*').eq('empresa_id', perfil.empresa_id).order('criado_em'),
       supabase.from('escala_dias').select('perfil_id, data, turno_id').gte('data', inicio).lte('data', fim),
       supabase.from('feriados').select('data, nome').eq('empresa_id', perfil.empresa_id).gte('data', inicio).lte('data', fim),

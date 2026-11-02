@@ -22,6 +22,9 @@ import BancoHoras from '../../components/banco/BancoHoras'
 import Afastamentos from '../../components/afastamentos/Afastamentos'
 import ListaHistorico from '../../components/historico/ListaHistorico'
 import ListaSolicitacoes from '../../components/marcacoes/ListaSolicitacoes'
+import ValorHora from '../../components/pagamento/ValorHora'
+import PagamentoHorista from '../../components/pagamento/PagamentoHorista'
+import { horaParaMinutos, minutosParaHora } from '../../lib/pagamento'
 
 const TOM_SITUACAO = { ativo: 'ok', afastado: 'atencao', desligado: 'neutra' }
 const ABAS = [
@@ -49,6 +52,8 @@ function formularioDe(p) {
     data_admissao: p.data_admissao || '',
     filial_id: p.filial_id || '',
     trabalho_externo: Boolean(p.trabalho_externo),
+    pago_por_hora: Boolean(p.pago_por_hora),
+    limite_diario: minutosParaHora(p.limite_diario_min ?? 480),
     tipo_escala: p.tipo_escala || 'semanal',
     escala_turno_id: p.escala_turno_id || '',
     escala_referencia: p.escala_referencia || '',
@@ -60,7 +65,7 @@ function formularioDe(p) {
 // Ficha completa do colaborador, com abas. Administrador e RH.
 export default function PerfilPessoa() {
   const { id } = useParams()
-  const { perfil: eu } = useAuth()
+  const { perfil: eu, suporte } = useAuth()
   const { unidades, unidadesAtivas } = useOutletContext()
   const avisar = useAvisos()
   const [busca, setBusca] = useSearchParams()
@@ -123,6 +128,11 @@ export default function PerfilPessoa() {
       } : {}),
       // (só depois que a migração do bloqueio por cerca foi rodada)
       ...(podeEditarTrabalho && 'trabalho_externo' in pessoa ? { trabalho_externo: form.trabalho_externo } : {}),
+      // (só depois que a migração da Fase 9A foi rodada: horista e pago por hora)
+      ...(podeEditarTrabalho && 'pago_por_hora' in pessoa ? {
+        pago_por_hora: form.tipo_escala === 'horista' ? true : form.pago_por_hora,
+        limite_diario_min: form.tipo_escala === 'horista' ? (horaParaMinutos(form.limite_diario) ?? pessoa.limite_diario_min) : pessoa.limite_diario_min,
+      } : {}),
       // (só depois que a migração da Fase 2D foi rodada, quando o cadastro já traz o tipo de escala)
       ...(podeEditarTrabalho && 'tipo_escala' in pessoa ? {
         tipo_escala: form.tipo_escala,
@@ -169,6 +179,13 @@ export default function PerfilPessoa() {
     if (cpfDigitos && cpfDigitos.length !== 11) { irParaAba('dados'); return setErro('O CPF precisa ter 11 números.') }
     const tel = apenasDigitos(form.telefone)
     if (tel && (tel.length < 10 || tel.length > 11)) { irParaAba('dados'); return setErro('O telefone precisa ter DDD e 8 ou 9 números.') }
+    if (form.tipo_escala === 'horista') {
+      const limite = horaParaMinutos(form.limite_diario)
+      if (limite == null || limite < 60 || limite > 720) {
+        irParaAba('trabalho')
+        return setErro('O limite de horas por dia do horista precisa ficar entre 01:00 e 12:00.')
+      }
+    }
     if (form.tipo_escala === '12x36' && (!form.escala_turno_id || !form.escala_referencia)) {
       irParaAba('trabalho')
       return setErro('Na escala 12x36, escolha o turno e o primeiro dia de trabalho.')
@@ -237,6 +254,7 @@ export default function PerfilPessoa() {
       {somenteLeitura && <Alerta tom="info">O cadastro de um administrador só pode ser alterado por outro administrador.</Alerta>}
 
       {abaAtual.formulario ? (
+        <>
         <form id="form-pessoa" className="formulario" onSubmit={pedirConfirmacao} noValidate>
           <fieldset className="cartao formulario" disabled={somenteLeitura}>
             {aba === 'dados' && (
@@ -276,6 +294,16 @@ export default function PerfilPessoa() {
                         <span className="opcao__desc">Pode bater o ponto fora da cerca da unidade, mesmo quando a empresa bloqueia. As marcações longe continuam com o selo Fora do local.</span></span>
                     </label>
                   )}
+                  {'pago_por_hora' in pessoa && (
+                    <label className="opcao" style={{ alignItems: 'center' }}>
+                      <input type="checkbox" checked={form.tipo_escala === 'horista' || form.pago_por_hora} disabled={form.tipo_escala === 'horista'}
+                        onChange={(e) => { setErro(''); setForm((f) => ({ ...f, pago_por_hora: e.target.checked })) }} />
+                      <span><span className="opcao__titulo">Pago por hora (horista)</span><br />
+                        <span className="opcao__desc">{form.tipo_escala === 'horista'
+                          ? 'Quem trabalha como horista sem horário fixo é sempre pago por hora.'
+                          : 'Recebe pelas horas trabalhadas, mesmo tendo jornada ou escala. Depois de salvar, o valor da hora aparece logo abaixo.'}</span></span>
+                    </label>
+                  )}
                   <div className="grade-campos">
                     <Selecao rotulo="Departamento" opcional value={form.departamento_id} onChange={mudar('departamento_id')}
                       ajuda={cadastros.departamentos.length === 0 ? 'Nenhum departamento cadastrado ainda.' : undefined}
@@ -305,6 +333,10 @@ export default function PerfilPessoa() {
                               : 'A pessoa trabalha neste dia, folga no seguinte, e assim por diante.'} />
                         </div>
                       )}
+                      {form.tipo_escala === 'horista' && 'limite_diario_min' in pessoa && (
+                        <Campo rotulo="Limite de horas normais por dia" type="time" value={form.limite_diario} onChange={mudar('limite_diario')}
+                          ajuda="Até este limite as horas são normais; o que passar vira hora extra. Ex.: 06:00 para um contrato de 6 horas." />
+                      )}
                       {form.tipo_escala === 'calendario' && (
                         <p className="suave pequeno">
                           Os dias de trabalho ficam na grade do mês, em <Link to="/gestao/escalas?aba=calendario" className="link">Escalas</Link>. Dia sem turno é folga.
@@ -313,7 +345,9 @@ export default function PerfilPessoa() {
                     </>
                   )}
                   <Selecao rotulo={form.tipo_escala !== 'semanal' && escalaDisponivel ? 'Jornada (tolerância e banco de horas)' : 'Jornada de trabalho'} opcional value={form.modelo_jornada_id} onChange={mudar('modelo_jornada_id')}
-                    ajuda={form.tipo_escala !== 'semanal' && escalaDisponivel
+                    ajuda={form.tipo_escala === 'horista'
+                      ? 'O horista não precisa de jornada. Se escolher uma, ela vale só para a tolerância e o banco de horas.'
+                      : form.tipo_escala !== 'semanal' && escalaDisponivel
                       ? 'Os horários vêm da escala. A jornada escolhida vale só para a tolerância de atraso e para o banco de horas.'
                       : modeloEscolhido
                       ? `${resumoHorarios(diasDoModelo)} · ${duracao(cargaSemanal(diasParaFormulario(diasDoModelo)))} por semana`
@@ -371,11 +405,18 @@ export default function PerfilPessoa() {
             </div>
           )}
         </form>
+        {aba === 'trabalho' && pessoa.pago_por_hora && !suporte && (
+          <ValorHora perfilId={pessoa.id} podeEditar={souAdmin || (eu.tipo === 'rh' && !ehEuMesmo && pessoa.tipo !== 'administrador')} />
+        )}
+        </>
       ) : aba === 'marcacoes' ? (
         <HistoricoMarcacoes perfilId={pessoa.id} mostrarLocal />
       ) : aba === 'espelho' ? (
-        <EspelhoMensal perfilId={pessoa.id} mesInicial={busca.get('mes')}
-          aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />
+        <div className="pilha">
+          <EspelhoMensal perfilId={pessoa.id} mesInicial={busca.get('mes')}
+            aoMudarMes={(m) => setBusca({ aba: 'espelho', mes: m }, { replace: true })} />
+          {pessoa.pago_por_hora && !suporte && <PagamentoHorista perfilId={pessoa.id} mesTexto={busca.get('mes')} />}
+        </div>
       ) : aba === 'banco' ? (
         <BancoHoras perfilId={pessoa.id} nomePessoa={pessoa.nome_completo} podeLancar={!ehEuMesmo} />
       ) : aba === 'historico' ? (

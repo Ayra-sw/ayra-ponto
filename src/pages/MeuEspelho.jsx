@@ -19,7 +19,7 @@ export default function MeuEspelho() {
   const [pedido, setPedido] = useState(null)
   const [versao, setVersao] = useState(0)
   // "Minha escala" só para quem trabalha em 12x36 ou por calendário
-  const temEscala = Boolean(perfil.tipo_escala) && perfil.tipo_escala !== 'semanal'
+  const temEscala = Boolean(perfil.tipo_escala) && perfil.tipo_escala !== 'semanal' && perfil.tipo_escala !== 'horista'
   const abas = ABAS.filter((a) => a.id !== 'escala' || temEscala)
   const pedida = busca.get('aba')
   const aba = abas.some((a) => a.id === pedida) ? pedida : 'espelho'

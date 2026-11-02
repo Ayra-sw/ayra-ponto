@@ -7,10 +7,11 @@ export const RELATORIOS = [
   { id: 'pedidos', titulo: 'Pedidos', descricao: 'Ajustes, abonos e folgas: quantos, de que tipo e em quanto tempo foram respondidos.' },
   { id: 'banco', titulo: 'Banco de horas', descricao: 'Saldo, horas a vencer e vencidas de cada pessoa numa data.' },
   { id: 'marcacoes', titulo: 'Marcações', descricao: 'Todas as marcações do período, com NSR, unidade e origem.' },
+  { id: 'horistas', titulo: 'Horistas', descricao: 'Horas e valor estimado de quem é pago por hora, prontos para a folha.' },
 ]
 
 // Limite de dias de cada relatório (igual ao do banco)
-export const LIMITE_DIAS = { frequencia: 93, pedidos: 366, marcacoes: 62 }
+export const LIMITE_DIAS = { frequencia: 93, pedidos: 366, marcacoes: 62, horistas: 62 }
 
 export const ORIGEM = { web: 'Computador', mobile: 'Celular', mobile_geolocalizacao: 'Celular com localização' }
 
@@ -46,7 +47,7 @@ export function conferirPeriodo(inicio, fim, relatorio) {
   const limite = LIMITE_DIAS[relatorio]
   if (limite && diasNoPeriodo(inicio, fim) > limite) {
     return relatorio === 'frequencia' ? 'Este relatório pode ter no máximo 3 meses (93 dias).'
-      : relatorio === 'marcacoes' ? 'Este relatório pode ter no máximo 62 dias.'
+      : relatorio === 'marcacoes' || relatorio === 'horistas' ? 'Este relatório pode ter no máximo 62 dias.'
       : 'Este relatório pode ter no máximo 1 ano.'
   }
   return ''

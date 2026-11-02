@@ -8,7 +8,7 @@ export default function RelatoriosGestao() {
         <div className="pagina__titulo">
           <span className="pagina__trilha">Gestão</span>
           <h1>Relatórios</h1>
-          <p className="suave">Frequência, pedidos, banco de horas e marcações de qualquer período, com planilha e impressão.</p>
+          <p className="suave">Frequência, pedidos, banco de horas, marcações e horistas de qualquer período, com planilha e impressão.</p>
         </div>
       </div>
       <Relatorios modo="gestao" />

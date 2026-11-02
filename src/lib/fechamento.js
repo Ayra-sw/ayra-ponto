@@ -113,7 +113,7 @@ export function abasDaPlanilha(dados, { geradoEm = new Date() } = {}) {
       const t = totaisDaFoto(e.totais, r)
       return [
         p.nome || '', p.cpf ? formatarCpf(p.cpf) : '', p.matricula || '', p.unidade || '', p.departamento || '', p.cargo || '',
-        p.jornada || (p.tipo_escala && p.tipo_escala !== 'semanal' ? 'Escala' : ''),
+        p.jornada || (p.tipo_escala === 'horista' ? 'Horista' : p.tipo_escala && p.tipo_escala !== 'semanal' ? 'Escala' : ''),
         t.diasTrabalhados, t.diasFalta, t.previsto, t.trabalhado, t.atraso, t.falta, t.abonado,
         t.extraNormal, t.extraEspecial, t.noturno, t.intervaloPagar, t.descansoPagar, t.dsrPerdidos,
         sn(t.banco), saldoPlanilha(t.saldo), t.diasAlerta, t.diasIncompletos, e.hash || '',

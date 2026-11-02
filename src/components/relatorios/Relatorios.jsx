@@ -13,16 +13,19 @@ import RelFrequencia from './RelFrequencia'
 import RelPedidos from './RelPedidos'
 import RelBancoHoras from './RelBancoHoras'
 import RelMarcacoes from './RelMarcacoes'
+import RelHoristas from './RelHoristas'
 
 // Relatórios: frequência, pedidos, banco de horas e marcações.
 //   modo "gestao": administrador e RH, a empresa toda
 //   modo "gestor": só a equipe (sem abonos e sem reconhecimento facial)
 export default function Relatorios({ modo = 'gestao', abaFixa }) {
-  const { perfil } = useAuth()
+  const { perfil, suporte } = useAuth()
   const { empresa } = useEmpresa()
   const [busca, setBusca] = useSearchParams()
   const gestor = modo === 'gestor'
-  const relatorio = RELATORIOS.some((r) => r.id === busca.get('relatorio')) ? busca.get('relatorio') : 'frequencia'
+  // horistas: valores em reais, só administrador e RH (nunca o gestor nem o suporte)
+  const lista = RELATORIOS.filter((r) => r.id !== 'horistas' || (!gestor && !suporte))
+  const relatorio = lista.some((r) => r.id === busca.get('relatorio')) ? busca.get('relatorio') : 'frequencia'
   const padrao = periodoPronto('mes')
   const inicio = busca.get('inicio') || padrao.inicio
   const fim = busca.get('fim') || padrao.fim
@@ -55,7 +58,7 @@ export default function Relatorios({ modo = 'gestao', abaFixa }) {
   return (
     <div className="pilha relatorio">
       <div className="abas nao-imprimir" role="tablist" aria-label="Escolha o relatório">
-        {RELATORIOS.map((r) => (
+        {lista.map((r) => (
           <button key={r.id} type="button" role="tab" aria-selected={relatorio === r.id} className="abas__item"
             onClick={() => mudar({ relatorio: r.id === 'frequencia' ? '' : r.id })}>{r.titulo}</button>
         ))}
@@ -119,6 +122,7 @@ export default function Relatorios({ modo = 'gestao', abaFixa }) {
         : relatorio === 'pedidos' ? <RelPedidos filtros={filtros} />
         : relatorio === 'banco' ? <RelBancoHoras filtros={filtros} />
         : relatorio === 'marcacoes' ? <RelMarcacoes filtros={filtros} />
+        : relatorio === 'horistas' ? <RelHoristas filtros={filtros} />
         : <RelFrequencia filtros={filtros} />}
     </div>
   )

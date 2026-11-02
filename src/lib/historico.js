@@ -51,7 +51,7 @@ const NOMES = {
   data_fim: 'Último dia', marcacao_solicitada: 'Horário pedido', tipo_marcacao: 'Marcação', anexo_path: 'Atestado',
   data_inicio: 'Primeiro dia', observacao: 'Observação', cancelado_em: 'Cancelado em', motivo_cancelamento: 'Motivo do cancelamento',
   minutos: 'Horas', motivo_recusa: 'Motivo da recusa', conferencia: 'Conferência', razao_social: 'Razão social', cnpj: 'CNPJ',
-  codigo_convite: 'Código de convite', reconhecimento_facial: 'Reconhecimento facial', bloquear_fora_cerca: 'Bloquear ponto fora da cerca', trabalho_externo: 'Trabalho externo', fuso_horario: 'Fuso horário',
+  codigo_convite: 'Código de convite', reconhecimento_facial: 'Reconhecimento facial', bloquear_fora_cerca: 'Bloquear ponto fora da cerca', trabalho_externo: 'Trabalho externo', pago_por_hora: 'Pago por hora', limite_diario_min: 'Limite diário do horista (minutos)', valor: 'Valor (R$)', desde: 'A partir de', fuso_horario: 'Fuso horário',
   cidade: 'Cidade', uf: 'UF', cep: 'CEP', logradouro: 'Endereço', numero: 'Número', bairro: 'Bairro', complemento: 'Complemento',
   empresa: 'Empresa',
   extra_normal_pct: 'Hora extra em dias normais (%)', extra_especial_pct: 'Hora extra em domingo, feriado e folga (%)',

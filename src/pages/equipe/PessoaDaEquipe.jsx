@@ -30,7 +30,7 @@ export default function PessoaDaEquipe() {
   const abas = [
     { id: 'espelho', rotulo: 'Espelho' },
     { id: 'marcacoes', rotulo: 'Marcações' },
-    ...(pessoa.tipo_escala && pessoa.tipo_escala !== 'semanal' ? [{ id: 'escala', rotulo: 'Escala' }] : []),
+    ...(pessoa.tipo_escala && !['semanal', 'horista'].includes(pessoa.tipo_escala) ? [{ id: 'escala', rotulo: 'Escala' }] : []),
     { id: 'banco', rotulo: 'Banco de horas' },
     { id: 'pedidos', rotulo: 'Pedidos' },
   ]

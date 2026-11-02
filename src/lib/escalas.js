@@ -9,6 +9,7 @@ export const TIPOS_ESCALA = [
   { valor: 'semanal', rotulo: 'Jornada semanal', curto: 'Semanal', descricao: 'Horários fixos por dia da semana (o que já existia).' },
   { valor: '12x36', rotulo: 'Escala 12x36', curto: '12x36', descricao: 'Trabalha um dia e folga o seguinte, de dois em dois dias.' },
   { valor: 'calendario', rotulo: 'Escala por calendário', curto: 'Calendário', descricao: 'Você marca, dia a dia, quem faz qual turno.' },
+  { valor: 'horista', rotulo: 'Horista (sem horário fixo)', curto: 'Horista', descricao: 'Sem jornada: não tem falta nem atraso. Até o limite do dia as horas são normais; o que passar vira hora extra.' },
 ]
 export const ROTULO_ESCALA = Object.fromEntries(TIPOS_ESCALA.map((t) => [t.valor, t.rotulo]))
 export const CURTO_ESCALA = Object.fromEntries(TIPOS_ESCALA.map((t) => [t.valor, t.curto]))
