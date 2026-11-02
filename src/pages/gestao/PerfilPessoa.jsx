@@ -48,6 +48,7 @@ function formularioDe(p) {
     categoria: p.categoria || '',
     data_admissao: p.data_admissao || '',
     filial_id: p.filial_id || '',
+    trabalho_externo: Boolean(p.trabalho_externo),
     tipo_escala: p.tipo_escala || 'semanal',
     escala_turno_id: p.escala_turno_id || '',
     escala_referencia: p.escala_referencia || '',
@@ -120,6 +121,8 @@ export default function PerfilPessoa() {
         data_admissao: vazio(form.data_admissao),
         filial_id: vazio(form.filial_id),
       } : {}),
+      // (só depois que a migração do bloqueio por cerca foi rodada)
+      ...(podeEditarTrabalho && 'trabalho_externo' in pessoa ? { trabalho_externo: form.trabalho_externo } : {}),
       // (só depois que a migração da Fase 2D foi rodada, quando o cadastro já traz o tipo de escala)
       ...(podeEditarTrabalho && 'tipo_escala' in pessoa ? {
         tipo_escala: form.tipo_escala,
@@ -265,6 +268,14 @@ export default function PerfilPessoa() {
                     {unidadeAtualInativa && <option value={form.filial_id}>{nomeUnidade[form.filial_id]} (desativada)</option>}
                     {unidadesAtivas.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
                   </Selecao>
+                  {'trabalho_externo' in pessoa && (
+                    <label className="opcao" style={{ alignItems: 'center' }}>
+                      <input type="checkbox" checked={form.trabalho_externo}
+                        onChange={(e) => { setErro(''); setForm((f) => ({ ...f, trabalho_externo: e.target.checked })) }} />
+                      <span><span className="opcao__titulo">Trabalho externo</span><br />
+                        <span className="opcao__desc">Pode bater o ponto fora da cerca da unidade, mesmo quando a empresa bloqueia. As marcações longe continuam com o selo Fora do local.</span></span>
+                    </label>
+                  )}
                   <div className="grade-campos">
                     <Selecao rotulo="Departamento" opcional value={form.departamento_id} onChange={mudar('departamento_id')}
                       ajuda={cadastros.departamentos.length === 0 ? 'Nenhum departamento cadastrado ainda.' : undefined}

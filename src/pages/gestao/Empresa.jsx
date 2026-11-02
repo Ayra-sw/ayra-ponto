@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
-import { RefreshCw, ScanFace } from 'lucide-react'
+import { Link, useOutletContext } from 'react-router-dom'
+import { MapPinned, RefreshCw, ScanFace } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAvisos } from '../../contexts/AvisosContext'
@@ -42,6 +42,8 @@ export default function Empresa() {
   const [gerandoCodigo, setGerandoCodigo] = useState(false)
   const [confirmarFacial, setConfirmarFacial] = useState(false)
   const [salvandoFacial, setSalvandoFacial] = useState(false)
+  const [confirmarCerca, setConfirmarCerca] = useState(false)
+  const [salvandoCerca, setSalvandoCerca] = useState(false)
 
   const podeEditar = perfil.tipo === 'administrador'
 
@@ -120,6 +122,18 @@ export default function Empresa() {
     avisar(ligar ? 'Reconhecimento facial ligado.' : 'Reconhecimento facial desligado.')
   }
 
+  async function alternarCerca() {
+    const ligar = !empresa.bloquear_fora_cerca
+    setSalvandoCerca(true)
+    const { error } = await supabase.from('empresas').update({ bloquear_fora_cerca: ligar }).eq('id', empresa.id)
+    setSalvandoCerca(false)
+    setConfirmarCerca(false)
+    if (error) return avisar(traduzirErro(error), 'problema')
+    await recarregar()
+    avisar(ligar ? 'Bloqueio fora da cerca ligado.' : 'Bloqueio fora da cerca desligado. A cerca voltou a ser só um aviso.')
+  }
+
+  const temBloqueioCerca = 'bloquear_fora_cerca' in empresa
   const cnpjAtualInvalido = empresa.cnpj && !cnpjValido(empresa.cnpj)
   const link = linkConvite(empresa.codigo_convite)
 
@@ -227,6 +241,38 @@ export default function Empresa() {
         )}
       </section>
 
+      {temBloqueioCerca && (
+        <section className="cartao" aria-labelledby="t-cerca">
+          <div className="cartao__cabecalho">
+            <div>
+              <h2 id="t-cerca">Bloquear ponto fora da cerca virtual</h2>
+              <p className="suave pequeno">Quando ligado, só dá para bater o ponto dentro da cerca da unidade.</p>
+            </div>
+            <Etiqueta tom={empresa.bloquear_fora_cerca ? 'ok' : 'neutra'}>{empresa.bloquear_fora_cerca ? 'Ligado' : 'Desligado'}</Etiqueta>
+          </div>
+          <ul className="lista-simples">
+            <li>Vale só para as unidades com cerca virtual, em <Link to="/gestao/configuracoes/unidades" className="link">Unidades</Link>. Unidades sem cerca continuam livres.</li>
+            <li>Quem estiver fora da cerca, ou com a localização desligada, vê uma mensagem e não consegue registrar.</li>
+            <li>Quem trabalha na rua (vendas, campo, entregas) pode ficar livre: marque <strong>Trabalho externo</strong> na ficha da pessoa, aba Trabalho.</li>
+            <li>A localização do celular pode errar algumas dezenas de metros. Use um raio de pelo menos 150 metros.</li>
+          </ul>
+          <Alerta tom="atencao">
+            A Portaria 671 proíbe restringir o ponto por horário. Por local, a decisão é da empresa: converse com o seu jurídico antes de ligar.
+            Se alguém for bloqueado por engano, pode pedir a inclusão da marcação em <strong>Pedir ajuste</strong>, opção “Esqueci de bater o ponto”.
+          </Alerta>
+          {podeEditar ? (
+            <div className="acoes" style={{ marginTop: 12 }}>
+              <Botao variante={empresa.bloquear_fora_cerca ? 'secundario' : 'primario'} icone={MapPinned}
+                onClick={() => setConfirmarCerca(true)} disabled={Boolean(cnpjAtualInvalido)}>
+                {empresa.bloquear_fora_cerca ? 'Desligar o bloqueio' : 'Ligar o bloqueio'}
+              </Botao>
+            </div>
+          ) : (
+            <p className="suave pequeno">Somente o administrador liga ou desliga.</p>
+          )}
+        </section>
+      )}
+
       <section className="cartao" aria-labelledby="t-convite">
         <div className="cartao__cabecalho">
           <div>
@@ -263,6 +309,19 @@ export default function Empresa() {
         {empresa.reconhecimento_facial
           ? 'O ponto volta a ser registrado sem câmera. As fotos e verificações já feitas continuam guardadas.'
           : 'Na próxima vez que registrarem o ponto, as pessoas verão o aviso de privacidade e a câmera. Avise a equipe antes, e cadastre também o seu rosto em "Minha conta".'}
+      </Confirmacao>
+
+      <Confirmacao
+        aberta={confirmarCerca}
+        titulo={empresa.bloquear_fora_cerca ? 'Desligar o bloqueio fora da cerca?' : 'Ligar o bloqueio fora da cerca?'}
+        textoConfirmar={empresa.bloquear_fora_cerca ? 'Desligar' : 'Ligar'}
+        carregando={salvandoCerca}
+        aoConfirmar={alternarCerca}
+        aoCancelar={() => setConfirmarCerca(false)}
+      >
+        {empresa.bloquear_fora_cerca
+          ? 'A cerca volta a ser só um aviso: todos batem o ponto de qualquer lugar, e o RH continua vendo o selo Fora do local.'
+          : 'A partir de agora, quem estiver fora da cerca da unidade não consegue bater o ponto. Avise a equipe antes e marque como Trabalho externo quem trabalha fora.'}
       </Confirmacao>
 
       <Confirmacao

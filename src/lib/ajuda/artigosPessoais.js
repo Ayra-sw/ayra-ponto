@@ -81,13 +81,20 @@ const ARTIGOS_PESSOAIS = [
     palavras: ['localizacao', 'gps', 'fora do local', 'cerca', 'mapa', 'permitir', 'permissao', 'onde estou', 'privacidade'],
     telas: ['/', '/gestao/meu-ponto'],
     corpo: [
-      'Ao bater o ponto, o navegador pode pedir permissão para saber **onde você está**. Se você permitir, o lugar fica guardado junto da marcação e o RH da sua empresa pode vê-lo. Se não permitir, **o ponto é registrado igual**.',
+      'Ao bater o ponto, o navegador pode pedir permissão para saber **onde você está**. Se você permitir, o lugar fica guardado junto da marcação e o RH da sua empresa pode vê-lo. Na maioria das empresas, se não permitir, **o ponto é registrado igual**.',
       { tipo: 'sub', titulo: 'O aviso “a cerca de … da unidade”' },
       'Algumas empresas marcam o local da unidade no sistema. Se você registrar o ponto longe dele, aparece um aviso gentil no comprovante. Ele **não impede nada**: a marcação vale normalmente. Se você estava em visita, entrega ou outro trabalho externo, está tudo certo.',
       { tipo: 'lista', itens: [
         'A localização do computador costuma errar mais do que a do celular.',
         'Para melhorar, permita a localização no navegador e, no celular, ligue o GPS.',
-        'Sem permissão, o ponto é registrado sem localização, e a empresa pode ver isso.',
+        'Sem permissão, o ponto é registrado sem localização (a não ser que a empresa bloqueie, veja abaixo), e a empresa pode ver isso.',
+      ] },
+      { tipo: 'sub', titulo: 'Quando a empresa só permite o ponto no local' },
+      'Algumas empresas ligam o bloqueio: aí o ponto só é registrado dentro da área da unidade, e com a localização ligada. Se aparecer a mensagem de que você está fora da área, chegue ao local e tente de novo.',
+      { tipo: 'lista', itens: [
+        'Permita a localização para o Ayra Ponto e, no celular, ligue o GPS.',
+        'Se você trabalha na rua, fale com o RH: ele pode liberar o seu cadastro.',
+        'Se não conseguiu bater o ponto por um problema, use **Pedir ajuste**, opção “Esqueci de bater o ponto”.',
       ] },
       { tipo: 'dica', texto: 'Dúvidas sobre o uso da sua localização? Fale com o RH da sua empresa.' },
     ],

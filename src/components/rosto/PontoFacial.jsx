@@ -15,14 +15,15 @@ import CameraRosto from './CameraRosto'
 // Registro de ponto com reconhecimento facial. Qualquer problema (sem
 // câmera, rosto não reconhecido, falha no envio da foto) NUNCA impede a
 // marcação: ela é registrada e fica "a conferir" pelo RH.
-export default function PontoFacial({ tipo, rosto, aoConcluir, aoFechar }) {
+// A única exceção é o bloqueio fora da cerca, quando a empresa liga.
+export default function PontoFacial({ tipo, rosto, localizacaoPrecisa = false, aoConcluir, aoFechar }) {
   const { perfil } = useAuth()
   const [etapa, setEtapa] = useState(rosto.aceitou ? 'camera' : 'aviso') // aviso | camera | registrando | erro
   const [aceitando, setAceitando] = useState(false)
   const [erro, setErro] = useState('')
 
   async function chamarRegistro(extra) {
-    const coords = await obterLocalizacao()
+    const coords = await obterLocalizacao({ precisa: localizacaoPrecisa })
     const { data, error } = await supabase.rpc('registrar_ponto_facial', {
       p_tipo: tipo,
       p_origem: 'web',

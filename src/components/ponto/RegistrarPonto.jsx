@@ -56,7 +56,7 @@ export default function RegistrarPonto() {
       perfil.filial_id
         ? supabase.from('filiais').select('id, nome').eq('id', perfil.filial_id).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase.from('empresas').select('id, nome, reconhecimento_facial').eq('id', perfil.empresa_id).maybeSingle(),
+      supabase.from('empresas').select('*').eq('id', perfil.empresa_id).maybeSingle(),
       supabase.from('verificacoes_faciais').select('registro_id, resultado, conferencia')
         .eq('perfil_id', perfil.id).gte('criado_em', inicioDeHoje()),
     ])
@@ -75,6 +75,8 @@ export default function RegistrarPonto() {
   const agora = situacaoAgora(registros)
 
   const usaRosto = Boolean(empresa?.reconhecimento_facial)
+  // Empresa que bloqueia o ponto fora da cerca: o banco confere o local
+  const bloqueiaCerca = Boolean(empresa?.bloquear_fora_cerca)
 
   function concluirFacial(data) {
     const { verificacao_facial: verificacao, ...registro } = data
@@ -84,7 +86,7 @@ export default function RegistrarPonto() {
   }
 
   // Fase 6A: se a unidade tem cerca e a pessoa marcou longe (ou sem localização),
-  // mostra um aviso gentil. Nunca atrapalha: qualquer falha é ignorada.
+  // mostra um aviso gentil. Qualquer falha aqui é ignorada.
   async function conferirLocal(registroId) {
     setLocalDoComprovante(null)
     try {
@@ -109,11 +111,19 @@ export default function RegistrarPonto() {
     // Sem internet não há registro: a hora e o NSR precisam vir do servidor.
     if (navigator.onLine === false) { setErro('Sem internet. O ponto precisa de conexão para registrar o horário certo. Tente de novo quando a internet voltar.'); return }
     if (usaRosto) {
+      // Com o bloqueio fora da cerca, confere o local antes de abrir a câmera
+      if (bloqueiaCerca) {
+        setEtapa('localizacao')
+        const local = await obterLocalizacao({ precisa: true })
+        const { data: motivo } = await supabase.rpc('conferir_local_ponto', local)
+        setEtapa('')
+        if (motivo) { setErro(motivo); return }
+      }
       setFluxoFacial(true)
       return
     }
     setEtapa('localizacao')
-    const coords = await obterLocalizacao()
+    const coords = await obterLocalizacao({ precisa: bloqueiaCerca })
     setEtapa('registrando')
     // O banco sempre registra para a pessoa logada, na unidade do cadastro.
     const { data, error } = await supabase.rpc('registrar_ponto', {
@@ -145,7 +155,7 @@ export default function RegistrarPonto() {
       )}
       {fluxoFacial && (
         <Suspense fallback={null}>
-          <PontoFacial tipo={tipo} rosto={rosto} aoConcluir={concluirFacial} aoFechar={() => setFluxoFacial(false)} />
+          <PontoFacial tipo={tipo} rosto={rosto} localizacaoPrecisa={bloqueiaCerca} aoConcluir={concluirFacial} aoFechar={() => setFluxoFacial(false)} />
         </Suspense>
       )}
 

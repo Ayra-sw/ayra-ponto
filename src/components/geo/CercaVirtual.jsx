@@ -60,7 +60,7 @@ export default function CercaVirtual({ valor, aoMudar, endereco, erroRaio }) {
       <h3 className="cerca__titulo" id="cerca-titulo"><MapPinned aria-hidden="true" /> Localização e cerca virtual</h3>
       <p className="suave pequeno" style={{ margin: 0 }}>
         Marque no mapa onde fica a unidade. Quando alguém registrar o ponto longe daqui, o RH vê um aviso na marcação.
-        O ponto <strong>nunca é bloqueado</strong>: a cerca só ajuda a conferir.
+        Por padrão, a cerca só ajuda a conferir e o ponto <strong>não é bloqueado</strong>. Se a empresa ligar o bloqueio, em Configurações › Empresa, só dá para bater o ponto dentro dela.
       </p>
       <div className="cerca__acoes">
         <Botao type="button" variante="secundario" tamanho="pequeno" icone={Search} onClick={pelaEndereco} carregando={buscando}>Buscar pelo endereço</Botao>
