@@ -1,67 +1,51 @@
-// Nomes que aparecem na tela. O banco guarda os códigos internos
-// (por exemplo, "funcionario" aparece como "Colaborador" e "filiais" como
-// "Unidades").
+// Solicitações de ajuste de ponto: como cada tipo aparece na tela.
+import { data, dataHora } from './formatos'
+import { rotuloMarcacao } from './marcacoes'
 
-export const PAPEL = {
-  administrador: 'Administrador',
-  rh: 'RH',
-  funcionario: 'Colaborador',
+export const OPCOES_SOLICITACAO = [
+  { valor: 'inclusao_esquecida', titulo: 'Esqueci de bater o ponto', descricao: 'Peça para incluir uma marcação que faltou.' },
+  { valor: 'correcao_marcacao', titulo: 'Bati no horário errado', descricao: 'Peça para corrigir o horário de uma marcação que você fez.' },
+  { valor: 'abono', titulo: 'Abonar falta ou atraso', descricao: 'Atestado, declaração ou outro motivo justificado. Pode ser mais de um dia. Quem analisa é o RH.' },
+  { valor: 'folga', titulo: 'Pedir folga', descricao: 'Dias em que você não vai trabalhar.' },
+  { valor: 'fora_do_local', titulo: 'Estava fora do local', descricao: 'Trabalho externo, visita a cliente ou outro motivo fora da unidade. Quem analisa é o RH.' },
+]
+
+export const STATUS_SOLICITACAO = {
+  pendente: { rotulo: 'Aguardando análise', tom: 'atencao' },
+  aprovado: { rotulo: 'Aprovada', tom: 'ok' },
+  rejeitado: { rotulo: 'Recusada', tom: 'problema' },
+  cancelado: { rotulo: 'Cancelada', tom: 'neutra' },
 }
 
-export const PAPEL_DESCRICAO = {
-  administrador: 'Acesso total: empresa, unidades, pessoas e permissões.',
-  rh: 'Gerencia pessoas e analisa solicitações. Não altera papéis nem a empresa.',
-  funcionario: 'Registra o próprio ponto e acompanha as próprias informações.',
+// Uma frase com o que a pessoa pediu
+export function descreverPedido(a) {
+  if (a.tipo === 'inclusao_esquecida' && a.marcacao_solicitada) {
+    return `${rotuloMarcacao(a.tipo_marcacao)} em ${dataHora(a.marcacao_solicitada)}`
+  }
+  if (a.tipo === 'correcao_marcacao' && a.marcacao_solicitada) {
+    return `Corrigir para ${dataHora(a.marcacao_solicitada)}`
+  }
+  if (a.data_referencia) {
+    return a.data_fim && a.data_fim !== a.data_referencia
+      ? `De ${data(a.data_referencia)} a ${data(a.data_fim)}`
+      : data(a.data_referencia)
+  }
+  return a.marcacao_solicitada ? dataHora(a.marcacao_solicitada) : ''
 }
 
-export const SITUACAO = {
-  ativo: 'Ativo',
-  afastado: 'Afastado',
-  desligado: 'Desligado',
+// "YYYY-MM-DD" de hoje (ou de daqui a n dias) no horário do aparelho
+export function diaIso(deslocamento = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + deslocamento)
+  const mes = String(d.getMonth() + 1).padStart(2, '0')
+  const dia = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mes}-${dia}`
 }
 
-export const CATEGORIA = {
-  clt: 'CLT',
-  estagiario: 'Estagiário',
-  menor_aprendiz: 'Menor aprendiz',
-  trainee: 'Trainee',
-}
-
-export const TIPO_SOLICITACAO = {
-  correcao_marcacao: 'Correção de marcação',
-  abono: 'Abono',
-  folga: 'Folga',
-  inclusao_esquecida: 'Marcação esquecida',
-}
-
-export const TIPO_IDENTIFICADOR = {
-  cnpj: 'CNPJ',
-  cei: 'CEI',
-  caepf: 'CAEPF',
-  cno: 'CNO',
-}
-
-export const RESULTADO_FACIAL = {
-  reconhecido: { rotulo: 'Rosto reconhecido', tom: 'ok' },
-  nao_reconhecido: { rotulo: 'Rosto não reconhecido', tom: 'atencao' },
-  sem_referencia: { rotulo: 'Sem foto de cadastro aprovada', tom: 'info' },
-  sem_foto: { rotulo: 'Sem foto', tom: 'neutra' },
-}
-
-export const CONFERENCIA_FACIAL = {
-  pendente: { rotulo: 'A conferir pelo RH', tom: 'atencao' },
-  confirmada: { rotulo: 'Conferida pelo RH', tom: 'ok' },
-  contestada: { rotulo: 'Contestada pelo RH', tom: 'problema' },
-}
-
-export const MOTIVO_SEM_FOTO = {
-  sem_camera: 'Aparelho sem câmera',
-  permissao_negada: 'Câmera bloqueada no aparelho',
-  aviso_nao_aceito: 'Não aceitou o aviso de privacidade',
-  falha_envio: 'A foto não chegou (internet)',
-  rosto_nao_encontrado: 'A câmera não encontrou o rosto',
-  app_sem_camera: 'Registrado sem câmera',
-  usuario_optou: 'A pessoa escolheu registrar sem foto',
-  reconhecimento_indisponivel: 'O reconhecimento não carregou no aparelho',
-  outro: 'Registrado sem foto',
+// Início e fim (ISO) do dia 'YYYY-MM-DD' no horário do aparelho
+export function limitesDoDia(diaIsoTexto) {
+  const inicio = new Date(`${diaIsoTexto}T00:00:00`)
+  const fim = new Date(inicio)
+  fim.setDate(fim.getDate() + 1)
+  return [inicio.toISOString(), fim.toISOString()]
 }
