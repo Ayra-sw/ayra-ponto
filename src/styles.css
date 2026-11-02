@@ -1225,3 +1225,10 @@ button.celula-escala.vazia:hover { background: var(--superficie-2); }
 .lista-opcoes__item:has(input:checked) { background: var(--superficie-2); font-weight: 600; }
 .lista-opcoes__item input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--primaria); }
 .anexo-dois { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Meu espelho: lista de meses (mesmo visual da lista de dias) */
+.mes-linha__nome { display: block; font-size: 1.05rem; font-weight: 600; }
+.mes-linha__periodo { display: block; color: var(--texto-suave); font-size: 0.875rem; margin-top: 2px; }
+.mes-linha__rodape { display: flex; justify-content: flex-end; }
+.so-impressao { display: none; }
+@media print { .so-impressao { display: block !important; } }

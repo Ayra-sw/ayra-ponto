@@ -234,7 +234,7 @@ const ARTIGOS_PESSOAIS = [
     palavras: ['espelho', 'folha de ponto', 'horas', 'saldo', 'falta', 'incompleto', 'hora extra', 'atraso', 'lapis', 'imprimir'],
     telas: ['/espelho', '/gestao/meu-espelho'],
     corpo: [
-      'O [espelho](rota:espelho) mostra o mês dia a dia: as marcações, o previsto pela jornada, o trabalhado, o que ficou a menos, as extras e o saldo.',
+      'O [espelho](rota:espelho) começa com a lista dos meses: horas normais, horas faltantes, horas extras e se o mês já foi **Assinado**. Toque na seta de um mês para ver todos os dias. Em cada dia, a seta mostra as marcações.',
       { tipo: 'lista', itens: [
         '**Em dia:** trabalhou o previsto (dentro da tolerância).',
         '**Horas a menos** ou **Hora extra:** trabalhou menos ou mais que o previsto.',
@@ -242,7 +242,7 @@ const ARTIGOS_PESSOAIS = [
         '**Incompleto:** falta uma entrada ou uma saída. O saldo do dia aparece como "?".',
         '**Abonado, Folga aprovada, Feriado, Férias, Atestado:** o dia não conta como falta.',
       ] },
-      'Dias com problema mostram um aviso e o botão **Pedir ajuste**. Marcações com um **lápis** foram ajustadas por pedido aprovado. A original continua guardada.',
+      'Dias com problema mostram um selo. Abra o dia para ver o aviso e o botão **Pedir ajuste deste dia**. Marcações ajustadas por pedido aprovado aparecem como corrigidas ou incluídas. A original continua guardada.',
       { tipo: 'dica', texto: 'Use **Imprimir ou salvar em PDF** para ter a folha do mês.' },
     ],
   },

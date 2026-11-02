@@ -14,7 +14,7 @@ import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
 import BotaoComprovantePdf from '../ponto/BotaoComprovantePdf'
 
 // "00:21" e "-00:09" (como num relógio)
-function hhmm(minutos, comSinal = false) {
+export function hhmm(minutos, comSinal = false) {
   const m = Math.abs(Math.round(minutos || 0))
   const texto = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
   return comSinal && minutos < 0 ? `-${texto}` : texto
@@ -35,6 +35,34 @@ function selosDoDia(d, temPedido) {
   if (d.situacao === 'trabalhado' && d.atraso_min > 0) selos.push({ texto: 'Horas a menos', tom: 'atencao' })
   if (d.extra_min > 0 && d.situacao !== 'em_andamento') selos.push({ texto: 'Horas extras', tom: 'info' })
   return selos
+}
+
+// Uma linha da lista de dias (Meu histórico e Espelho do mês)
+export function LinhaDoDia({ d, temPedido = false, hoje = '', aoAbrir }) {
+  const semana = SEMANA[d.dia_semana]
+  const selos = selosDoDia(d, temPedido)
+  const nota = d.data === hoje ? 'hoje' : NOTA_DO_DIA[d.situacao]
+  return (
+    <li>
+      <button type="button" className="dia-linha" onClick={aoAbrir}
+        aria-label={`${dataBr(d.data)}, ${semana}. Horas extras ${hhmm(d.extra_min)}, horas faltantes ${hhmm(d.atraso_min + d.falta_min)}, saldo ${hhmm(d.saldo_min, true)}. Ver detalhes do dia`}>
+        {selos.length > 0 && (
+          <span className="dia-linha__selos">
+            {selos.map((s) => <Etiqueta key={s.texto} tom={s.tom} icone={false}>{s.texto}</Etiqueta>)}
+          </span>
+        )}
+        <span className="dia-linha__topo">
+          <span className="dia-linha__data">{dataBr(d.data)} <span className="dia-linha__sep">|</span> {semana}{nota && <span className="dia-linha__nota"> · {nota}</span>}</span>
+          <ChevronRight className="dia-linha__seta" aria-hidden="true" />
+        </span>
+        <span className="dia-linha__numeros">
+          <span><span className="dia-linha__rotulo">H. extra</span><span className="dia-linha__valor">{hhmm(d.extra_min)}</span></span>
+          <span><span className="dia-linha__rotulo">H. faltantes</span><span className="dia-linha__valor">{hhmm(d.atraso_min + d.falta_min)}</span></span>
+          <span><span className="dia-linha__rotulo">Saldo</span><span className={`dia-linha__valor${d.saldo_min < 0 ? ' dia-linha__valor--negativo' : ''}`}>{hhmm(d.saldo_min, true)}</span></span>
+        </span>
+      </button>
+    </li>
+  )
 }
 
 // "Meu histórico" do colaborador: um dia por linha, com horas extras, horas que
@@ -100,32 +128,9 @@ export default function MeusDias({ perfilId, aoPedirAjuste, atualizarEm }) {
         </EstadoVazio>
       ) : (
         <ul className="dias-lista" aria-label={`Seus dias em ${nomeDoMes(mes).toLowerCase()}`}>
-          {dias.map((d) => {
-            const semana = SEMANA[d.dia_semana]
-            const selos = selosDoDia(d, comPedido.has(d.data))
-            const nota = d.data === hoje ? 'hoje' : NOTA_DO_DIA[d.situacao]
-            return (
-              <li key={d.data}>
-                <button type="button" className="dia-linha" onClick={() => setAberto(d)}
-                  aria-label={`${dataBr(d.data)}, ${semana}. Horas extras ${hhmm(d.extra_min)}, horas faltantes ${hhmm(d.atraso_min + d.falta_min)}, saldo ${hhmm(d.saldo_min, true)}. Ver detalhes do dia`}>
-                  {selos.length > 0 && (
-                    <span className="dia-linha__selos">
-                      {selos.map((s) => <Etiqueta key={s.texto} tom={s.tom} icone={false}>{s.texto}</Etiqueta>)}
-                    </span>
-                  )}
-                  <span className="dia-linha__topo">
-                    <span className="dia-linha__data">{dataBr(d.data)} <span className="dia-linha__sep">|</span> {semana}{nota && <span className="dia-linha__nota"> · {nota}</span>}</span>
-                    <ChevronRight className="dia-linha__seta" aria-hidden="true" />
-                  </span>
-                  <span className="dia-linha__numeros">
-                    <span><span className="dia-linha__rotulo">H. extra</span><span className="dia-linha__valor">{hhmm(d.extra_min)}</span></span>
-                    <span><span className="dia-linha__rotulo">H. faltantes</span><span className="dia-linha__valor">{hhmm(d.atraso_min + d.falta_min)}</span></span>
-                    <span><span className="dia-linha__rotulo">Saldo</span><span className={`dia-linha__valor${d.saldo_min < 0 ? ' dia-linha__valor--negativo' : ''}`}>{hhmm(d.saldo_min, true)}</span></span>
-                  </span>
-                </button>
-              </li>
-            )
-          })}
+          {dias.map((d) => (
+            <LinhaDoDia key={d.data} d={d} temPedido={comPedido.has(d.data)} hoje={hoje} aoAbrir={() => setAberto(d)} />
+          ))}
         </ul>
       )}
 
@@ -137,7 +142,7 @@ export default function MeusDias({ perfilId, aoPedirAjuste, atualizarEm }) {
   )
 }
 
-function DetalhesDoDia({ dia, temPedido, aoFechar, aoPedirAjuste }) {
+export function DetalhesDoDia({ dia, temPedido, aoFechar, aoPedirAjuste }) {
   const sit = situacaoDoDia(dia)
   const marcacoes = Array.isArray(dia.marcacoes) ? dia.marcacoes : []
   const registros = marcacoes.filter((m) => m.nsr != null)

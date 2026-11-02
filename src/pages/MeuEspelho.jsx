@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import EspelhoMensal from '../components/espelho/EspelhoMensal'
+import MesesDoEspelho from '../components/espelho/MesesDoEspelho'
+import Botao from '../components/ui/Botao'
 import BancoHoras from '../components/banco/BancoHoras'
 import MinhaEscala from '../components/escalas/MinhaEscala'
 import PedirAjuste from '../components/marcacoes/PedirAjuste'
@@ -42,15 +45,23 @@ export default function MeuEspelho() {
         <BancoHoras perfilId={perfil.id} nomePessoa={perfil.nome_completo} podeLancar={false} />
       ) : aba === 'escala' ? (
         <MinhaEscala perfilId={perfil.id} />
+      ) : !busca.get('mes') ? (
+        <MesesDoEspelho perfilId={perfil.id} aoAbrir={(m) => setBusca({ mes: m })} />
       ) : (
-        <EspelhoMensal
-          perfilId={perfil.id}
-          mesInicial={busca.get('mes')}
-          aoMudarMes={(m) => setBusca({ mes: m }, { replace: true })}
-          aoPedirAjuste={(inicial) => setPedido(inicial)}
-          atualizarEm={versao}
-          podeAssinar
-        />
+        <div className="pilha">
+          <div className="nao-imprimir">
+            <Botao variante="discreto" tamanho="pequeno" icone={ArrowLeft} onClick={() => setBusca({})}>Todos os meses</Botao>
+          </div>
+          <EspelhoMensal
+            perfilId={perfil.id}
+            mesInicial={busca.get('mes')}
+            aoMudarMes={(m) => setBusca({ mes: m }, { replace: true })}
+            aoPedirAjuste={(inicial) => setPedido(inicial)}
+            atualizarEm={versao}
+            podeAssinar
+            simples
+          />
+        </div>
       )}
       <PedirAjuste
         aberto={Boolean(pedido)}

@@ -18,6 +18,8 @@ import Etiqueta from '../ui/Etiqueta'
 import Alerta from '../ui/Alerta'
 import Indicador from '../ui/Indicador'
 import { Esqueleto, EstadoErro, EstadoVazio } from '../ui/Estados'
+import { DetalhesDoDia, LinhaDoDia } from '../marcacoes/MeusDias'
+import { diaIso } from '../../lib/ajustes'
 
 function Marcas({ marcacoes, fuso }) {
   if (!marcacoes?.length) return <span className="suave">—</span>
@@ -107,7 +109,9 @@ async function fotoDoFechamento(empresaId, perfilId, inicio) {
 // Espelho de ponto de uma pessoa, mês a mês. As contas vêm prontas do banco
 // (função apurar_periodo). Com "aoPedirAjuste" aparece o botão de pedir ajuste
 // nos dias com problema (só na tela da própria pessoa).
-export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial, podeAssinar = false }) {
+// Com "simples" (tela da própria pessoa), os dias aparecem numa lista limpa, um por linha;
+// a tabela completa continua na impressão.
+export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedirAjuste, atualizarEm, pessoaInicial, podeAssinar = false, simples = false }) {
   const { empresa, unidades } = useEmpresa()
   const { perfil: eu } = useAuth()
   // a empresa de quem está olhando (já vem no login, sem esperar o cadastro da empresa)
@@ -120,6 +124,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
   const [fechado, setFechado] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [diaAberto, setDiaAberto] = useState(null)
 
   const carregar = useCallback(async () => {
     setErro('')
@@ -250,7 +255,14 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
             </EstadoVazio>
           ) : (
             <>
-              <div className="so-computador">
+              {simples && (
+                <ul className="dias-lista nao-imprimir" aria-label={`Dias de ${nomeDoMes(mes).toLowerCase()}`}>
+                  {visiveis.filter((l) => l.situacao !== 'antes_admissao').map((l) => (
+                    <LinhaDoDia key={l.data} d={l} hoje={diaIso()} aoAbrir={() => setDiaAberto(l)} />
+                  ))}
+                </ul>
+              )}
+              <div className={simples ? 'so-impressao' : 'so-computador'}>
                 <div className="tabela-envoltorio">
                   <table className="tabela tabela--espelho">
                     <thead>
@@ -305,7 +317,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                 </div>
               </div>
 
-              <div className="so-celular lista-cartoes">
+              {!simples && <div className="so-celular lista-cartoes">
                 {visiveis.map((l) => {
                   const s = situacaoDoDia(l)
                   return (
@@ -346,7 +358,7 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
                     <span>Saldo <strong className="mono">{saldoTexto(totais.saldo)}</strong></span>
                   </div>
                 </div>
-              </div>
+              </div>}
 
               <p className="suave pequeno espelho__nota">
                 <Pencil aria-hidden="true" className="espelho__nota-icone" /> O lápis marca uma marcação ajustada por pedido aprovado. A marcação original continua guardada, sem alteração.
@@ -362,6 +374,10 @@ export default function EspelhoMensal({ perfilId, mesInicial, aoMudarMes, aoPedi
             </>
           )}
         </>
+      )}
+      {diaAberto && (
+        <DetalhesDoDia dia={diaAberto} aoFechar={() => setDiaAberto(null)}
+          aoPedirAjuste={aoPedirAjuste && !fechado ? (inicial) => { setDiaAberto(null); aoPedirAjuste(inicial) } : null} />
       )}
     </div>
   )
