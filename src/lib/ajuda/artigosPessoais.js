@@ -132,7 +132,7 @@ const ARTIGOS_PESSOAIS = [
     telas: ['/historico', '/gestao/meu-historico', '/espelho', '/gestao/meu-espelho'],
     corpo: [
       { tipo: 'passos', itens: [
-        'Abra o seu [histórico](rota:historico) e toque em **Pedir ajuste** (ou em **Pedir ajuste deste dia**, no dia certo).',
+        'Abra o seu [histórico](rota:historico) e toque em **Pedir ajuste** (ou toque na seta do dia certo e depois em **Pedir ajuste deste dia**).',
         'Escolha **Esqueci de bater o ponto** para incluir uma marcação que faltou, ou **Bati no horário errado** para corrigir uma marcação.',
         'Informe o dia, o horário e qual marcação é.',
         'Escreva o motivo e toque em **Enviar pedido**.',

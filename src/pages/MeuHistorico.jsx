@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { MessageSquarePlus } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Botao from '../components/ui/Botao'
-import HistoricoMarcacoes from '../components/marcacoes/HistoricoMarcacoes'
+import MeusDias from '../components/marcacoes/MeusDias'
 import ListaSolicitacoes from '../components/marcacoes/ListaSolicitacoes'
 import PedirAjuste from '../components/marcacoes/PedirAjuste'
 
@@ -21,7 +21,7 @@ export default function MeuHistorico() {
       <div className="pagina__cabecalho">
         <div className="pagina__titulo">
           <h1>Meu histórico</h1>
-          <p className="suave">Suas marcações, dia a dia, e os pedidos de ajuste que você enviou.</p>
+          <p className="suave">Seus dias, com horas extras, horas que faltaram e saldo. Toque na seta para ver as marcações do dia.</p>
         </div>
         <Botao icone={MessageSquarePlus} onClick={() => setPedido({})}>Pedir ajuste</Botao>
       </div>
@@ -34,7 +34,7 @@ export default function MeuHistorico() {
       </div>
 
       {aba === 'marcacoes' ? (
-        <HistoricoMarcacoes perfilId={perfil.id} atualizarEm={versao} aoPedirAjuste={(inicial) => setPedido(inicial)} />
+        <MeusDias perfilId={perfil.id} atualizarEm={versao} aoPedirAjuste={(inicial) => setPedido(inicial)} />
       ) : (
         <ListaSolicitacoes
           perfilId={perfil.id}
